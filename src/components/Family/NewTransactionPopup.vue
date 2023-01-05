@@ -68,11 +68,11 @@ import { ITransaction } from '../../models/transaction';
 import { formatDate, loading, openNotificationWithIcon, setIsLoading } from '../../services/utils';
 import { DataBaseClient } from '../../api/db';
 import { Category } from '../../models/category';
+import { useCategoryStore } from '../../stores/category';
 
 const props = defineProps<{
 	visible: boolean;
 	type: 'expense' | 'earning';
-	categories: Category[];
 }>();
 
 const emits = defineEmits(['close', 'ok']);
@@ -104,12 +104,9 @@ watch(
 	() => props.type,
 	() => resetTransaction()
 );
-watch(
-	() => props.categories,
-	() => resetTransaction()
-);
 
-const categories = computed(() => props.categories.filter(c => c.type === props.type));
+const allCategories = computed(() => useCategoryStore().categories);
+const categories = computed(() => allCategories.value.filter(c => c.type === props.type));
 
 const handleOk = () => {
 	setIsLoading(true);

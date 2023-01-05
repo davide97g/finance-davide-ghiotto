@@ -4,5 +4,7 @@ import App from './App.vue';
 import Antd from 'ant-design-vue';
 import { router } from './router/index';
 import 'ant-design-vue/dist/antd.css';
+import { createPinia } from 'pinia';
+const pinia = createPinia();
 
-createApp(App).use(router).use(Antd).mount('#app');
+createApp(App).use(router).use(pinia).use(Antd).mount('#app');

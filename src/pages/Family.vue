@@ -39,55 +39,32 @@
 	</div>
 	<a-tabs v-model:activeKey="activeKey" style="padding: 20px">
 		<a-tab-pane key="1" tab="Expenses">
-			<TransactionList
-				:title="'Expenses'"
-				:transactions="expenses"
-				:categories="categories"
-				v-if="expenses.length"
-			/>
+			<TransactionList :title="'Expenses'" :transactions="expenses" v-if="expenses.length" />
 		</a-tab-pane>
 		<a-tab-pane key="2" tab="Earnings">
-			<TransactionList
-				:title="'Earnings'"
-				:transactions="earnings"
-				:categories="categories"
-				v-if="earnings.length"
-			/>
+			<TransactionList :title="'Earnings'" :transactions="earnings" v-if="earnings.length" />
 		</a-tab-pane>
 	</a-tabs>
 	<NewTransactionPopup
 		:visible="newTransactionPopupIsVisibile"
 		:type="type"
-		:categories="categories"
 		@close="newTransactionPopupIsVisibile = false"
 	/>
-	<NewCategoryPopup
-		:visible="newCategoryPopupIsVisibile"
-		@close="newCategoryPopupIsVisibile = false"
-	/>
-	<a-button
-		type="primary"
-		shape="round"
-		size="small"
-		id="add-new-category"
-		@click="newCategoryPopupIsVisibile = true"
-	>
-		<template #icon>
-			<PlusOutlined />
-		</template>
-		Category
-	</a-button>
+	
+	<SettingOutlined @click="sideMenuVisible = true" id="icon-open-settings" />
+	<Settings :visible="sideMenuVisible" @close="sideMenuVisible = false" />
 </template>
 
 <script setup lang="ts">
 import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
-import NewCategoryPopup from '../components/Family/NewCategoryPopup.vue';
+
 import TransactionList from '../components/Family/TransactionList.vue';
 import { computed, ref } from 'vue';
-import { DataBaseClient, IResult } from '../api/db';
+import { DataBaseClient } from '../api/db';
 import { Transaction } from '../models/transaction';
-import { PlusOutlined } from '@ant-design/icons-vue/lib/icons';
-import { Category } from '../models/category';
+import { SettingOutlined } from '@ant-design/icons-vue/lib/icons';
+import Settings from '../components/Family/Settings.vue';
+import { useCategoryStore } from '../stores/category';
 
 // stats
 
@@ -106,11 +83,10 @@ const activeKey = ref('1');
 
 const earnings = ref<Transaction[]>([]);
 const expenses = ref<Transaction[]>([]);
-const categories = ref<Category[]>([]);
 
 DataBaseClient.Transaction.getTransactions('earning').then(results => (earnings.value = results));
 DataBaseClient.Transaction.getTransactions('expense').then(results => (expenses.value = results));
-DataBaseClient.Category.getAll().then(results => (categories.value = results));
+DataBaseClient.Category.getAll().then(results => useCategoryStore().setCategories(results));
 
 // *** add new transaction popup
 
@@ -125,6 +101,10 @@ const openPopupFor = (_type: 'expense' | 'earning') => {
 // *** add new category popup
 
 const newCategoryPopupIsVisibile = ref(false);
+
+// *** side menu
+
+const sideMenuVisible = ref<boolean>(false);
 </script>
 
 <style scoped lang="scss">
@@ -135,9 +115,11 @@ const newCategoryPopupIsVisibile = ref(false);
 	justify-content: space-around;
 	align-items: center;
 }
-#add-new-category {
+#icon-open-settings {
 	position: absolute;
-	bottom: 10px;
+	top: 10px;
 	right: 10px;
+	height: 25px;
+	width: 25px;
 }
 </style>

@@ -45,15 +45,14 @@
 import { DeleteOutlined } from '@ant-design/icons-vue/lib/icons';
 import { computed } from 'vue';
 import { DataBaseClient } from '../../api/db';
-import { Category } from '../../models/category';
 import { Transaction } from '../../models/transaction';
 import { openNotificationWithIcon } from '../../services/utils';
+import { useCategoryStore } from '../../stores/category';
 import TagCategory from './TagCategory.vue';
 
 const props = defineProps<{
 	title: string;
 	transactions: Transaction[];
-	categories: Category[];
 }>();
 
 const transactions = computed(() => props.transactions);
@@ -81,7 +80,8 @@ const openTransactionDetails = (transaction: Transaction) => {
 	console.info(transaction);
 };
 
-const getCategory = (categoryId: string) => props.categories.find(c => c.id === categoryId);
+const categories = computed(() => useCategoryStore().categories);
+const getCategory = (categoryId: string) => categories.value.find(c => c.id === categoryId);
 </script>
 
 <style scoped lang="scss">
