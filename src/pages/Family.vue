@@ -1,5 +1,6 @@
 <template>
 	<h1>Family</h1>
+	<ReloadOutlined @click="reload" id="icon-reload" />
 	<a-row>
 		<a-col :span="24">
 			<a-statistic
@@ -50,7 +51,7 @@
 		:type="type"
 		@close="newTransactionPopupIsVisibile = false"
 	/>
-	
+
 	<SettingOutlined @click="sideMenuVisible = true" id="icon-open-settings" />
 	<Settings :visible="sideMenuVisible" @close="sideMenuVisible = false" />
 </template>
@@ -62,9 +63,26 @@ import TransactionList from '../components/Family/TransactionList.vue';
 import { computed, ref } from 'vue';
 import { DataBaseClient } from '../api/db';
 import { Transaction } from '../models/transaction';
-import { SettingOutlined } from '@ant-design/icons-vue/lib/icons';
+import { SettingOutlined, ReloadOutlined } from '@ant-design/icons-vue/lib/icons';
 import Settings from '../components/Family/Settings.vue';
 import { useCategoryStore } from '../stores/category';
+import { setIsLoading } from '../services/utils';
+
+// reload
+
+const reload = async () => {
+	setIsLoading(true);
+	await DataBaseClient.Transaction.getTransactions('earning').then(
+		results => (earnings.value = results)
+	);
+	await DataBaseClient.Transaction.getTransactions('expense').then(
+		results => (expenses.value = results)
+	);
+	await DataBaseClient.Category.getAll().then(results =>
+		useCategoryStore().setCategories(results)
+	);
+	setIsLoading(false);
+};
 
 // stats
 
@@ -119,6 +137,13 @@ const sideMenuVisible = ref<boolean>(false);
 	position: absolute;
 	top: 10px;
 	right: 10px;
+	height: 25px;
+	width: 25px;
+}
+#icon-reload {
+	position: absolute;
+	top: 10px;
+	left: 10px;
 	height: 25px;
 	width: 25px;
 }
