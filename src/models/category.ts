@@ -4,3 +4,7 @@ export interface ICategory {
 	color?: string;
 	description?: string;
 }
+
+export interface Category extends ICategory {
+	id: string;
+}

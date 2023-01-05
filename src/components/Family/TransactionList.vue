@@ -17,7 +17,10 @@
 				</a-row>
 				<a-row style="width: 90vw">
 					<a-col :span="8">
-						<a-tag :color="getCategoryColor(item.category)">{{ item.category }}</a-tag>
+						<TagCategory
+							:category="getCategory(item.category)!"
+							v-if="getCategory(item.category)"
+						/>
 					</a-col>
 					<a-col :span="14" class="ellipsis">€ {{ item.amount }} </a-col>
 					<a-popconfirm
@@ -39,14 +42,16 @@
 </template>
 
 <script setup lang="ts">
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons-vue/lib/icons';
+import { DeleteOutlined } from '@ant-design/icons-vue/lib/icons';
 import { computed } from 'vue';
+import { Category } from '../../models/category';
 import { ITransaction } from '../../models/transaction';
-import { getCategoryColor } from '../../services/utils';
+import TagCategory from './TagCategory.vue';
 
 const props = defineProps<{
 	title: string;
 	transactions: ITransaction[];
+	categories: Category[];
 }>();
 
 const transactions = computed(() => props.transactions);
@@ -58,6 +63,8 @@ const deleteTransaction = (transaction: ITransaction) => {
 const openTransactionDetails = (transaction: ITransaction) => {
 	console.info(transaction);
 };
+
+const getCategory = (categoryId: string) => props.categories.find(c => c.id === categoryId);
 </script>
 
 <style scoped lang="scss">

@@ -39,15 +39,26 @@
 	</div>
 	<a-tabs v-model:activeKey="activeKey" style="padding: 20px">
 		<a-tab-pane key="1" tab="Expenses">
-			<TransactionList :title="'Expenses'" :transactions="expenses" v-if="expenses.length" />
+			<TransactionList
+				:title="'Expenses'"
+				:transactions="expenses"
+				:categories="categories"
+				v-if="expenses.length"
+			/>
 		</a-tab-pane>
 		<a-tab-pane key="2" tab="Earnings">
-			<TransactionList :title="'Earnings'" :transactions="earnings" v-if="earnings.length" />
+			<TransactionList
+				:title="'Earnings'"
+				:transactions="earnings"
+				:categories="categories"
+				v-if="earnings.length"
+			/>
 		</a-tab-pane>
 	</a-tabs>
 	<NewTransactionPopup
 		:visible="newTransactionPopupIsVisibile"
 		:type="type"
+		:categories="categories"
 		@close="newTransactionPopupIsVisibile = false"
 	/>
 	<NewCategoryPopup
@@ -76,6 +87,7 @@ import { computed, ref } from 'vue';
 import { DataBaseClient, IResult } from '../api/db';
 import { ITransaction } from '../models/transaction';
 import { PlusOutlined } from '@ant-design/icons-vue/lib/icons';
+import { Category } from '../models/category';
 
 // stats
 
@@ -94,6 +106,7 @@ const activeKey = ref('1');
 
 const resultsEarnings = ref<IResult<ITransaction>[]>([]);
 const resultsExpenses = ref<IResult<ITransaction>[]>([]);
+const categories = ref<Category[]>([]);
 
 const earnings = computed(() => {
 	return resultsEarnings.value.map(r => r.data);
@@ -108,6 +121,8 @@ DataBaseClient.Transaction.getTransactions('earning').then(
 DataBaseClient.Transaction.getTransactions('expense').then(
 	results => (resultsExpenses.value = results)
 );
+
+DataBaseClient.Category.getAll().then(results => (categories.value = results));
 
 // *** add new transaction popup
 

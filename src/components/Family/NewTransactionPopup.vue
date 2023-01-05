@@ -33,28 +33,13 @@
 				class="full-width"
 				ref="select"
 				v-model:value="transaction.category"
-				v-if="type == 'expense'"
 				style="margin-top: 10px"
 			>
 				<a-select-option
-					v-for="category in ExpenseCategories"
-					:key="category"
-					:value="category"
-					>{{ category }}</a-select-option
-				>
-			</a-select>
-			<a-select
-				class="full-width"
-				ref="select"
-				v-model:value="transaction.category"
-				v-else
-				style="margin-top: 10px"
-			>
-				<a-select-option
-					v-for="category in EarningCategories"
-					:key="category"
-					:value="category"
-					>{{ category }}</a-select-option
+					v-for="category in categories"
+					:key="category.id"
+					:value="category.id"
+					>{{ category.name }}</a-select-option
 				>
 			</a-select>
 		</div>
@@ -78,14 +63,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { ITransaction, EarningCategories, ExpenseCategories } from '../../models/transaction';
+import { computed, ref, watch } from 'vue';
+import { ITransaction } from '../../models/transaction';
 import { formatDate, loading, openNotificationWithIcon, setIsLoading } from '../../services/utils';
 import { DataBaseClient } from '../../api/db';
+import { Category } from '../../models/category';
 
 const props = defineProps<{
 	visible: boolean;
 	type: 'expense' | 'earning';
+	categories: Category[];
 }>();
 
 const emits = defineEmits(['close', 'ok']);
@@ -117,6 +104,12 @@ watch(
 	() => props.type,
 	() => resetTransaction()
 );
+watch(
+	() => props.categories,
+	() => resetTransaction()
+);
+
+const categories = computed(() => props.categories.filter(c => c.type === props.type));
 
 const handleOk = () => {
 	setIsLoading(true);

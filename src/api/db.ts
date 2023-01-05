@@ -13,7 +13,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
 import { ITransaction } from '../models/transaction';
-import { ICategory } from '../models/category';
+import { Category, ICategory } from '../models/category';
 
 const firebaseConfig = {
 	apiKey: 'AIzaSyAJxoJsYk8XAyFwxMk8fCmh2F8IaCxncg0',
@@ -83,13 +83,21 @@ export const DataBaseClient = {
 		},
 	},
 	Category: {
-		async getAll(type: 'expense' | 'earning'): Promise<IResult<ICategory>[]> {
-			const q = query(collection(db, 'categories'), where('type', '==', type));
-			const querySnapshot = await getDocs(q);
-			return querySnapshot.docs.map(doc => ({
-				id: doc.id,
-				data: doc.data(),
-			})) as IResult<ICategory>[];
+		async getAll(type?: 'expense' | 'earning'): Promise<Category[]> {
+			if (type) {
+				const q = query(collection(db, 'categories'), where('type', '==', type));
+				const querySnapshot = await getDocs(q);
+				return querySnapshot.docs.map(doc => ({
+					id: doc.id,
+					...doc.data(),
+				})) as Category[];
+			} else {
+				const querySnapshot = await getDocs(collection(db, 'categories'));
+				return querySnapshot.docs.map(doc => ({
+					id: doc.id,
+					...doc.data(),
+				})) as Category[];
+			}
 		},
 		async createNewCategory(category: ICategory): Promise<boolean> {
 			try {

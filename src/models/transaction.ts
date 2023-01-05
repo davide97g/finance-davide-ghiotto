@@ -6,6 +6,10 @@ export interface ITransaction {
 	type: 'expense' | 'earning';
 }
 
+export interface Transaction extends ITransaction {
+	id: string;
+}
+
 export const EarningCategories = ['salary', 'investment', 'gift', 'refund', 'other'];
 export const ExpenseCategories = [
 	'travel',

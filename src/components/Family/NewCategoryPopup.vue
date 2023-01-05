@@ -84,7 +84,7 @@ const newCategory = (): ICategory => ({
 	name: '',
 	type: 'expense',
 	description: undefined,
-	color: undefined,
+	color: '#ababab',
 });
 const category = ref<ICategory>(newCategory());
 const resetCategory = () => (category.value = newCategory());
