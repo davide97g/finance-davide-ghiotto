@@ -85,7 +85,7 @@ import NewCategoryPopup from '../components/Family/NewCategoryPopup.vue';
 import TransactionList from '../components/Family/TransactionList.vue';
 import { computed, ref } from 'vue';
 import { DataBaseClient, IResult } from '../api/db';
-import { ITransaction } from '../models/transaction';
+import { Transaction } from '../models/transaction';
 import { PlusOutlined } from '@ant-design/icons-vue/lib/icons';
 import { Category } from '../models/category';
 
@@ -104,24 +104,12 @@ const totalSumEarnings = computed(() => {
 // *** transaction list
 const activeKey = ref('1');
 
-const resultsEarnings = ref<IResult<ITransaction>[]>([]);
-const resultsExpenses = ref<IResult<ITransaction>[]>([]);
+const earnings = ref<Transaction[]>([]);
+const expenses = ref<Transaction[]>([]);
 const categories = ref<Category[]>([]);
 
-const earnings = computed(() => {
-	return resultsEarnings.value.map(r => r.data);
-});
-const expenses = computed(() => {
-	return resultsExpenses.value.map(r => r.data);
-});
-
-DataBaseClient.Transaction.getTransactions('earning').then(
-	results => (resultsEarnings.value = results)
-);
-DataBaseClient.Transaction.getTransactions('expense').then(
-	results => (resultsExpenses.value = results)
-);
-
+DataBaseClient.Transaction.getTransactions('earning').then(results => (earnings.value = results));
+DataBaseClient.Transaction.getTransactions('expense').then(results => (expenses.value = results));
 DataBaseClient.Category.getAll().then(results => (categories.value = results));
 
 // *** add new transaction popup

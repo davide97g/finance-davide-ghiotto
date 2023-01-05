@@ -2,6 +2,7 @@ import { User } from 'firebase/auth';
 import {
 	addDoc,
 	collection,
+	deleteDoc,
 	getDocs,
 	getFirestore,
 	query,
@@ -12,7 +13,7 @@ import { doc, getDoc } from 'firebase/firestore';
 
 import { initializeApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
-import { ITransaction } from '../models/transaction';
+import { ITransaction, Transaction } from '../models/transaction';
 import { Category, ICategory } from '../models/category';
 
 const firebaseConfig = {
@@ -61,13 +62,13 @@ export const DataBaseClient = {
 		},
 	},
 	Transaction: {
-		async getTransactions(type: 'expense' | 'earning'): Promise<IResult<ITransaction>[]> {
+		async getTransactions(type: 'expense' | 'earning'): Promise<Transaction[]> {
 			const q = query(collection(db, 'transactions'), where('type', '==', type));
 			const querySnapshot = await getDocs(q);
 			return querySnapshot.docs.map(doc => ({
 				id: doc.id,
-				data: doc.data(),
-			})) as IResult<ITransaction>[];
+				...doc.data(),
+			})) as Transaction[];
 		},
 		async createNewTransaction(transaction: ITransaction): Promise<boolean> {
 			try {
@@ -75,6 +76,15 @@ export const DataBaseClient = {
 					collection(db, 'transactions'),
 					JSON.parse(JSON.stringify(transaction))
 				);
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async deleteTransaction(transactionId: string): Promise<boolean> {
+			try {
+				await deleteDoc(doc(collection(db, 'transactions'), transactionId));
 				return true;
 			} catch (err) {
 				console.error(err);

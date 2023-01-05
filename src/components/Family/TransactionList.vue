@@ -44,23 +44,40 @@
 <script setup lang="ts">
 import { DeleteOutlined } from '@ant-design/icons-vue/lib/icons';
 import { computed } from 'vue';
+import { DataBaseClient } from '../../api/db';
 import { Category } from '../../models/category';
-import { ITransaction } from '../../models/transaction';
+import { Transaction } from '../../models/transaction';
+import { openNotificationWithIcon } from '../../services/utils';
 import TagCategory from './TagCategory.vue';
 
 const props = defineProps<{
 	title: string;
-	transactions: ITransaction[];
+	transactions: Transaction[];
 	categories: Category[];
 }>();
 
 const transactions = computed(() => props.transactions);
 
-const deleteTransaction = (transaction: ITransaction) => {
-	console.info(transaction);
+const deleteTransaction = (transaction: Transaction) => {
+	DataBaseClient.Transaction.deleteTransaction(transaction.id)
+		.then(() =>
+			openNotificationWithIcon(
+				'success',
+				'Success',
+				'Deleted transaction with id: ' + transaction.id
+			)
+		)
+		.catch(err => {
+			console.error(err);
+			openNotificationWithIcon(
+				'error',
+				'Error',
+				'Failed deleting transaction with id:' + transaction.id
+			);
+		});
 };
 
-const openTransactionDetails = (transaction: ITransaction) => {
+const openTransactionDetails = (transaction: Transaction) => {
 	console.info(transaction);
 };
 
