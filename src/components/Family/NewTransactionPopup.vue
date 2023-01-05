@@ -80,7 +80,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { ITransaction, EarningCategories, ExpenseCategories } from '../../models/transaction';
-import { formatDate, loading, setIsLoading } from '../../services/utils';
+import { formatDate, loading, openNotificationWithIcon, setIsLoading } from '../../services/utils';
 import { DataBaseClient } from '../../api/db';
 
 const props = defineProps<{
@@ -93,7 +93,7 @@ const emits = defineEmits(['close', 'ok']);
 const visible = ref<boolean>(false);
 const newTransaction = () => ({
 	description: '',
-	date: formatDate(new Date().toLocaleDateString()),
+	date: formatDate(new Date().toISOString()),
 	amount: 0,
 	category: '',
 	type: props.type,
@@ -120,8 +120,13 @@ watch(
 
 const handleOk = () => {
 	setIsLoading(true);
-	DataBaseClient.Transactions.createNewTransaction(transaction.value)
+	DataBaseClient.Transaction.createNewTransaction(transaction.value)
 		.then(() => {
+			openNotificationWithIcon(
+				'success',
+				'Success',
+				'Transaction ' + transaction.value.description + ' saved'
+			);
 			resetTransaction();
 			emits('close');
 		})

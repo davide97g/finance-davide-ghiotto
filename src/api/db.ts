@@ -13,6 +13,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
 import { ITransaction } from '../models/transaction';
+import { ICategory } from '../models/category';
 
 const firebaseConfig = {
 	apiKey: 'AIzaSyAJxoJsYk8XAyFwxMk8fCmh2F8IaCxncg0',
@@ -35,29 +36,31 @@ export interface IResult<T> {
 const db = getFirestore();
 
 export const DataBaseClient = {
-	async getUser(uid: string): Promise<User | null> {
-		const docRef = doc(db, 'users', uid);
-		const docSnap = await getDoc(docRef);
+	User: {
+		async getUser(uid: string): Promise<User | null> {
+			const docRef = doc(db, 'users', uid);
+			const docSnap = await getDoc(docRef);
 
-		if (docSnap.exists()) return docSnap.data() as User;
-		else return null;
-	},
-	async getUserOrCreateOne(firebaseUser: User): Promise<User> {
-		const docRef = doc(db, 'users', firebaseUser.uid);
-		const docSnap = await getDoc(docRef);
+			if (docSnap.exists()) return docSnap.data() as User;
+			else return null;
+		},
+		async getUserOrCreateOne(firebaseUser: User): Promise<User> {
+			const docRef = doc(db, 'users', firebaseUser.uid);
+			const docSnap = await getDoc(docRef);
 
-		if (docSnap.exists()) return docSnap.data() as User;
-		else return this.createNewUser(firebaseUser);
+			if (docSnap.exists()) return docSnap.data() as User;
+			else return this.createNewUser(firebaseUser);
+		},
+		async createNewUser(firebaseUser: User): Promise<User> {
+			await setDoc(doc(collection(db, 'users'), firebaseUser.uid), firebaseUser);
+			return firebaseUser;
+		},
+		async getAllUsers(): Promise<User[]> {
+			const querySnapshot = await getDocs(collection(db, 'users'));
+			return querySnapshot.docs.map(doc => doc.data()) as User[];
+		},
 	},
-	async createNewUser(firebaseUser: User): Promise<User> {
-		await setDoc(doc(collection(db, 'users'), firebaseUser.uid), firebaseUser);
-		return firebaseUser;
-	},
-	async getAllUsers(): Promise<User[]> {
-		const querySnapshot = await getDocs(collection(db, 'users'));
-		return querySnapshot.docs.map(doc => doc.data()) as User[];
-	},
-	Transactions: {
+	Transaction: {
 		async getTransactions(type: 'expense' | 'earning'): Promise<IResult<ITransaction>[]> {
 			const q = query(collection(db, 'transactions'), where('type', '==', type));
 			const querySnapshot = await getDocs(q);
@@ -74,7 +77,26 @@ export const DataBaseClient = {
 				);
 				return true;
 			} catch (err) {
-				console.info(err);
+				console.error(err);
+				throw err;
+			}
+		},
+	},
+	Category: {
+		async getAll(type: 'expense' | 'earning'): Promise<IResult<ICategory>[]> {
+			const q = query(collection(db, 'categories'), where('type', '==', type));
+			const querySnapshot = await getDocs(q);
+			return querySnapshot.docs.map(doc => ({
+				id: doc.id,
+				data: doc.data(),
+			})) as IResult<ICategory>[];
+		},
+		async createNewCategory(category: ICategory): Promise<boolean> {
+			try {
+				await addDoc(collection(db, 'categories'), JSON.parse(JSON.stringify(category)));
+				return true;
+			} catch (err) {
+				console.error(err);
 				throw err;
 			}
 		},

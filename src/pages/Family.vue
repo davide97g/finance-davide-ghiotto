@@ -18,7 +18,6 @@
 			<a-statistic
 				title="Tot Expenses"
 				:value="totalSumExpenses"
-				style="margin-right: 50px"
 				:precision="2"
 				suffix="€"
 				:value-style="{ color: '#cf1322' }"
@@ -34,6 +33,10 @@
 			/>
 		</a-col>
 	</a-row>
+	<div class="actions">
+		<a-button type="primary" danger @click="openPopupFor('expense')">Add Expense</a-button>
+		<a-button type="primary" @click="openPopupFor('earning')">Add Earning</a-button>
+	</div>
 	<a-tabs v-model:activeKey="activeKey" style="padding: 20px">
 		<a-tab-pane key="1" tab="Expenses">
 			<TransactionList :title="'Expenses'" :transactions="expenses" v-if="expenses.length" />
@@ -47,18 +50,32 @@
 		:type="type"
 		@close="newTransactionPopupIsVisibile = false"
 	/>
-	<div class="actions">
-		<a-button type="primary" danger @click="openPopupFor('expense')">Add Expense</a-button>
-		<a-button type="primary" @click="openPopupFor('earning')">Add Earning</a-button>
-	</div>
+	<NewCategoryPopup
+		:visible="newCategoryPopupIsVisibile"
+		@close="newCategoryPopupIsVisibile = false"
+	/>
+	<a-button
+		type="primary"
+		shape="round"
+		size="small"
+		id="add-new-category"
+		@click="newCategoryPopupIsVisibile = true"
+	>
+		<template #icon>
+			<PlusOutlined />
+		</template>
+		Category
+	</a-button>
 </template>
 
 <script setup lang="ts">
 import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
+import NewCategoryPopup from '../components/Family/NewCategoryPopup.vue';
 import TransactionList from '../components/Family/TransactionList.vue';
 import { computed, ref } from 'vue';
 import { DataBaseClient, IResult } from '../api/db';
 import { ITransaction } from '../models/transaction';
+import { PlusOutlined } from '@ant-design/icons-vue/lib/icons';
 
 // stats
 
@@ -85,10 +102,10 @@ const expenses = computed(() => {
 	return resultsExpenses.value.map(r => r.data);
 });
 
-DataBaseClient.Transactions.getTransactions('earning').then(
+DataBaseClient.Transaction.getTransactions('earning').then(
 	results => (resultsEarnings.value = results)
 );
-DataBaseClient.Transactions.getTransactions('expense').then(
+DataBaseClient.Transaction.getTransactions('expense').then(
 	results => (resultsExpenses.value = results)
 );
 
@@ -101,16 +118,23 @@ const openPopupFor = (_type: 'expense' | 'earning') => {
 	type.value = _type;
 	newTransactionPopupIsVisibile.value = true;
 };
+
+// *** add new category popup
+
+const newCategoryPopupIsVisibile = ref(false);
 </script>
 
 <style scoped lang="scss">
 .actions {
-	position: absolute;
-	bottom: 0px;
-	height: 75px;
+	margin-top: 10px;
 	width: 100vw;
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
+}
+#add-new-category {
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
 }
 </style>

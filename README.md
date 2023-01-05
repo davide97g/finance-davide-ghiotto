@@ -1,18 +1,15 @@
-# davideghiotto
+# finance-davide-ghiotto
 
-Personal portfolio website.
+![GitHub repo size](https://img.shields.io/github/repo-size/davide97g/finance-davide-ghiotto)
+![Lines of code](https://img.shields.io/tokei/lines/github/davide97g/finance-davide-ghiotto?label=lines%20of%20code)
 
-![GitHub repo size](https://img.shields.io/github/repo-size/davide97g/davideghiotto)
-![Lines of code](https://img.shields.io/tokei/lines/github/davide97g/davideghiotto?label=lines%20of%20code)
+![GitHub Workflow Status (event)](https://img.shields.io/github/workflow/status/davide97g/finance-davide-ghiotto/deploy-prod?event=push)
 
-![GitHub Workflow Status (event)](https://img.shields.io/github/workflow/status/davide97g/davideghiotto/deploy-hosting?event=push)
+## Personal Finance Website
 
-## Technology Architecture
+Live website [finance.davideghiotto.it](https://finance.davideghiotto.it)
 
-![](https://img.shields.io/static/v1?label=angular&message=webapp&color=red&logo=angular)
+## Technology Stack
+
+![](https://img.shields.io/static/v1?label=vue&message=webapp&color=green&logo=vue.js)
 ![](https://img.shields.io/static/v1?label=firebase&message=hosting&color=orange&logo=firebase)
-
-![](https://img.shields.io/static/v1?label=python&message=backend&color=blue&logo=python)
-![](https://img.shields.io/static/v1?label=heroku&message=server&color=purple&logo=heroku)
-
-![](https://img.shields.io/static/v1?label=mongodb&message=database&color=green&logo=mongodb)

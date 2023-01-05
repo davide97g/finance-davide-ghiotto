@@ -49,11 +49,23 @@ body {
 	width: 100%;
 }
 
+.flex-center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.column {
+	display: flex;
+	flex-direction: column;
+}
 .left {
 	text-align: left;
 }
 .right {
 	text-align: right;
+}
+.center {
+	text-align: center;
 }
 .ellipsis {
 	text-overflow: ellipsis;

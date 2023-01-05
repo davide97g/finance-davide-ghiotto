@@ -120,7 +120,7 @@ watch(
 
 const handleOk = () => {
 	setIsLoading(true);
-	DataBaseClient.Transactions.createNewTransaction(transaction.value)
+	DataBaseClient.Transaction.createNewTransaction(transaction.value)
 		.then(() => {
 			resetTransaction();
 			emits('close');

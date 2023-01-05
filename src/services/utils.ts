@@ -1,6 +1,7 @@
 import { User } from 'firebase/auth';
 import { computed, ref } from 'vue';
 import { useUserStore } from '../stores/user';
+import { notification } from 'ant-design-vue';
 
 const windowWidth = ref(window.innerWidth);
 window.addEventListener('resize', () => (windowWidth.value = window.innerWidth));
@@ -17,8 +18,6 @@ export const getPhotoURL = (user: User | null) => {
 };
 
 export const isLoggedIn = computed(() => useUserStore().isLoggedIn);
-
-export const Environment = import.meta.env;
 
 export const formatDate = (date: string) => {
 	var d = new Date(date),
@@ -45,4 +44,12 @@ const categoryColorMap = {
 
 export const getCategoryColor = (category: string) => {
 	return (categoryColorMap as any)[category] ?? null;
+};
+
+export const openNotificationWithIcon = (type: string, message: string, description?: string) => {
+	(notification as any)[type]({
+		message,
+		description,
+		duration: 2,
+	});
 };
