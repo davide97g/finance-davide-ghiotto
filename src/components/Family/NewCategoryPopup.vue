@@ -72,6 +72,7 @@ import { ref, watch } from 'vue';
 import { ICategory } from '../../models/category';
 import { loading, openNotificationWithIcon, setIsLoading } from '../../services/utils';
 import { DataBaseClient } from '../../api/db';
+import { useCategoryStore } from '../../stores/category';
 
 const props = defineProps<{
 	visible: boolean;
@@ -104,12 +105,13 @@ watch(
 const handleOk = () => {
 	setIsLoading(true);
 	DataBaseClient.Category.createNewCategory(category.value)
-		.then(() => {
+		.then(category => {
 			openNotificationWithIcon(
 				'success',
 				'Success',
-				'Category ' + category.value.name + ' created'
+				'Category ' + category.name + ' created'
 			);
+			useCategoryStore().addCategory(category);
 			resetCategory();
 			emits('close');
 		})

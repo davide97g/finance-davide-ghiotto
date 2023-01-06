@@ -4,12 +4,32 @@ import { Transaction } from '../models/transaction';
 export const useTransactionStore = defineStore('transaction', {
 	state: () => {
 		return {
-			transactions: [] as Transaction[],
+			expenses: [] as Transaction[],
+			earnings: [] as Transaction[],
 		};
 	},
 	actions: {
-		setTransactions(transactions: Transaction[]) {
-			this.transactions = transactions;
+		setEarnings(earnings: Transaction[]) {
+			this.earnings = earnings;
+		},
+		setExpenses(expenses: Transaction[]) {
+			this.expenses = expenses;
+		},
+		addTransaction(transaction: Transaction) {
+			if (transaction.type === 'earning') this.earnings.push(transaction);
+			else this.expenses.push(transaction);
+		},
+		removeTransaction(transaction: Transaction) {
+			if (transaction.type === 'earning')
+				this.earnings.splice(
+					this.earnings.findIndex(t => t.id === transaction.id),
+					1
+				);
+			else
+				this.expenses.splice(
+					this.expenses.findIndex(t => t.id === transaction.id),
+					1
+				);
 		},
 	},
 });

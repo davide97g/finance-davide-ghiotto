@@ -48,6 +48,7 @@ import { DataBaseClient } from '../../api/db';
 import { Transaction } from '../../models/transaction';
 import { openNotificationWithIcon } from '../../services/utils';
 import { useCategoryStore } from '../../stores/category';
+import { useTransactionStore } from '../../stores/transaction';
 import TagCategory from './TagCategory.vue';
 
 const props = defineProps<{
@@ -59,13 +60,14 @@ const transactions = computed(() => props.transactions);
 
 const deleteTransaction = (transaction: Transaction) => {
 	DataBaseClient.Transaction.deleteTransaction(transaction.id)
-		.then(() =>
+		.then(() => {
 			openNotificationWithIcon(
 				'success',
 				'Success',
 				'Deleted transaction with id: ' + transaction.id
-			)
-		)
+			);
+			useTransactionStore().removeTransaction(transaction);
+		})
 		.catch(err => {
 			console.error(err);
 			openNotificationWithIcon(

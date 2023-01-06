@@ -70,13 +70,16 @@ export const DataBaseClient = {
 				...doc.data(),
 			})) as Transaction[];
 		},
-		async createNewTransaction(transaction: ITransaction): Promise<boolean> {
+		async createNewTransaction(transaction: ITransaction): Promise<Transaction> {
 			try {
-				await addDoc(
+				const res = await addDoc(
 					collection(db, 'transactions'),
 					JSON.parse(JSON.stringify(transaction))
 				);
-				return true;
+				return {
+					id: res.id,
+					...transaction,
+				};
 			} catch (err) {
 				console.error(err);
 				throw err;
@@ -109,10 +112,16 @@ export const DataBaseClient = {
 				})) as Category[];
 			}
 		},
-		async createNewCategory(category: ICategory): Promise<boolean> {
+		async createNewCategory(iCategory: ICategory): Promise<Category> {
 			try {
-				await addDoc(collection(db, 'categories'), JSON.parse(JSON.stringify(category)));
-				return true;
+				const res = await addDoc(
+					collection(db, 'categories'),
+					JSON.parse(JSON.stringify(iCategory))
+				);
+				return {
+					id: res.id,
+					...iCategory,
+				};
 			} catch (err) {
 				console.error(err);
 				throw err;

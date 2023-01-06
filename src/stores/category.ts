@@ -11,5 +11,8 @@ export const useCategoryStore = defineStore('category', {
 		setCategories(categories: Category[]) {
 			this.categories = categories;
 		},
+		addCategory(category: Category) {
+			this.categories.push(category);
+		},
 	},
 });

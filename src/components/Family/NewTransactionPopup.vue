@@ -69,6 +69,7 @@ import { formatDate, loading, openNotificationWithIcon, setIsLoading } from '../
 import { DataBaseClient } from '../../api/db';
 import { Category } from '../../models/category';
 import { useCategoryStore } from '../../stores/category';
+import { useTransactionStore } from '../../stores/transaction';
 
 const props = defineProps<{
 	visible: boolean;
@@ -111,12 +112,13 @@ const categories = computed(() => allCategories.value.filter(c => c.type === pro
 const handleOk = () => {
 	setIsLoading(true);
 	DataBaseClient.Transaction.createNewTransaction(transaction.value)
-		.then(() => {
+		.then(transaction => {
 			openNotificationWithIcon(
 				'success',
 				'Success',
-				'Transaction ' + transaction.value.description + ' saved'
+				'Transaction ' + transaction.description + ' saved'
 			);
+			useTransactionStore().addTransaction(transaction);
 			resetTransaction();
 			emits('close');
 		})

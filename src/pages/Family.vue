@@ -1,6 +1,5 @@
 <template>
 	<h1>Family</h1>
-	<ReloadOutlined @click="reload" id="icon-reload" />
 	<a-row>
 		<a-col :span="24">
 			<a-statistic
@@ -62,21 +61,19 @@ import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
 import TransactionList from '../components/Family/TransactionList.vue';
 import { computed, ref } from 'vue';
 import { DataBaseClient } from '../api/db';
-import { Transaction } from '../models/transaction';
-import { SettingOutlined, ReloadOutlined } from '@ant-design/icons-vue/lib/icons';
+import { SettingOutlined } from '@ant-design/icons-vue/lib/icons';
 import Settings from '../components/Family/Settings.vue';
 import { useCategoryStore } from '../stores/category';
 import { setIsLoading } from '../services/utils';
+import { useTransactionStore } from '../stores/transaction';
 
-// reload
-
-const reload = async () => {
+const getData = async () => {
 	setIsLoading(true);
-	await DataBaseClient.Transaction.getTransactions('earning').then(
-		results => (earnings.value = results)
+	await DataBaseClient.Transaction.getTransactions('earning').then(results =>
+		useTransactionStore().setEarnings(results)
 	);
-	await DataBaseClient.Transaction.getTransactions('expense').then(
-		results => (expenses.value = results)
+	await DataBaseClient.Transaction.getTransactions('expense').then(results =>
+		useTransactionStore().setExpenses(results)
 	);
 	await DataBaseClient.Category.getAll().then(results =>
 		useCategoryStore().setCategories(results)
@@ -99,12 +96,8 @@ const totalSumEarnings = computed(() => {
 // *** transaction list
 const activeKey = ref('1');
 
-const earnings = ref<Transaction[]>([]);
-const expenses = ref<Transaction[]>([]);
-
-DataBaseClient.Transaction.getTransactions('earning').then(results => (earnings.value = results));
-DataBaseClient.Transaction.getTransactions('expense').then(results => (expenses.value = results));
-DataBaseClient.Category.getAll().then(results => useCategoryStore().setCategories(results));
+const earnings = computed(() => useTransactionStore().earnings);
+const expenses = computed(() => useTransactionStore().expenses);
 
 // *** add new transaction popup
 
@@ -116,13 +109,11 @@ const openPopupFor = (_type: 'expense' | 'earning') => {
 	newTransactionPopupIsVisibile.value = true;
 };
 
-// *** add new category popup
-
-const newCategoryPopupIsVisibile = ref(false);
-
 // *** side menu
 
 const sideMenuVisible = ref<boolean>(false);
+
+getData();
 </script>
 
 <style scoped lang="scss">
@@ -137,13 +128,6 @@ const sideMenuVisible = ref<boolean>(false);
 	position: absolute;
 	top: 10px;
 	right: 10px;
-	height: 25px;
-	width: 25px;
-}
-#icon-reload {
-	position: absolute;
-	top: 10px;
-	left: 10px;
 	height: 25px;
 	width: 25px;
 }
