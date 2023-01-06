@@ -1,7 +1,7 @@
 {
 	"name": "finance-davide-ghiotto",
 	"private": false,
-	"version": "0.6.3",
+	"version": "0.7.0",
 	"type": "module",
 	"website": "https://finance.davideghiotto.it",
 	"scripts": {
@@ -9,7 +9,10 @@
 		"compile": "vue-tsc",
 		"build": "vue-tsc && vite build",
 		"preview": "vite preview",
-		"prepare": "husky install"
+		"prepare": "husky install",
+		"pwa": "npm run build && npm run pwa:preview",
+		"pwa:icons": "npx vue-pwa-asset-generator -a ./src/assets/img/logo.png -o public/img/icons --no-manifest",
+		"pwa:preview": "vite --config vite.config.js preview"
 	},
 	"dependencies": {
 		"ant-design-vue": "^3.2.15",
@@ -23,7 +26,10 @@
 		"@vitejs/plugin-vue": "^3.2.0",
 		"husky": "^8.0.0",
 		"typescript": "^4.6.4",
+		"unplugin-vue-components": "^0.22.12",
 		"vite": "^3.2.3",
-		"vue-tsc": "^1.0.9"
+		"vite-plugin-pwa": "^0.14.1",
+		"vue-tsc": "^1.0.9",
+		"workbox-precaching": "^6.5.4"
 	}
 }

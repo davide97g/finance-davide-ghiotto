@@ -22,8 +22,6 @@
 	-webkit-text-size-adjust: 100%;
 
 	--primary-color: #61e7b4;
-	--primary-test-color: #53b7c4;
-
 	--background-color: #eaefea;
 
 	background-color: var(--background-color);
