@@ -37,7 +37,7 @@
 		<a-button type="primary" danger @click="openPopupFor('expense')">Add Expense</a-button>
 		<a-button type="primary" @click="openPopupFor('earning')">Add Earning</a-button>
 	</div>
-	<a-tabs v-model:activeKey="activeKey" style="padding: 20px">
+	<a-tabs id="tabs" v-model:activeKey="activeKey" style="padding: 20px">
 		<a-tab-pane key="1" tab="Expenses">
 			<TransactionList :title="'Expenses'" :transactions="expenses" v-if="expenses.length" />
 		</a-tab-pane>
@@ -130,5 +130,9 @@ getData();
 	right: 10px;
 	height: 25px;
 	width: 25px;
+}
+#tabs {
+	padding: 20px;
+	height: calc(100vh - 235px);
 }
 </style>

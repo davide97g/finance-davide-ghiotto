@@ -89,7 +89,7 @@ const getCategory = (categoryId: string) => categories.value.find(c => c.id === 
 <style scoped lang="scss">
 .transaction-list {
 	width: 90vw;
-	max-height: 400px;
+	max-height: calc(100vh - 280px);
 	overflow: auto;
 }
 </style>
