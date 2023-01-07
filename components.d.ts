@@ -28,7 +28,7 @@ declare module '@vue/runtime-core' {
     ATabs: typeof import('ant-design-vue/es')['Tabs']
     ATag: typeof import('ant-design-vue/es')['Tag']
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
-    EditTransactionPopup: typeof import('./src/components/Family/EditTransactionPopup.vue')['default']
+    Avatar: typeof import('./src/components/Avatar.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']
     NewCategoryPopup: typeof import('./src/components/Family/NewCategoryPopup.vue')['default']
     NewTransactionPopup: typeof import('./src/components/Family/NewTransactionPopup.vue')['default']

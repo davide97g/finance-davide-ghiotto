@@ -1,4 +1,5 @@
 <template>
+	<Avatar :position="'topLeft'" />
 	<h1>Family</h1>
 	<a-row>
 		<a-col :span="24">
@@ -66,6 +67,7 @@ import Settings from '../components/Family/Settings.vue';
 import { useCategoryStore } from '../stores/category';
 import { setIsLoading } from '../services/utils';
 import { useTransactionStore } from '../stores/transaction';
+import Avatar from '../components/Avatar.vue';
 
 const getData = async () => {
 	setIsLoading(true);

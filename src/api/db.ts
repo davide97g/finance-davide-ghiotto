@@ -10,24 +10,8 @@ import {
 	where,
 } from 'firebase/firestore';
 import { doc, getDoc } from 'firebase/firestore';
-
-import { initializeApp } from 'firebase/app';
-import { getAnalytics } from 'firebase/analytics';
 import { ITransaction, Transaction } from '../models/transaction';
 import { Category, ICategory } from '../models/category';
-
-const firebaseConfig = {
-	apiKey: 'AIzaSyAJxoJsYk8XAyFwxMk8fCmh2F8IaCxncg0',
-	authDomain: 'test-davide-ghiotto.firebaseapp.com',
-	projectId: 'test-davide-ghiotto',
-	storageBucket: 'test-davide-ghiotto.appspot.com',
-	messagingSenderId: '507675193838',
-	appId: '1:507675193838:web:0ad24c3dd4afea80545eff',
-	measurementId: 'G-4T0KJZ8R1K',
-};
-
-const app = initializeApp(firebaseConfig);
-getAnalytics(app);
 
 export interface IResult<T> {
 	id: string;

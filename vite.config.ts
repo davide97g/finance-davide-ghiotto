@@ -1,15 +1,15 @@
-import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-import Components from 'unplugin-vue-components/vite';
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
+import Components from 'unplugin-vue-components/vite';
 
-// https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [
 		vue(),
 		VitePWA({
+			registerType: 'autoUpdate',
 			mode: 'production',
 			base: '/',
 			srcDir: 'src',
@@ -17,9 +17,9 @@ export default defineConfig({
 			includeAssets: ['/favicon.png'],
 			strategies: 'injectManifest',
 			manifest: {
-				name: 'Sooshi',
-				short_name: 'sooshi',
-				theme_color: '#61e7b4',
+				name: 'Personal Finance',
+				short_name: 'Personal Finance',
+				theme_color: '#eaefea',
 				start_url: '/',
 				display: 'standalone',
 				background_color: '#eaefea',
@@ -72,6 +72,9 @@ export default defineConfig({
 						type: 'image/png',
 					},
 				],
+			},
+			workbox: {
+				globPatterns: ['**/*.{js,css,html,ico,png,svg,ttf}'],
 			},
 		}),
 		Components({
