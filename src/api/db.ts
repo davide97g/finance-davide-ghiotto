@@ -46,13 +46,21 @@ export const DataBaseClient = {
 		},
 	},
 	Transaction: {
-		async getTransactions(type: 'expense' | 'earning'): Promise<Transaction[]> {
-			const q = query(collection(db, 'transactions'), where('type', '==', type));
-			const querySnapshot = await getDocs(q);
-			return querySnapshot.docs.map(doc => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Transaction[];
+		async getTransactions(type?: 'expense' | 'earning'): Promise<Transaction[]> {
+			if (!type) {
+				const querySnapshot = await getDocs(collection(db, 'transactions'));
+				return querySnapshot.docs.map(doc => ({
+					id: doc.id,
+					...doc.data(),
+				})) as Transaction[];
+			} else {
+				const q = query(collection(db, 'transactions'), where('type', '==', type));
+				const querySnapshot = await getDocs(q);
+				return querySnapshot.docs.map(doc => ({
+					id: doc.id,
+					...doc.data(),
+				})) as Transaction[];
+			}
 		},
 		async createNewTransaction(transaction: ITransaction): Promise<Transaction> {
 			try {

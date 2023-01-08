@@ -2,6 +2,7 @@ import { User } from 'firebase/auth';
 import { computed, ref } from 'vue';
 import { useUserStore } from '../stores/user';
 import { notification } from 'ant-design-vue';
+import { Transaction } from '../models/transaction';
 
 const windowWidth = ref(window.innerWidth);
 window.addEventListener('resize', () => (windowWidth.value = window.innerWidth));

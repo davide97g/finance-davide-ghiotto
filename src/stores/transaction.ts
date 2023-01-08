@@ -9,15 +9,15 @@ export const useTransactionStore = defineStore('transaction', {
 		};
 	},
 	actions: {
-		setEarnings(earnings: Transaction[]) {
-			this.earnings = earnings;
-		},
-		setExpenses(expenses: Transaction[]) {
-			this.expenses = expenses;
+		setTransactions(transactions: Transaction[]) {
+			this.earnings = transactions.filter(t => t.type === 'earning');
+			this.expenses = transactions.filter(t => t.type === 'expense');
+			this.sortTransactions();
 		},
 		addTransaction(transaction: Transaction) {
 			if (transaction.type === 'earning') this.earnings.push(transaction);
 			else this.expenses.push(transaction);
+			this.sortTransactions();
 		},
 		removeTransaction(transaction: Transaction) {
 			if (transaction.type === 'earning')
@@ -30,6 +30,19 @@ export const useTransactionStore = defineStore('transaction', {
 					this.expenses.findIndex(t => t.id === transaction.id),
 					1
 				);
+			this.sortTransactions();
+		},
+		sortTransactions(ascending?: boolean) {
+			this.expenses = this.expenses.sort(
+				(t1, t2) =>
+					(new Date(t1.date).getTime() - new Date(t2.date).getTime()) *
+					(ascending ? 1 : -1)
+			);
+			this.earnings = this.earnings.sort(
+				(t1, t2) =>
+					(new Date(t1.date).getTime() - new Date(t2.date).getTime()) *
+					(ascending ? 1 : -1)
+			);
 		},
 	},
 });

@@ -39,10 +39,27 @@
 			</a-list-item>
 		</template>
 	</a-list>
+
+	<div class="actions flex-center full-width">
+		<a-button type="link">
+			<ArrowDownOutlined />
+		</a-button>
+		<a-button type="link">
+			<ArrowUpOutlined />
+		</a-button>
+		<a-button type="link">
+			<FilterOutlined />
+		</a-button>
+	</div>
 </template>
 
 <script setup lang="ts">
-import { DeleteOutlined } from '@ant-design/icons-vue/lib/icons';
+import {
+	DeleteOutlined,
+	ArrowDownOutlined,
+	ArrowUpOutlined,
+	FilterOutlined,
+} from '@ant-design/icons-vue/lib/icons';
 import { computed } from 'vue';
 import { DataBaseClient } from '../../api/db';
 import { Transaction } from '../../models/transaction';
@@ -89,8 +106,13 @@ const getCategory = (categoryId: string) => categories.value.find(c => c.id === 
 <style scoped lang="scss">
 .transaction-list {
 	width: 90vw;
-	max-height: calc(100vh - 350px);
+	max-height: calc(100vh - 375px);
 	overflow: auto;
 	padding-bottom: 20px;
+}
+.actions {
+	margin-top: 10px;
+	justify-content: space-around;
+	height: 30px;
 }
 </style>

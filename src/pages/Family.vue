@@ -58,7 +58,6 @@
 
 <script setup lang="ts">
 import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
-
 import TransactionList from '../components/Family/TransactionList.vue';
 import { computed, ref } from 'vue';
 import { DataBaseClient } from '../api/db';
@@ -71,11 +70,8 @@ import Avatar from '../components/Avatar.vue';
 
 const getData = async () => {
 	setIsLoading(true);
-	await DataBaseClient.Transaction.getTransactions('earning').then(results =>
-		useTransactionStore().setEarnings(results)
-	);
-	await DataBaseClient.Transaction.getTransactions('expense').then(results =>
-		useTransactionStore().setExpenses(results)
+	await DataBaseClient.Transaction.getTransactions().then(results =>
+		useTransactionStore().setTransactions(results)
 	);
 	await DataBaseClient.Category.getAll().then(results =>
 		useCategoryStore().setCategories(results)
