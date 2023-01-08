@@ -40,10 +40,20 @@
 	</div>
 	<a-tabs id="tabs" v-model:activeKey="activeKey" style="padding: 20px">
 		<a-tab-pane key="1" tab="Expenses">
-			<TransactionList :title="'Expenses'" :transactions="expenses" v-if="expenses.length" />
+			<TransactionList
+				:type="'expense'"
+				:title="'Expenses'"
+				:transactions="expenses"
+				v-if="expenses.length"
+			/>
 		</a-tab-pane>
 		<a-tab-pane key="2" tab="Earnings">
-			<TransactionList :title="'Earnings'" :transactions="earnings" v-if="earnings.length" />
+			<TransactionList
+				:type="'earning'"
+				:title="'Earnings'"
+				:transactions="earnings"
+				v-if="earnings.length"
+			/>
 		</a-tab-pane>
 	</a-tabs>
 	<NewTransactionPopup

@@ -59,6 +59,12 @@ body {
 	display: flex;
 	flex-direction: column;
 }
+.flex-gap {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
 .left {
 	text-align: left;
 }

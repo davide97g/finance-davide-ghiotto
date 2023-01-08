@@ -119,5 +119,14 @@ export const DataBaseClient = {
 				throw err;
 			}
 		},
+		async deleteCategory(categoryId: string): Promise<boolean> {
+			try {
+				await deleteDoc(doc(collection(db, 'categories'), categoryId));
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
 	},
 };

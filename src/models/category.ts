@@ -1,6 +1,7 @@
+export type CategoryType = 'expense' | 'earning';
 export interface ICategory {
 	name: string;
-	type: 'expense' | 'earning';
+	type: CategoryType;
 	color?: string;
 	description?: string;
 }

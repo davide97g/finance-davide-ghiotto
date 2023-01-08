@@ -7,6 +7,7 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    ABadge: typeof import('ant-design-vue/es')['Badge']
     AButton: typeof import('ant-design-vue/es')['Button']
     ACol: typeof import('ant-design-vue/es')['Col']
     ADivider: typeof import('ant-design-vue/es')['Divider']
@@ -29,6 +30,8 @@ declare module '@vue/runtime-core' {
     ATag: typeof import('ant-design-vue/es')['Tag']
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
     Avatar: typeof import('./src/components/Avatar.vue')['default']
+    copy: typeof import('./src/components/Family/NewTransactionPopup copy.vue')['default']
+    FiltersPopup: typeof import('./src/components/Family/FiltersPopup.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']
     NewCategoryPopup: typeof import('./src/components/Family/NewCategoryPopup.vue')['default']
     NewTransactionPopup: typeof import('./src/components/Family/NewTransactionPopup.vue')['default']

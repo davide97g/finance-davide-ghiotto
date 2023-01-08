@@ -8,21 +8,21 @@
 		<template #renderItem="{ item }">
 			<a-list-item class="left" @click="openTransactionDetails(item)">
 				<a-row style="width: 90vw">
-					<a-col :span="8">
-						{{ item.date }}
-					</a-col>
 					<a-col :span="16" class="ellipsis">
 						{{ item.description }}
 					</a-col>
+					<a-col :span="7" class="right">
+						{{ item.date }}
+					</a-col>
 				</a-row>
 				<a-row style="width: 90vw">
-					<a-col :span="8">
+					<a-col :span="6" class="ellipsis">€ {{ item.amount }} </a-col>
+					<a-col :span="16" class="left">
 						<TagCategory
 							:category="getCategory(item.category)!"
 							v-if="getCategory(item.category)"
 						/>
 					</a-col>
-					<a-col :span="14" class="ellipsis">€ {{ item.amount }} </a-col>
 					<a-popconfirm
 						@click.stop=""
 						title="Are you sure delete this transaction?"
@@ -31,7 +31,7 @@
 						cancel-text="No"
 						@confirm="deleteTransaction(item)"
 					>
-						<a-col :span="2">
+						<a-col :span="1" class="right">
 							<DeleteOutlined />
 						</a-col>
 					</a-popconfirm>
@@ -42,15 +42,24 @@
 
 	<div class="actions flex-center full-width">
 		<a-button type="link">
-			<ArrowDownOutlined />
+			<ArrowDownOutlined @click="useTransactionStore().sortTransactions(true)" />
 		</a-button>
 		<a-button type="link">
-			<ArrowUpOutlined />
+			<ArrowUpOutlined @click="useTransactionStore().sortTransactions(false)" />
 		</a-button>
 		<a-button type="link">
-			<FilterOutlined />
+			<a-badge :count="filters.categoryIds?.length" :overflowCount="9" :offset="[10, 0]">
+				<FilterOutlined @click="filtersPopupVisible = true" />
+			</a-badge>
 		</a-button>
 	</div>
+	<FiltersPopup
+		:type="props.type"
+		:visible="filtersPopupVisible"
+		:filters="filters"
+		@ok="filterTransactions"
+		@close="filtersPopupVisible = false"
+	/>
 </template>
 
 <script setup lang="ts">
@@ -60,20 +69,33 @@ import {
 	ArrowUpOutlined,
 	FilterOutlined,
 } from '@ant-design/icons-vue/lib/icons';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { DataBaseClient } from '../../api/db';
 import { Transaction } from '../../models/transaction';
 import { openNotificationWithIcon } from '../../services/utils';
 import { useCategoryStore } from '../../stores/category';
 import { useTransactionStore } from '../../stores/transaction';
 import TagCategory from './TagCategory.vue';
+import FiltersPopup from './FiltersPopup.vue';
+import { CategoryType } from '../../models/category';
+
+export interface Filters {
+	categoryIds?: string[];
+}
+
+const filters = ref<Filters>({});
 
 const props = defineProps<{
 	title: string;
+	type: CategoryType;
 	transactions: Transaction[];
 }>();
 
-const transactions = computed(() => props.transactions);
+const transactions = computed(() => {
+	if (filters.value.categoryIds?.length && filters.value.categoryIds?.length > 0) {
+		return props.transactions.filter(t => filters.value.categoryIds?.includes(t.category));
+	} else return props.transactions;
+});
 
 const deleteTransaction = (transaction: Transaction) => {
 	DataBaseClient.Transaction.deleteTransaction(transaction.id)
@@ -101,12 +123,19 @@ const openTransactionDetails = (transaction: Transaction) => {
 
 const categories = computed(() => useCategoryStore().categories);
 const getCategory = (categoryId: string) => categories.value.find(c => c.id === categoryId);
+
+const filtersPopupVisible = ref(false);
+
+const filterTransactions = (newFilters: Filters) => {
+	filters.value = newFilters;
+	filtersPopupVisible.value = false;
+};
 </script>
 
 <style scoped lang="scss">
 .transaction-list {
 	width: 90vw;
-	max-height: calc(100vh - 375px);
+	height: calc(100vh - 375px);
 	overflow: auto;
 	padding-bottom: 20px;
 }

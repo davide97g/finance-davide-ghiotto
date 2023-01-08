@@ -67,7 +67,6 @@ import { computed, ref, watch } from 'vue';
 import { ITransaction } from '../../models/transaction';
 import { formatDate, loading, openNotificationWithIcon, setIsLoading } from '../../services/utils';
 import { DataBaseClient } from '../../api/db';
-import { Category } from '../../models/category';
 import { useCategoryStore } from '../../stores/category';
 import { useTransactionStore } from '../../stores/transaction';
 
