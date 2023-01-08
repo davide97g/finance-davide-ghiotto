@@ -1,4 +1,9 @@
 <template>
+	<UpdateTransactionPopup
+		:visible="updateTransactionPopupVisible"
+		:transaction="selectedTransaction!"
+		@close="updateTransactionPopupVisible = false"
+	/>
 	<a-list
 		item-layout="horizontal"
 		:data-source="transactions"
@@ -78,6 +83,7 @@ import { useTransactionStore } from '../../stores/transaction';
 import TagCategory from './TagCategory.vue';
 import FiltersPopup from './FiltersPopup.vue';
 import { CategoryType } from '../../models/category';
+import UpdateTransactionPopup from './UpdateTransactionPopup.vue';
 
 export interface Filters {
 	categoryIds?: string[];
@@ -117,10 +123,6 @@ const deleteTransaction = (transaction: Transaction) => {
 		});
 };
 
-const openTransactionDetails = (transaction: Transaction) => {
-	console.info(transaction);
-};
-
 const categories = computed(() => useCategoryStore().categories);
 const getCategory = (categoryId: string) => categories.value.find(c => c.id === categoryId);
 
@@ -129,6 +131,14 @@ const filtersPopupVisible = ref(false);
 const filterTransactions = (newFilters: Filters) => {
 	filters.value = newFilters;
 	filtersPopupVisible.value = false;
+};
+
+const updateTransactionPopupVisible = ref(false);
+const selectedTransaction = ref<Transaction>();
+
+const openTransactionDetails = (transaction: Transaction) => {
+	selectedTransaction.value = transaction;
+	updateTransactionPopupVisible.value = true;
 };
 </script>
 

@@ -32,6 +32,11 @@ export const useTransactionStore = defineStore('transaction', {
 				);
 			this.sortTransactions();
 		},
+		updateTransaction(transaction: Transaction) {
+			const transactions = transaction.type === 'expense' ? this.expenses : this.earnings;
+			const i = transactions.findIndex(t => t.id === transaction.id);
+			transactions[i] = transaction;
+		},
 		sortTransactions(ascending?: boolean) {
 			this.expenses = this.expenses.sort(
 				(t1, t2) =>

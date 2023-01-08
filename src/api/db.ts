@@ -77,6 +77,21 @@ export const DataBaseClient = {
 				throw err;
 			}
 		},
+		async updateTransaction(transaction: Transaction): Promise<boolean> {
+			try {
+				await setDoc(
+					doc(collection(db, 'transactions'), transaction.id),
+					JSON.parse(JSON.stringify(transaction)),
+					{
+						merge: true,
+					}
+				);
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
 		async deleteTransaction(transactionId: string): Promise<boolean> {
 			try {
 				await deleteDoc(doc(collection(db, 'transactions'), transactionId));
@@ -114,6 +129,21 @@ export const DataBaseClient = {
 					id: res.id,
 					...iCategory,
 				};
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async updateCategory(category: Category): Promise<boolean> {
+			try {
+				await setDoc(
+					doc(collection(db, 'categories'), category.id),
+					JSON.parse(JSON.stringify(category)),
+					{
+						merge: true,
+					}
+				);
+				return true;
 			} catch (err) {
 				console.error(err);
 				throw err;

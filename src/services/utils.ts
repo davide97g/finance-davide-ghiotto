@@ -32,21 +32,6 @@ export const formatDate = (date: string) => {
 	return [year, month, day].join('-');
 };
 
-const categoryColorMap = {
-	salary: 'green',
-	investments: 'cyan',
-	gifts: 'orange',
-	refund: 'blue',
-	other: null,
-	house: 'purple',
-	travel: 'gold',
-	health: 'red',
-};
-
-export const getCategoryColor = (category: string) => {
-	return (categoryColorMap as any)[category] ?? null;
-};
-
 export const openNotificationWithIcon = (type: string, message: string, description?: string) => {
 	(notification as any)[type]({
 		message,
@@ -54,3 +39,10 @@ export const openNotificationWithIcon = (type: string, message: string, descript
 		duration: 2,
 	});
 };
+
+export function clone<T>(object: T): T {
+	return JSON.parse(JSON.stringify(object || {}));
+}
+export function equals<T>(obj1: T, obj2: T): boolean {
+	return JSON.stringify(obj1) === JSON.stringify(obj2);
+}

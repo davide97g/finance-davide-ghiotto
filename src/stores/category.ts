@@ -14,6 +14,10 @@ export const useCategoryStore = defineStore('category', {
 		addCategory(category: Category) {
 			this.categories.push(category);
 		},
+		updateCategory(category: Category) {
+			const i = this.categories.findIndex(c => c.id === category.id);
+			this.categories[i] = category;
+		},
 		removeCategory(category: Category) {
 			this.categories.splice(
 				this.categories.findIndex(c => c.id === category.id),

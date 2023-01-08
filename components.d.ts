@@ -41,5 +41,7 @@ declare module '@vue/runtime-core' {
     Settings: typeof import('./src/components/Family/Settings.vue')['default']
     TagCategory: typeof import('./src/components/Family/TagCategory.vue')['default']
     TransactionList: typeof import('./src/components/Family/TransactionList.vue')['default']
+    UpdateCategoryPopup: typeof import('./src/components/Family/UpdateCategoryPopup.vue')['default']
+    UpdateTransactionPopup: typeof import('./src/components/Family/UpdateTransactionPopup.vue')['default']
   }
 }

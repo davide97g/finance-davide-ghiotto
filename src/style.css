@@ -36,6 +36,13 @@ body {
 	height: 100%;
 }
 
+input {
+	color-scheme: dark;
+}
+::-webkit-calendar-picker-indicator {
+	filter: invert(1);
+}
+
 #app {
 	margin: 0;
 	text-align: center;
