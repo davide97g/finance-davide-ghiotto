@@ -55,6 +55,9 @@
 				v-if="earnings.length"
 			/>
 		</a-tab-pane>
+		<a-tab-pane key="3" tab="Stats" tabPosition="right">
+			<p>Coming soon</p>
+		</a-tab-pane>
 	</a-tabs>
 	<NewTransactionPopup
 		:visible="newTransactionPopupIsVisibile"

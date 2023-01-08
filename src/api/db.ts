@@ -13,11 +13,6 @@ import { doc, getDoc } from 'firebase/firestore';
 import { ITransaction, Transaction } from '../models/transaction';
 import { Category, ICategory } from '../models/category';
 
-export interface IResult<T> {
-	id: string;
-	data: T;
-}
-
 const db = getFirestore();
 
 export const DataBaseClient = {
