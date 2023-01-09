@@ -70,16 +70,16 @@
 </template>
 
 <script setup lang="ts">
-import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
-import TransactionList from '../components/Family/TransactionList.vue';
+import { SettingOutlined } from '@ant-design/icons-vue/lib/icons';
 import { computed, ref } from 'vue';
 import { DataBaseClient } from '../api/db';
-import { SettingOutlined } from '@ant-design/icons-vue/lib/icons';
-import Settings from '../components/Family/Settings.vue';
-import { useCategoryStore } from '../stores/category';
-import { setIsLoading } from '../services/utils';
-import { useTransactionStore } from '../stores/transaction';
 import Avatar from '../components/Avatar.vue';
+import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
+import Settings from '../components/Family/Settings.vue';
+import TransactionList from '../components/Family/TransactionList.vue';
+import { setIsLoading } from '../services/utils';
+import { useCategoryStore } from '../stores/category';
+import { useTransactionStore } from '../stores/transaction';
 
 const getData = async () => {
 	setIsLoading(true);

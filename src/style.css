@@ -86,3 +86,7 @@ input {
 	white-space: pre;
 	overflow: hidden;
 }
+
+.m1 {
+	margin: 10px;
+}

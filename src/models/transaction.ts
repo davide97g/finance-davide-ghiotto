@@ -9,19 +9,3 @@ export interface ITransaction {
 export interface Transaction extends ITransaction {
 	id: string;
 }
-
-export const EarningCategories = ['salary', 'investment', 'gift', 'refund', 'other'];
-export const ExpenseCategories = [
-	'travel',
-	'house',
-	'sport 🏆',
-	'health',
-	'beauty 🌺',
-	'groceries',
-	'petrol ⛽',
-	'party 🎉',
-	'clothes',
-	'food & drink 🍔',
-	'bills & taxes 🧾',
-	'other',
-];
