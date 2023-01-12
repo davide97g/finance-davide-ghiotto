@@ -43,23 +43,23 @@ export const DataBaseClient = {
 	},
 	Transaction: {
 		collection: 'transactions',
-		async getTransactions(type?: 'expense' | 'earning'): Promise<Transaction[]> {
-			if (!type) {
-				const querySnapshot = await getDocs(collection(db, this.collection));
-				return querySnapshot.docs.map(doc => ({
-					id: doc.id,
-					...doc.data(),
-				})) as Transaction[];
-			} else {
-				const q = query(collection(db, this.collection), where('type', '==', type));
-				const querySnapshot = await getDocs(q);
-				return querySnapshot.docs.map(doc => ({
-					id: doc.id,
-					...doc.data(),
-				})) as Transaction[];
-			}
+		async get(filters?: {
+			type?: 'expense' | 'earning';
+			month?: string;
+			year?: string;
+		}): Promise<Transaction[]> {
+			const constraints = [];
+			if (filters?.type) constraints.push(where('type', '==', filters.type));
+			if (filters?.month) constraints.push(where('month', '==', filters.month));
+			if (filters?.year) constraints.push(where('year', '==', filters.year));
+			const q = query(collection(db, this.collection), ...constraints);
+			const querySnapshot = await getDocs(q);
+			return querySnapshot.docs.map(doc => ({
+				id: doc.id,
+				...doc.data(),
+			})) as Transaction[];
 		},
-		async createNewTransaction(transaction: ITransaction): Promise<Transaction> {
+		async create(transaction: ITransaction): Promise<Transaction> {
 			try {
 				const res = await addDoc(
 					collection(db, this.collection),
@@ -74,7 +74,7 @@ export const DataBaseClient = {
 				throw err;
 			}
 		},
-		async updateTransaction(transaction: Transaction): Promise<boolean> {
+		async update(transaction: Transaction): Promise<boolean> {
 			try {
 				await setDoc(
 					doc(collection(db, this.collection), transaction.id),
@@ -89,7 +89,7 @@ export const DataBaseClient = {
 				throw err;
 			}
 		},
-		async deleteTransaction(transactionId: string): Promise<boolean> {
+		async delete(transactionId: string): Promise<boolean> {
 			try {
 				await deleteDoc(doc(collection(db, this.collection), transactionId));
 				return true;
@@ -101,23 +101,17 @@ export const DataBaseClient = {
 	},
 	Category: {
 		collection: 'categories',
-		async getAll(type?: 'expense' | 'earning'): Promise<Category[]> {
-			if (type) {
-				const q = query(collection(db, this.collection), where('type', '==', type));
-				const querySnapshot = await getDocs(q);
-				return querySnapshot.docs.map(doc => ({
-					id: doc.id,
-					...doc.data(),
-				})) as Category[];
-			} else {
-				const querySnapshot = await getDocs(collection(db, this.collection));
-				return querySnapshot.docs.map(doc => ({
-					id: doc.id,
-					...doc.data(),
-				})) as Category[];
-			}
+		async get(type?: 'expense' | 'earning'): Promise<Category[]> {
+			const constraints = [];
+			if (type) constraints.push(where('type', '==', type));
+			const q = query(collection(db, this.collection), ...constraints);
+			const querySnapshot = await getDocs(q);
+			return querySnapshot.docs.map(doc => ({
+				id: doc.id,
+				...doc.data(),
+			})) as Category[];
 		},
-		async createNewCategory(iCategory: ICategory): Promise<Category> {
+		async create(iCategory: ICategory): Promise<Category> {
 			try {
 				const res = await addDoc(
 					collection(db, this.collection),
@@ -132,7 +126,7 @@ export const DataBaseClient = {
 				throw err;
 			}
 		},
-		async updateCategory(category: Category): Promise<boolean> {
+		async update(category: Category): Promise<boolean> {
 			try {
 				await setDoc(
 					doc(collection(db, this.collection), category.id),
@@ -147,7 +141,7 @@ export const DataBaseClient = {
 				throw err;
 			}
 		},
-		async deleteCategory(categoryId: string): Promise<boolean> {
+		async delete(categoryId: string): Promise<boolean> {
 			try {
 				await deleteDoc(doc(collection(db, this.collection), categoryId));
 				return true;
@@ -159,21 +153,12 @@ export const DataBaseClient = {
 	},
 	Nail: {
 		collection: 'nails',
-		async get(month: string, year: string): Promise<Nail[]> {
-			const q = query(
-				collection(db, this.collection),
-				where('month', '==', month),
-				where('year', '==', year)
-			);
-
+		async get(month?: string, year?: string): Promise<Nail[]> {
+			const constraints = [];
+			if (month) constraints.push(where('month', '==', month));
+			if (year) constraints.push(where('year', '==', year));
+			const q = query(collection(db, this.collection), ...constraints);
 			const querySnapshot = await getDocs(q);
-			return querySnapshot.docs.map(doc => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Nail[];
-		},
-		async getAll(): Promise<Nail[]> {
-			const querySnapshot = await getDocs(collection(db, this.collection));
 			return querySnapshot.docs.map(doc => ({
 				id: doc.id,
 				...doc.data(),

@@ -35,7 +35,7 @@ const removeConfirmVisibile = ref(false);
 
 const deleteCategory = (category: Category) => {
 	setIsLoading(true);
-	DataBaseClient.Category.deleteCategory(category.id)
+	DataBaseClient.Category.delete(category.id)
 		.then(() => {
 			useCategoryStore().removeCategory(category);
 			openNotificationWithIcon('success', 'Deleted', `Successfully deleted ${category.name}`);

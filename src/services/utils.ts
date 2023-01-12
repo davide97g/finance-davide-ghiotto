@@ -46,3 +46,19 @@ export function clone<T>(object: T): T {
 export function equals<T>(obj1: T, obj2: T): boolean {
 	return JSON.stringify(obj1) === JSON.stringify(obj2);
 }
+
+export const YEARS = ['2022', '2023'];
+export const MONTHS = [
+	'January',
+	'February',
+	'March',
+	'April',
+	'May',
+	'June',
+	'July',
+	'August',
+	'September',
+	'October',
+	'November',
+	'December',
+];

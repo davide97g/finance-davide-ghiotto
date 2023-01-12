@@ -121,7 +121,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { ITransaction } from '../../models/transaction';
-import { formatDate, loading, openNotificationWithIcon, setIsLoading } from '../../services/utils';
+import {
+	formatDate,
+	loading,
+	MONTHS,
+	openNotificationWithIcon,
+	setIsLoading,
+} from '../../services/utils';
 import { DataBaseClient } from '../../api/db';
 import { useCategoryStore } from '../../stores/category';
 import { useTransactionStore } from '../../stores/transaction';
@@ -140,10 +146,21 @@ const newTransaction = () => ({
 	amount: 0,
 	category: '',
 	type: props.type,
+	month: MONTHS[new Date().getMonth()],
+	year: new Date().getFullYear().toString(),
 });
+
 const transaction = ref<ITransaction>(newTransaction());
 const resetTransaction = () => (transaction.value = newTransaction());
 
+watch(
+	() => transaction.value.date,
+	date => {
+		const dateObj = new Date(date);
+		transaction.value.month = MONTHS[dateObj.getMonth()];
+		transaction.value.year = dateObj.getFullYear().toString();
+	}
+);
 watch(
 	() => props.visible,
 	() => (visible.value = props.visible)
@@ -182,7 +199,7 @@ const setUpPeriodicity = () => {
 
 const handleOk = () => {
 	setIsLoading(true);
-	DataBaseClient.Transaction.createNewTransaction(transaction.value)
+	DataBaseClient.Transaction.create(transaction.value)
 		.then(transaction => {
 			openNotificationWithIcon(
 				'success',

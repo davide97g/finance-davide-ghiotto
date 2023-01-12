@@ -104,7 +104,7 @@ watch(
 
 const handleOk = () => {
 	setIsLoading(true);
-	DataBaseClient.Category.createNewCategory(category.value)
+	DataBaseClient.Category.create(category.value)
 		.then(category => {
 			openNotificationWithIcon(
 				'success',

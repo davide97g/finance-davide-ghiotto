@@ -9,6 +9,8 @@ export interface Periodicity {
 
 export interface ITransaction {
 	date: string;
+	month: string;
+	year: string;
 	amount: number;
 	description: string;
 	category: string;

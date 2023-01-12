@@ -112,7 +112,7 @@ watch(
 
 const handleOk = () => {
 	setIsLoading(true);
-	DataBaseClient.Category.updateCategory(category.value)
+	DataBaseClient.Category.update(category.value)
 		.then(() => {
 			openNotificationWithIcon(
 				'success',

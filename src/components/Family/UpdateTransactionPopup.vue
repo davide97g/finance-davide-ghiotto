@@ -109,7 +109,7 @@ const categories = computed(() =>
 
 const handleOk = () => {
 	setIsLoading(true);
-	DataBaseClient.Transaction.updateTransaction(transaction.value)
+	DataBaseClient.Transaction.update(transaction.value)
 		.then(() => {
 			openNotificationWithIcon(
 				'success',

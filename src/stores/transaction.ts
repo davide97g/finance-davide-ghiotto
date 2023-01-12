@@ -10,9 +10,18 @@ export const useTransactionStore = defineStore('transaction', {
 	},
 	actions: {
 		setTransactions(transactions: Transaction[]) {
-			this.earnings = transactions.filter(t => t.type === 'earning');
-			this.expenses = transactions.filter(t => t.type === 'expense');
-			this.sortTransactions();
+			const newTransactions = transactions.filter(
+				e =>
+					!this.earnings.find(t => t.id === e.id) &&
+					!this.expenses.find(t => t.id === e.id)
+			);
+			newTransactions.forEach(t => this.addTransaction(t));
+
+			const presentTransactions = transactions.filter(
+				e =>
+					this.earnings.find(t => t.id === e.id) || this.expenses.find(t => t.id === e.id)
+			);
+			presentTransactions.forEach(t => this.updateTransaction(t));
 		},
 		addTransaction(transaction: Transaction) {
 			if (transaction.type === 'earning') this.earnings.push(transaction);

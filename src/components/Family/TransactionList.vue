@@ -109,7 +109,7 @@ const transactions = computed(() => {
 });
 
 const deleteTransaction = (transaction: Transaction) => {
-	DataBaseClient.Transaction.deleteTransaction(transaction.id)
+	DataBaseClient.Transaction.delete(transaction.id)
 		.then(() => {
 			openNotificationWithIcon(
 				'success',
@@ -152,7 +152,7 @@ const isFuture = (date: string) => new Date().getTime() < new Date(date).getTime
 <style scoped lang="scss">
 .transaction-list {
 	width: 90vw;
-	height: calc(100vh - 375px);
+	height: calc(100vh - 400px);
 	overflow: auto;
 	padding-bottom: 20px;
 }
