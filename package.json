@@ -1,7 +1,7 @@
 {
 	"name": "finance-davide-ghiotto",
 	"private": false,
-	"version": "0.9.1",
+	"version": "0.9.2",
 	"type": "module",
 	"website": "https://finance.davideghiotto.it",
 	"scripts": {
@@ -16,10 +16,12 @@
 	},
 	"dependencies": {
 		"ant-design-vue": "^3.2.15",
+		"chart.js": "^4.1.2",
 		"firebase": "^9.15.0",
 		"pinia": "^2.0.23",
 		"sass": "^1.56.0",
 		"vue": "^3.2.41",
+		"vue-chartjs": "^5.2.0",
 		"vue-router": "^4.1.6"
 	},
 	"devDependencies": {

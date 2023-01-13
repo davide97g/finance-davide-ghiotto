@@ -38,7 +38,12 @@
 			<TransactionList :type="'earning'" :title="'Earnings'" :transactions="earnings" />
 		</a-tab-pane>
 		<a-tab-pane key="3" tab="Stats" tabPosition="right">
-			<p>Coming soon</p>
+			<MonthStats
+				:month="props.month"
+				:year="props.year"
+				:earnings="earnings"
+				:expenses="expenses"
+			/>
 		</a-tab-pane>
 	</a-tabs>
 </template>
@@ -48,6 +53,7 @@ import { computed, ref } from 'vue';
 import { DataBaseClient } from '../../api/db';
 import { setIsLoading } from '../../services/utils';
 import { useTransactionStore } from '../../stores/transaction';
+import MonthStats from './MonthStats.vue';
 
 const props = defineProps<{
 	month: string;
