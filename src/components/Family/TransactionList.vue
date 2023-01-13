@@ -12,16 +12,16 @@
 	>
 		<template #renderItem="{ item }">
 			<a-list-item class="left" @click="openTransactionDetails(item)">
-				<div style="position: relative">
-					<a-row style="width: 90vw" :class="{ future: isFuture(item.date) }">
+				<div style="position: relative; width: 100%; padding-right: 5px">
+					<a-row style="width: 100%" :class="{ future: isFuture(item.date) }">
 						<a-col :span="16" class="ellipsis">
 							{{ item.description }}
 						</a-col>
-						<a-col :span="7" class="right">
+						<a-col :span="8" class="right">
 							{{ item.date }}
 						</a-col>
 					</a-row>
-					<a-row style="width: 90vw" :class="{ future: isFuture(item.date) }">
+					<a-row style="width: 100%" :class="{ future: isFuture(item.date) }">
 						<a-col :span="6" class="ellipsis">€ {{ item.amount }} </a-col>
 						<a-col :span="16" class="left">
 							<TagCategory
@@ -33,11 +33,11 @@
 							@click.stop=""
 							title="Are you sure delete this transaction?"
 							ok-text="Yes"
-							placement="bottomRight"
+							placement="left"
 							cancel-text="No"
 							@confirm="deleteTransaction(item)"
 						>
-							<a-col :span="1" class="right">
+							<a-col :span="2" class="right">
 								<DeleteOutlined />
 							</a-col>
 						</a-popconfirm>
@@ -49,17 +49,24 @@
 			</a-list-item>
 		</template>
 	</a-list>
-
 	<div class="actions flex-center full-width">
-		<a-button type="link">
-			<ArrowDownOutlined @click="useTransactionStore().sortTransactions(true)" />
+		<a-button
+			type="link"
+			:disabled="useTransactionStore().sorting == 'ascending'"
+			@click="useTransactionStore().sortTransactions(true)"
+		>
+			<ArrowUpOutlined /> Old
 		</a-button>
-		<a-button type="link">
-			<ArrowUpOutlined @click="useTransactionStore().sortTransactions(false)" />
+		<a-button
+			type="link"
+			:disabled="useTransactionStore().sorting == 'descending'"
+			@click="useTransactionStore().sortTransactions(false)"
+		>
+			<ArrowDownOutlined /> Recent
 		</a-button>
-		<a-button type="link">
+		<a-button type="link" @click="filtersPopupVisible = true">
 			<a-badge :count="filters.categoryIds?.length" :overflowCount="9" :offset="[10, 0]">
-				<FilterOutlined @click="filtersPopupVisible = true" />
+				<FilterOutlined /> Filter
 			</a-badge>
 		</a-button>
 	</div>
@@ -151,10 +158,13 @@ const isFuture = (date: string) => new Date().getTime() < new Date(date).getTime
 
 <style scoped lang="scss">
 .transaction-list {
-	width: 90vw;
-	height: calc(100vh - 400px);
+	width: 100%;
+	height: calc(100vh - 410px);
 	overflow: auto;
+	padding: 10px;
 	padding-bottom: 20px;
+	background-color: #e2f0e2;
+	box-shadow: inset 0 0 12px #ccc;
 }
 .actions {
 	margin-top: 10px;

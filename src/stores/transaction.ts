@@ -6,6 +6,7 @@ export const useTransactionStore = defineStore('transaction', {
 		return {
 			expenses: [] as Transaction[],
 			earnings: [] as Transaction[],
+			sorting: 'descending' as 'descending' | 'ascending',
 		};
 	},
 	actions: {
@@ -47,6 +48,7 @@ export const useTransactionStore = defineStore('transaction', {
 			transactions[i] = transaction;
 		},
 		sortTransactions(ascending?: boolean) {
+			this.sorting = ascending ? 'ascending' : 'descending';
 			this.expenses = this.expenses.sort(
 				(t1, t2) =>
 					(new Date(t1.date).getTime() - new Date(t2.date).getTime()) *

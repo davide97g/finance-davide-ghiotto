@@ -1,10 +1,6 @@
 <template>
 	<Avatar :position="'topLeft'" />
 	<h1>Family</h1>
-	<a-button type="primary" danger @click="openPopupFor('expense')">Add Exp</a-button>
-	<a-button style="margin-left: 5px" type="primary" success @click="openPopupFor('earning')"
-		>Add Earn</a-button
-	>
 	<a-tabs id="tabs" v-model:activeKey="activeYear">
 		<a-tab-pane :key="year" :tab="year" v-for="year in YEARS">
 			<a-tabs v-model:activeKey="activeMonth">
@@ -14,6 +10,22 @@
 			</a-tabs>
 		</a-tab-pane>
 	</a-tabs>
+	<div class="flex-center" style="justify-content: space-around">
+		<a-button
+			type="primary"
+			danger
+			@click="openPopupFor('expense')"
+			style="background: #cf1322; border-color: #cf1322"
+			><PlusOutlined /> Exp</a-button
+		>
+		<a-button
+			type="primary"
+			success
+			@click="openPopupFor('earning')"
+			style="background: #3f8600; border-color: #3f8600; margin-left: 5px"
+			><PlusOutlined /> Earn</a-button
+		>
+	</div>
 	<NewTransactionPopup
 		:visible="newTransactionPopupIsVisibile"
 		:type="type"
@@ -33,6 +45,7 @@ import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
 import Settings from '../components/Family/Settings.vue';
 import { MONTHS, YEARS, setIsLoading } from '../services/utils';
 import { useCategoryStore } from '../stores/category';
+import { PlusOutlined } from '@ant-design/icons-vue';
 
 const activeMonth = ref(MONTHS[new Date().getMonth()]);
 const activeYear = ref(new Date().getFullYear().toString());
@@ -70,6 +83,6 @@ getCategories();
 }
 #tabs {
 	padding: 10px;
-	height: calc(100vh - 90px);
+	height: calc(100vh - 100px);
 }
 </style>

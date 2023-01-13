@@ -4,7 +4,7 @@
 			<a-statistic
 				title="Balance"
 				:value="totalSumEarnings + totalSumExpenses"
-				:precision="2"
+				:precision="0"
 				suffix="€"
 				:value-style="{
 					color: totalSumEarnings > -totalSumExpenses ? '#3f8600' : '#cf1322',
@@ -13,20 +13,20 @@
 		</a-col>
 		<a-col :span="8">
 			<a-statistic
-				title="Tot Expenses"
-				:value="totalSumExpenses"
-				:precision="2"
+				title="Tot Earnings"
+				:value="totalSumEarnings"
+				:precision="0"
 				suffix="€"
-				:value-style="{ color: '#cf1322' }"
+				:value-style="{ color: '#3f8600' }"
 			/>
 		</a-col>
 		<a-col :span="8">
 			<a-statistic
-				title="Tot Earnings"
-				:value="totalSumEarnings"
-				:precision="2"
+				title="Tot Expenses"
+				:value="totalSumExpenses"
+				:precision="0"
 				suffix="€"
-				:value-style="{ color: '#3f8600' }"
+				:value-style="{ color: '#cf1322' }"
 			/>
 		</a-col>
 	</a-row>
