@@ -37,7 +37,12 @@
 		<a-tab-pane key="2" tab="Earnings">
 			<TransactionList :type="'earning'" :title="'Earnings'" :transactions="earnings" />
 		</a-tab-pane>
-		<a-tab-pane key="3" tab="Stats" tabPosition="right">
+		<a-tab-pane
+			key="3"
+			tab="Stats"
+			tabPosition="right"
+			v-if="earnings.length || expenses.length"
+		>
 			<MonthStats
 				:month="props.month"
 				:year="props.year"
