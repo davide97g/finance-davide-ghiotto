@@ -1,13 +1,25 @@
 <template>
 	<a-tabs v-model:activeKey="activeKey">
 		<a-tab-pane key="1" tab="Expenses">
-			<div style="height: 400px; width: 100%">
+			<div style="height: 200px; width: 100%">
 				<Doughnut :data="dataExpenses" :options="(options as any)" id="stats-expenses" />
+			</div>
+			<div class="legend full-width">
+				<div v-for="(legendRow, index) in legendExpenses" :key="index" class="legend-item">
+					<a-tag :color="legendRow.color">{{ legendRow.name }}</a-tag>
+					{{ legendRow.amount }}€ ({{ legendRow.percentage }}%)
+				</div>
 			</div>
 		</a-tab-pane>
 		<a-tab-pane key="2" tab="Earnings">
-			<div style="height: 400px; width: 100%">
+			<div style="height: 200px; width: 100%">
 				<Doughnut :data="dataEarnings" :options="(options as any)" id="stats-earnings" />
+			</div>
+			<div class="legend full-width">
+				<div v-for="(legendRow, index) in legendEarnings" :key="index" class="legend-item">
+					<a-tag :color="legendRow.color">{{ legendRow.name }}</a-tag>
+					{{ legendRow.amount }} ({{ legendRow.percentage }}%)
+				</div>
 			</div>
 		</a-tab-pane>
 	</a-tabs>
@@ -33,6 +45,16 @@ const props = defineProps<{
 const activeKey = ref('1');
 const allCategories = computed(() => useCategoryStore().categories);
 
+interface LegendRow {
+	name: string;
+	amount: number;
+	percentage: number;
+	color: string;
+}
+
+const legendExpenses = ref([] as LegendRow[]);
+const legendEarnings = ref([] as LegendRow[]);
+
 const dataExpenses = computed(() => {
 	const categoriesMap: any = {};
 	props.expenses.forEach(t => {
@@ -49,6 +71,13 @@ const dataExpenses = computed(() => {
 		category: allCategories.value.find(cat => cat.id === c),
 	}));
 	const total = aggregatedCategory.reduce((acc, c) => acc + c.amount, 0);
+	aggregatedCategory.sort((a, b) => b.amount - a.amount);
+	legendExpenses.value = aggregatedCategory.map(c => ({
+		name: c.category.name,
+		amount: c.amount,
+		percentage: Math.round((c.amount / total) * 100),
+		color: c.category.color,
+	}));
 	return {
 		labels: aggregatedCategory.map(
 			c => c.category.name + ' ' + Math.round((c.amount / total) * 100) + '%'
@@ -78,6 +107,13 @@ const dataEarnings = computed(() => {
 		category: allCategories.value.find(cat => cat.id === c),
 	}));
 	const total = aggregatedCategory.reduce((acc, c) => acc + c.amount, 0);
+	aggregatedCategory.sort((a, b) => b.amount - a.amount);
+	legendEarnings.value = aggregatedCategory.map(c => ({
+		name: c.category.name,
+		amount: c.amount,
+		percentage: Math.round((c.amount / total) * 100),
+		color: c.category.color,
+	}));
 	return {
 		labels: aggregatedCategory.map(
 			c => c.category.name + ' ' + Math.round((c.amount / total) * 100) + '%'
@@ -95,9 +131,25 @@ const options = {
 	responsive: true,
 	maintainAspectRatio: false,
 	plugins: {
-		legend: {
-			position: 'bottom',
-		},
+		legend: null,
 	},
 };
 </script>
+
+<style scoped lang="scss">
+.legend {
+	max-height: 200px;
+	overflow-y: auto;
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	.legend-item {
+		display: inline-flex;
+		align-items: center;
+		.ant-tag {
+			margin-right: 5px;
+		}
+	}
+}
+</style>
