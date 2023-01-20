@@ -9,12 +9,20 @@ import {
 	setDoc,
 	where,
 } from 'firebase/firestore';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, enableIndexedDbPersistence } from 'firebase/firestore';
 import { ITransaction, Transaction } from '../models/transaction';
 import { Category, ICategory } from '../models/category';
 import { INail, Nail } from '../models/nail';
 
 const db = getFirestore();
+
+enableIndexedDbPersistence(db).catch(err => {
+	if (err.code == 'failed-precondition') {
+		console.info('offline init failed');
+	} else if (err.code == 'unimplemented') {
+		console.info('offline not supported');
+	}
+});
 
 export const DataBaseClient = {
 	User: {
