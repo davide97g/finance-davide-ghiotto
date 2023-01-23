@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { SettingOutlined } from '@ant-design/icons-vue/lib/icons';
+import { SettingOutlined, PlusOutlined } from '@ant-design/icons-vue/lib/icons';
 import { ref } from 'vue';
 import { DataBaseClient } from '../api/db';
 import Avatar from '../components/Avatar.vue';
@@ -45,7 +45,6 @@ import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
 import Settings from '../components/Family/Settings.vue';
 import { MONTHS, YEARS, setIsLoading } from '../services/utils';
 import { useCategoryStore } from '../stores/category';
-import { PlusOutlined } from '@ant-design/icons-vue';
 
 const activeMonth = ref(MONTHS[new Date().getMonth()]);
 const activeYear = ref(new Date().getFullYear().toString());

@@ -135,7 +135,9 @@ const deleteTransaction = (transaction: Transaction) => {
 		});
 };
 
-const categories = computed(() => useCategoryStore().categories);
+const categories = computed(() =>
+	useCategoryStore().categories.filter(c => c.type === 'earning' || c.type === 'expense')
+);
 const getCategory = (categoryId: string) => categories.value.find(c => c.id === categoryId);
 
 const filtersPopupVisible = ref(false);

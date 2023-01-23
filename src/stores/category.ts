@@ -9,7 +9,13 @@ export const useCategoryStore = defineStore('category', {
 	},
 	actions: {
 		setCategories(categories: Category[]) {
-			this.categories = categories;
+			const newCategories = categories.filter(e => !this.categories.find(t => t.id === e.id));
+			newCategories.forEach(c => this.addCategory(c));
+
+			const presentCategories = categories.filter(e =>
+				this.categories.find(c => c.id === e.id)
+			);
+			presentCategories.forEach(c => this.updateCategory(c));
 		},
 		addCategory(category: Category) {
 			this.categories.push(category);

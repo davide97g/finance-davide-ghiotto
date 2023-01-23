@@ -219,6 +219,16 @@ const handleOk = () => {
 		.catch(err => console.error(err))
 		.finally(() => setIsLoading(false));
 };
+
+if (allCategories.value.length === 0) {
+	setIsLoading(true);
+	DataBaseClient.Category.get()
+		.then(categories => {
+			useCategoryStore().setCategories(categories);
+		})
+		.catch(err => console.error(err))
+		.finally(() => setIsLoading(false));
+}
 </script>
 
 <style lang="scss" scoped>

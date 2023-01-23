@@ -41,6 +41,7 @@
 					<a-radio-group v-model:value="category.type">
 						<a-radio-button value="expense">Expense</a-radio-button>
 						<a-radio-button value="earning">Earning</a-radio-button>
+						<a-radio-button value="nail">Nail</a-radio-button>
 					</a-radio-group>
 				</a-col>
 			</a-row>

@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore';
 import { doc, getDoc, enableIndexedDbPersistence } from 'firebase/firestore';
 import { ITransaction, Transaction } from '../models/transaction';
-import { Category, ICategory } from '../models/category';
+import { Category, CategoryType, ICategory } from '../models/category';
 import { INail, Nail } from '../models/nail';
 
 const db = getFirestore();
@@ -109,7 +109,7 @@ export const DataBaseClient = {
 	},
 	Category: {
 		collection: 'categories',
-		async get(type?: 'expense' | 'earning'): Promise<Category[]> {
+		async get(type?: CategoryType): Promise<Category[]> {
 			const constraints = [];
 			if (type) constraints.push(where('type', '==', type));
 			const q = query(collection(db, this.collection), ...constraints);
@@ -172,7 +172,7 @@ export const DataBaseClient = {
 				...doc.data(),
 			})) as Nail[];
 		},
-		async createNewNail(iNail: INail): Promise<Nail> {
+		async create(iNail: INail): Promise<Nail> {
 			try {
 				const res = await addDoc(
 					collection(db, this.collection),
@@ -187,7 +187,7 @@ export const DataBaseClient = {
 				throw err;
 			}
 		},
-		async updateNail(nail: Nail): Promise<boolean> {
+		async update(nail: Nail): Promise<boolean> {
 			try {
 				await setDoc(
 					doc(collection(db, this.collection), nail.id),
@@ -202,7 +202,7 @@ export const DataBaseClient = {
 				throw err;
 			}
 		},
-		async deleteNail(nailId: string): Promise<boolean> {
+		async delete(nailId: string): Promise<boolean> {
 			try {
 				await deleteDoc(doc(collection(db, this.collection), nailId));
 				return true;
