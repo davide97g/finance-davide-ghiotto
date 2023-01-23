@@ -18,7 +18,7 @@
 							{{ item.description }}
 						</a-col>
 						<a-col :span="8" class="right">
-							{{ item.date }}
+							{{ formatDate(item.date) }}
 						</a-col>
 					</a-row>
 					<a-row style="width: 100%" :class="{ future: isFuture(item.date) }">
@@ -154,6 +154,11 @@ const openTransactionDetails = (transaction: Transaction) => {
 };
 
 const isFuture = (date: string) => new Date().getTime() < new Date(date).getTime();
+
+const formatDate = (date: string) => {
+	const d = new Date(date);
+	return d.toLocaleDateString('it-IT');
+};
 </script>
 
 <style scoped lang="scss">
