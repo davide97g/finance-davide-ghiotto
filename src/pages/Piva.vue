@@ -23,6 +23,7 @@
 	<NewTransactionPopup
 		:visible="newTransactionPopupIsVisibile"
 		:type="'expense'"
+		:isNail="true"
 		@close="newTransactionPopupIsVisibile = false"
 	/>
 	<NewNailPopup :visible="newNailPopupIsVisibile" @close="newNailPopupIsVisibile = false" />
@@ -30,7 +31,7 @@
 		<a-tab-pane :key="year" :tab="year" v-for="year in years">
 			<a-tabs id="tabs" v-model:activeKey="activeMonth">
 				<a-tab-pane :key="month" :tab="month" v-for="month in months">
-					<NailList :month="month" :year="year" />
+					<MonthNails :month="month" :year="year" @close="closeMonth" />
 				</a-tab-pane>
 			</a-tabs>
 		</a-tab-pane>
@@ -46,11 +47,11 @@ import { ref } from 'vue';
 import { DataBaseClient } from '../api/db';
 import Avatar from '../components/Avatar.vue';
 import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
-import NailList from '../components/Piva/NailList.vue';
 import NewNailPopup from '../components/Piva/NewNailPopup.vue';
 import { setIsLoading } from '../services/utils';
 import { useCategoryStore } from '../stores/category';
 import Settings from '../components/Family/Settings.vue';
+import MonthNails from '../components/Piva/MonthNails.vue';
 
 const years = ['2022', '2023'];
 const months = [
@@ -84,6 +85,12 @@ const getCategories = async () => {
 };
 
 const sideMenuVisible = ref<boolean>(false);
+
+const closeMonth = async () => {
+	setIsLoading(true);
+	await DataBaseClient.Nail.closeMonth(activeMonth.value, activeYear.value);
+	setIsLoading(false);
+};
 
 getCategories();
 </script>

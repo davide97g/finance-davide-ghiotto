@@ -141,6 +141,7 @@ import { useTransactionStore } from '../../stores/transaction';
 const props = defineProps<{
 	visible: boolean;
 	type: 'expense' | 'earning';
+	isNail?: boolean;
 }>();
 
 const emits = defineEmits(['close', 'ok']);
@@ -185,7 +186,10 @@ watch(
 );
 
 const allCategories = computed(() => useCategoryStore().categories);
-const categories = computed(() => allCategories.value.filter(c => c.type === props.type));
+const categories = computed(() => {
+	if (props.isNail) return allCategories.value.filter(c => c.id === 'WuNj7dDtoKstlO5VTFXz');
+	else return allCategories.value.filter(c => c.type === props.type);
+});
 
 const frequencyOptions = ['monthly', 'weekly', 'daily', 'yearly'];
 const periodic = ref(false);

@@ -1,7 +1,7 @@
 <template>
 	<a-modal
 		v-model:visible="visible"
-		:title="'New Nail'"
+		:title="'New Nail 💅'"
 		@cancel="emits('close')"
 		:loading="loading"
 		:disabled="true"
@@ -17,14 +17,14 @@
 				/>
 			</a-row>
 			<a-row class="full-width" style="margin-top: 10px">
-				<p>Description</p>
+				<p>Client</p>
 				<a-input
 					class="full-width"
 					type="text"
 					v-model:value="nail.clientId"
-					placeholder="Enter a clientId"
+					placeholder="Enter a client name"
 				/>
-				<a-button>New Client ?</a-button>
+				<!-- <a-button>New Client ?</a-button> -->
 			</a-row>
 			<a-row class="full-width" style="margin-top: 10px">
 				<a-col :span="12">
@@ -47,6 +47,11 @@
 							>{{ category.name.toLowerCase() }}</a-select-option
 						>
 					</a-select>
+				</a-col>
+			</a-row>
+			<a-row class="full-width" style="margin-top: 20px">
+				<a-col :span="24">
+					<a-checkbox v-model:checked="nail.hasInvoice">Invoice?</a-checkbox>
 				</a-col>
 			</a-row>
 		</div>
@@ -75,7 +80,7 @@ import {
 } from '../../services/utils';
 import { DataBaseClient } from '../../api/db';
 import { useCategoryStore } from '../../stores/category';
-import { INail, NailType } from '../../models/nail';
+import { INail } from '../../models/nail';
 import { useNailStore } from '../../stores/nail';
 
 const props = defineProps<{
@@ -88,10 +93,11 @@ const visible = ref<boolean>(false);
 const newNail = (): INail => ({
 	datetime: formatDate(new Date().toISOString()),
 	amount: 0,
-	category: '' as NailType,
+	category: '',
 	month: MONTHS[new Date().getMonth()],
 	year: new Date().getFullYear().toString(),
 	clientId: '',
+	hasInvoice: false,
 });
 
 const nail = ref<INail>(newNail());

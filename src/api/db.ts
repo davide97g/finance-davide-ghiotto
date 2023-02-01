@@ -13,6 +13,7 @@ import { doc, getDoc, enableIndexedDbPersistence } from 'firebase/firestore';
 import { ITransaction, Transaction } from '../models/transaction';
 import { Category, CategoryType, ICategory } from '../models/category';
 import { INail, Nail } from '../models/nail';
+import { formatDate } from '../services/utils';
 
 const db = getFirestore();
 
@@ -101,6 +102,18 @@ export const DataBaseClient = {
 			try {
 				await deleteDoc(doc(collection(db, this.collection), transactionId));
 				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async bulkAdd(transactions: ITransaction[]): Promise<Transaction[]> {
+			try {
+				const transactionsCreation: Promise<Transaction>[] = [];
+				transactions.forEach(transaction =>
+					transactionsCreation.push(this.create(transaction))
+				);
+				return await Promise.all(transactionsCreation);
 			} catch (err) {
 				console.error(err);
 				throw err;
@@ -206,6 +219,36 @@ export const DataBaseClient = {
 			try {
 				await deleteDoc(doc(collection(db, this.collection), nailId));
 				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async closeMonth(month: string, year: string): Promise<boolean> {
+			try {
+				const nails = await this.get(month, year);
+				const total = nails.reduce((acc, nail) => acc + nail.amount, 0);
+				const iTransaction: ITransaction = {
+					amount: total,
+					category: 'l99HyP3OYayjb2ra9uKQ',
+					type: 'earning',
+					date: formatDate(new Date().toISOString()),
+					description: `Nail earnings for ${month} ${year}`,
+					month,
+					year,
+				};
+				await DataBaseClient.Transaction.create(iTransaction);
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async bulkAdd(nails: INail[]): Promise<Nail[]> {
+			try {
+				const nailsCreation: Promise<Nail>[] = [];
+				nails.forEach(nail => nailsCreation.push(this.create(nail)));
+				return await Promise.all(nailsCreation);
 			} catch (err) {
 				console.error(err);
 				throw err;

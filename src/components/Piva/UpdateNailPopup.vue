@@ -1,7 +1,7 @@
 <template>
 	<a-modal
 		v-model:visible="visible"
-		title="Update Nail"
+		title="Update Nail 💅"
 		@cancel="emits('close')"
 		:loading="loading"
 		:disabled="true"
@@ -42,6 +42,9 @@
 					>{{ category.name }}</a-select-option
 				>
 			</a-select>
+			<a-checkbox v-model:checked="nail.hasInvoice" style="margin-top: 20px"
+				>Invoice?</a-checkbox
+			>
 		</div>
 		<template #footer>
 			<a-button key="back" @click="emits('close')">Cancel</a-button>
