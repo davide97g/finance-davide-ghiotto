@@ -14,6 +14,7 @@ import { ITransaction, Transaction } from '../models/transaction';
 import { Category, CategoryType, ICategory } from '../models/category';
 import { INail, Nail } from '../models/nail';
 import { formatDate } from '../services/utils';
+import { IStats, Stats } from '../models/stats';
 
 const db = getFirestore();
 
@@ -251,6 +252,77 @@ export const DataBaseClient = {
 				return await Promise.all(nailsCreation);
 			} catch (err) {
 				console.error(err);
+				throw err;
+			}
+		},
+	},
+	Stats: {
+		collection: 'stats',
+		async get(month: string, year: string): Promise<Stats> {
+			const q = query(
+				collection(db, this.collection),
+				where('month', '==', month),
+				where('year', '==', year)
+			);
+			const querySnapshot = await getDocs(q);
+			return querySnapshot.docs.map(doc => ({
+				id: doc.id,
+				...doc.data(),
+			}))[0] as Stats;
+		},
+		async create(iStats: IStats): Promise<Stats> {
+			try {
+				const res = await addDoc(
+					collection(db, this.collection),
+					JSON.parse(JSON.stringify(iStats))
+				);
+				return {
+					id: res.id,
+					...iStats,
+				};
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async update(stats: Stats): Promise<boolean> {
+			try {
+				await setDoc(
+					doc(collection(db, this.collection), stats.id),
+					JSON.parse(JSON.stringify(stats)),
+					{
+						merge: true,
+					}
+				);
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async delete(statsId: string): Promise<boolean> {
+			let document;
+			try {
+				document = doc(collection(db, this.collection), statsId);
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+			try {
+				await deleteDoc(document);
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async bulkAdd(stats: IStats[]): Promise<Stats[]> {
+			try {
+				const statsCreation: Promise<Stats>[] = [];
+				stats.forEach(stat => statsCreation.push(this.create(stat)));
+				const result = await Promise.all(statsCreation);
+				return result;
+			} catch (err) {
 				throw err;
 			}
 		},
