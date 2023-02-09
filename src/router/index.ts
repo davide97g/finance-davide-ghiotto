@@ -12,6 +12,7 @@ export const LoginPageName = 'Login';
 export const ProfilePageName = 'Profile';
 export const FamilyPageName = 'Family';
 export const PivaPageName = 'Piva';
+export const InvestmentPageName = 'Investment';
 
 const loggedInGuard = async (
 	to: RouteLocationNormalized,
@@ -56,6 +57,12 @@ const routes = [
 		path: '/piva',
 		name: PivaPageName,
 		component: () => import('../pages/Piva.vue'),
+		beforeEnter: loggedInGuard,
+	},
+	{
+		path: '/investments',
+		name: InvestmentPageName,
+		component: () => import('../pages/Investments.vue'),
 		beforeEnter: loggedInGuard,
 	},
 	{ path: '/:pathMatch(.*)*', redirect: '/' },
