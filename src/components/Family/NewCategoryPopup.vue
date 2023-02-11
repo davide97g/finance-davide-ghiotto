@@ -45,6 +45,13 @@
 					</a-radio-group>
 				</a-col>
 			</a-row>
+			<a-row class="full-width" style="margin-top: 20px">
+				<a-col :span="24">
+					<a-checkbox v-model:checked="category.excludeFromBudget"
+						>Exclude From Budget</a-checkbox
+					>
+				</a-col>
+			</a-row>
 		</div>
 		<a-divider></a-divider>
 		<div class="category-preview flex-center" v-if="category.name">

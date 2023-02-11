@@ -4,6 +4,7 @@ export interface ICategory {
 	type: CategoryType;
 	color?: string;
 	description?: string;
+	excludeFromBudget?: boolean;
 }
 
 export interface Category extends ICategory {

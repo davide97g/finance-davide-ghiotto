@@ -21,13 +21,26 @@
 							{{ formatDate(item.date) }}
 						</a-col>
 					</a-row>
-					<a-row style="width: 100%" :class="{ future: isFuture(item.date) }">
+					<a-row
+						style="width: 100%"
+						:class="{
+							future: isFuture(item.date),
+						}"
+					>
 						<a-col :span="6" class="ellipsis">€ {{ item.amount }} </a-col>
-						<a-col :span="16" class="left">
+						<a-col :span="12" class="left">
 							<TagCategory
 								:category="getCategory(item.category)!"
 								v-if="getCategory(item.category)"
 							/>
+						</a-col>
+						<a-col :span="4">
+							<div
+								class="excluded-badge"
+								v-if="getCategory(item.category)?.excludeFromBudget"
+							>
+								<a-tag :color="'gray'">Excluded</a-tag>
+							</div>
 						</a-col>
 						<a-popconfirm
 							@click.stop=""

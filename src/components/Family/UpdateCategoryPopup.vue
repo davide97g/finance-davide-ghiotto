@@ -64,6 +64,13 @@
 					</a-tooltip>
 				</div>
 			</a-col>
+			<a-row class="full-width" style="margin-top: 20px">
+				<a-col :span="24">
+					<a-checkbox v-model:checked="category.excludeFromBudget"
+						>Exclude From Budget</a-checkbox
+					>
+				</a-col>
+			</a-row>
 		</a-row>
 		<template #footer>
 			<a-button key="back" @click="emits('close')">Cancel</a-button>

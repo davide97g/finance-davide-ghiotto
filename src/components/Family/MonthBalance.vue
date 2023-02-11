@@ -59,6 +59,7 @@ import { DataBaseClient } from '../../api/db';
 import { setIsLoading } from '../../services/utils';
 import { useTransactionStore } from '../../stores/transaction';
 import MonthStats from './MonthStats.vue';
+import { useCategoryStore } from '../../stores/category';
 
 const props = defineProps<{
 	month: string;
@@ -73,16 +74,25 @@ const getTransactions = async () => {
 	setIsLoading(false);
 };
 
+const categories = computed(() =>
+	useCategoryStore().categories.filter(c => c.type === 'earning' || c.type === 'expense')
+);
+const getCategory = (categoryId: string) => categories.value.find(c => c.id === categoryId);
+
 // stats
 
 const totalSumExpenses = computed(() => {
 	let tot = 0;
-	expenses.value.forEach(t => (tot += t.amount));
+	expenses.value
+		.filter(t => !getCategory(t.category)?.excludeFromBudget)
+		.forEach(t => (tot += t.amount));
 	return -tot;
 });
 const totalSumEarnings = computed(() => {
 	let tot = 0;
-	earnings.value.forEach(t => (tot += t.amount));
+	earnings.value
+		.filter(t => !getCategory(t.category)?.excludeFromBudget)
+		.forEach(t => (tot += t.amount));
 	return tot;
 });
 // *** transaction list

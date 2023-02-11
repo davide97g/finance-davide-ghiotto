@@ -55,17 +55,24 @@ interface LegendRow {
 const legendExpenses = ref([] as LegendRow[]);
 const legendEarnings = ref([] as LegendRow[]);
 
+const categories = computed(() =>
+	useCategoryStore().categories.filter(c => c.type === 'earning' || c.type === 'expense')
+);
+const getCategory = (categoryId: string) => categories.value.find(c => c.id === categoryId);
+
 const dataExpenses = computed(() => {
 	const categoriesMap: any = {};
-	props.expenses.forEach(t => {
-		if (!categoriesMap[t.category]) {
-			categoriesMap[t.category] = {
-				amount: 0,
-				category: {} as Category,
-			};
-		}
-		categoriesMap[t.category].amount += t.amount;
-	});
+	props.expenses
+		.filter(t => !getCategory(t.category)?.excludeFromBudget)
+		.forEach(t => {
+			if (!categoriesMap[t.category]) {
+				categoriesMap[t.category] = {
+					amount: 0,
+					category: {} as Category,
+				};
+			}
+			categoriesMap[t.category].amount += t.amount;
+		});
 	const aggregatedCategory = Object.keys(categoriesMap).map(c => ({
 		...categoriesMap[c],
 		category: allCategories.value.find(cat => cat.id === c),
@@ -79,8 +86,8 @@ const dataExpenses = computed(() => {
 		color: c.category.color,
 	}));
 	return {
-		labels: aggregatedCategory.map(
-			c => c.category.name + ' ' + Math.round((c.amount / total) * 100) + '%'
+		labels: legendExpenses.value.map(
+			c => c.name + ' ' + Math.round((c.amount / total) * 100) + '%'
 		),
 		datasets: [
 			{
@@ -93,15 +100,17 @@ const dataExpenses = computed(() => {
 
 const dataEarnings = computed(() => {
 	const categoriesMap: any = {};
-	props.earnings.forEach(t => {
-		if (!categoriesMap[t.category]) {
-			categoriesMap[t.category] = {
-				amount: 0,
-				category: {} as Category,
-			};
-		}
-		categoriesMap[t.category].amount += t.amount;
-	});
+	props.earnings
+		.filter(t => !getCategory(t.category)?.excludeFromBudget)
+		.forEach(t => {
+			if (!categoriesMap[t.category]) {
+				categoriesMap[t.category] = {
+					amount: 0,
+					category: {} as Category,
+				};
+			}
+			categoriesMap[t.category].amount += t.amount;
+		});
 	const aggregatedCategory = Object.keys(categoriesMap).map(c => ({
 		...categoriesMap[c],
 		category: allCategories.value.find(cat => cat.id === c),
@@ -115,8 +124,8 @@ const dataEarnings = computed(() => {
 		color: c.category.color,
 	}));
 	return {
-		labels: aggregatedCategory.map(
-			c => c.category.name + ' ' + Math.round((c.amount / total) * 100) + '%'
+		labels: legendEarnings.value.map(
+			c => c.name + ' ' + Math.round((c.amount / total) * 100) + '%'
 		),
 		datasets: [
 			{
