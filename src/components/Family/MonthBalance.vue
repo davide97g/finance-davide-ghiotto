@@ -37,7 +37,7 @@
 		<a-tab-pane key="2" tab="Earnings">
 			<TransactionList :type="'earning'" :title="'Earnings'" :transactions="earnings" />
 		</a-tab-pane>
-		<span class="stats-icon">
+		<span class="stats-icon" v-if="earnings.length || expenses.length">
 			<LineChartOutlined style="cursor: pointer" @click="statsPopupVisible = true" />
 		</span>
 	</a-tabs>
@@ -59,6 +59,7 @@ import { useTransactionStore } from '../../stores/transaction';
 import { useCategoryStore } from '../../stores/category';
 import { LineChartOutlined } from '@ant-design/icons-vue';
 import MonthStatsPopup from './MonthStatsPopup.vue';
+import { Transaction } from '../../models/transaction';
 
 const props = defineProps<{
 	month: string;
@@ -69,8 +70,13 @@ const statsPopupVisible = ref(false);
 
 const getTransactions = async () => {
 	setIsLoading(true);
-	await DataBaseClient.Transaction.get({ month: props.month, year: props.year }).then(results =>
-		useTransactionStore().setTransactions(results)
+
+	await DataBaseClient.Transaction.getRT(
+		(transactions: Transaction[]) => useTransactionStore().setTransactions(transactions),
+		{
+			month: props.month,
+			year: props.year,
+		}
 	);
 	setIsLoading(false);
 };

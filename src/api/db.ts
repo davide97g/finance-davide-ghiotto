@@ -5,8 +5,10 @@ import {
 	deleteDoc,
 	getDocs,
 	getFirestore,
+	onSnapshot,
 	query,
 	setDoc,
+	Unsubscribe,
 	where,
 } from 'firebase/firestore';
 import { doc, getDoc, enableIndexedDbPersistence } from 'firebase/firestore';
@@ -68,6 +70,27 @@ export const DataBaseClient = {
 				id: doc.id,
 				...doc.data(),
 			})) as Transaction[];
+		},
+		async getRT(
+			callback: (transactions: Transaction[]) => void,
+			filters?: {
+				type?: 'expense' | 'earning';
+				month?: string;
+				year?: string;
+			}
+		): Promise<Unsubscribe> {
+			const constraints = [];
+			if (filters?.type) constraints.push(where('type', '==', filters.type));
+			if (filters?.month) constraints.push(where('month', '==', filters.month));
+			if (filters?.year) constraints.push(where('year', '==', filters.year));
+			const q = query(collection(db, this.collection), ...constraints);
+			return onSnapshot(q, querySnapshot => {
+				const transactions = querySnapshot.docs.map(doc => ({
+					id: doc.id,
+					...doc.data(),
+				})) as Transaction[];
+				callback(transactions);
+			});
 		},
 		async create(transaction: ITransaction): Promise<Transaction> {
 			try {
