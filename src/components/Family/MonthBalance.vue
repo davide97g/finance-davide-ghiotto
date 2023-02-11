@@ -30,27 +30,25 @@
 			/>
 		</a-col>
 	</a-row>
-	<a-tabs v-model:activeKey="activeKey">
+	<a-tabs v-model:activeKey="activeKey" style="position: relative">
 		<a-tab-pane key="1" tab="Expenses">
 			<TransactionList :type="'expense'" :title="'Expenses'" :transactions="expenses" />
 		</a-tab-pane>
 		<a-tab-pane key="2" tab="Earnings">
 			<TransactionList :type="'earning'" :title="'Earnings'" :transactions="earnings" />
 		</a-tab-pane>
-		<a-tab-pane
-			key="3"
-			tab="Stats"
-			tabPosition="right"
-			v-if="earnings.length || expenses.length"
-		>
-			<MonthStats
-				:month="props.month"
-				:year="props.year"
-				:earnings="earnings"
-				:expenses="expenses"
-			/>
-		</a-tab-pane>
+		<span class="stats-icon">
+			<LineChartOutlined style="cursor: pointer" @click="statsPopupVisible = true" />
+		</span>
 	</a-tabs>
+	<MonthStatsPopup
+		:month="props.month"
+		:year="props.year"
+		:earnings="earnings"
+		:expenses="expenses"
+		:visible="statsPopupVisible"
+		@close="statsPopupVisible = false"
+	/>
 </template>
 
 <script setup lang="ts">
@@ -58,13 +56,16 @@ import { computed, ref } from 'vue';
 import { DataBaseClient } from '../../api/db';
 import { setIsLoading } from '../../services/utils';
 import { useTransactionStore } from '../../stores/transaction';
-import MonthStats from './MonthStats.vue';
 import { useCategoryStore } from '../../stores/category';
+import { LineChartOutlined } from '@ant-design/icons-vue';
+import MonthStatsPopup from './MonthStatsPopup.vue';
 
 const props = defineProps<{
 	month: string;
 	year: string;
 }>();
+
+const statsPopupVisible = ref(false);
 
 const getTransactions = async () => {
 	setIsLoading(true);
@@ -107,3 +108,12 @@ const expenses = computed(() =>
 
 getTransactions();
 </script>
+
+<style scoped lang="scss">
+.stats-icon {
+	position: absolute;
+	right: 0;
+	top: 0;
+	padding: 10px;
+}
+</style>

@@ -36,7 +36,7 @@ declare module '@vue/runtime-core' {
     Footer: typeof import('./src/components/Footer.vue')['default']
     MonthBalance: typeof import('./src/components/Family/MonthBalance.vue')['default']
     MonthNails: typeof import('./src/components/Piva/MonthNails.vue')['default']
-    MonthStats: typeof import('./src/components/Family/MonthStats.vue')['default']
+    MonthStatsPopup: typeof import('./src/components/Family/MonthStatsPopup.vue')['default']
     NailList: typeof import('./src/components/Piva/NailList.vue')['default']
     NewCategoryPopup: typeof import('./src/components/Family/NewCategoryPopup.vue')['default']
     NewNailPopup: typeof import('./src/components/Piva/NewNailPopup.vue')['default']

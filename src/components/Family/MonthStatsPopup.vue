@@ -1,49 +1,73 @@
 <template>
-	<a-tabs v-model:activeKey="activeKey">
-		<a-tab-pane key="1" tab="Expenses">
-			<div style="height: 200px; width: 100%">
-				<Doughnut :data="dataExpenses" :options="(options as any)" id="stats-expenses" />
-			</div>
-			<div class="legend full-width">
-				<div v-for="(legendRow, index) in legendExpenses" :key="index" class="legend-item">
-					<a-tag :color="legendRow.color">{{ legendRow.name }}</a-tag>
-					{{ legendRow.amount }}€ ({{ legendRow.percentage }}%)
+	<a-modal
+		v-model:visible="visible"
+		:title="'Statistic for ' + month + ' ' + year"
+		@cancel="emits('close')"
+		:disabled="true"
+	>
+		<a-tabs v-model:activeKey="activeKey">
+			<a-tab-pane key="1" tab="Expenses">
+				<div style="height: 450px; width: 100%">
+					<Doughnut
+						:data="dataExpenses"
+						:options="(options as any)"
+						id="stats-expenses"
+					/>
 				</div>
-			</div>
-		</a-tab-pane>
-		<a-tab-pane key="2" tab="Earnings">
-			<div style="height: 200px; width: 100%">
-				<Doughnut :data="dataEarnings" :options="(options as any)" id="stats-earnings" />
-			</div>
-			<div class="legend full-width">
-				<div v-for="(legendRow, index) in legendEarnings" :key="index" class="legend-item">
-					<a-tag :color="legendRow.color">{{ legendRow.name }}</a-tag>
-					{{ legendRow.amount }} ({{ legendRow.percentage }}%)
+			</a-tab-pane>
+			<a-tab-pane key="2" tab="Earnings">
+				<div style="height: 450px; width: 100%">
+					<Doughnut
+						:data="dataEarnings"
+						:options="(options as any)"
+						id="stats-earnings"
+					/>
 				</div>
-			</div>
-		</a-tab-pane>
-	</a-tabs>
+			</a-tab-pane>
+		</a-tabs>
+		<template #footer>
+			<a-button key="back" @click="emits('close')">Close</a-button>
+		</template>
+	</a-modal>
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue';
+import { useCategoryStore } from '../../stores/category';
+
 import { Transaction } from '../../models/transaction';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'vue-chartjs';
-import { computed, ref } from 'vue';
-import { useCategoryStore } from '../../stores/category';
 import { Category } from '../../models/category';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const props = defineProps<{
+	visible: boolean;
 	month: string;
 	year: string;
 	expenses: Transaction[];
 	earnings: Transaction[];
 }>();
 
+const emits = defineEmits(['close']);
+
 const activeKey = ref('1');
 const allCategories = computed(() => useCategoryStore().categories);
+
+const visible = ref<boolean>(false);
+
+watch(
+	() => props.visible,
+	() => (visible.value = props.visible)
+);
+
+watch(
+	() => visible.value,
+	() => {
+		if (!visible.value) emits('close');
+	}
+);
 
 interface LegendRow {
 	name: string;
@@ -140,25 +164,18 @@ const options = {
 	responsive: true,
 	maintainAspectRatio: false,
 	plugins: {
-		legend: null,
+		legend: {
+			position: 'bottom',
+		},
 	},
 };
 </script>
 
-<style scoped lang="scss">
-.legend {
-	max-height: 200px;
-	overflow-y: auto;
-	display: inline-flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: space-between;
-	.legend-item {
-		display: inline-flex;
-		align-items: center;
-		.ant-tag {
-			margin-right: 5px;
-		}
-	}
+<style lang="scss" scoped>
+.input-form {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: flex-start;
 }
 </style>
