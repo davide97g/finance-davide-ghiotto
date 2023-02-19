@@ -1,74 +1,39 @@
 <template>
-	<a-modal
-		v-model:visible="visible"
-		:title="'New ' + type"
-		@cancel="emits('close')"
-		:loading="loading"
-		:disabled="true"
-	>
+	<a-modal v-model:visible="visible" :title="'New ' + type" @cancel="emits('close')" :loading="loading" :disabled="true">
 		<div class="input-form">
 			<a-row class="full-width" style="flex-direction: column">
 				<p>Date</p>
-				<a-input
-					class="full-width"
-					type="date"
-					v-model:value="transaction.date"
-					placeholder="Choose a date"
-				/>
+				<a-input class="full-width" type="date" v-model:value="transaction.date" placeholder="Choose a date" />
 			</a-row>
 			<a-row class="full-width" style="margin-top: 10px">
 				<p>Description</p>
-				<a-input
-					class="full-width"
-					type="text"
-					v-model:value="transaction.description"
-					placeholder="Enter a description"
-				/>
+				<a-input class="full-width" type="text" v-model:value="transaction.description"
+					placeholder="Enter a description" />
 			</a-row>
 			<a-row class="full-width" style="margin-top: 10px">
 				<a-col :span="12">
 					<p>Amount</p>
-					<a-input-number
-						class="full-width"
-						v-model:value="transaction.amount"
-						placeholder="Enter an amount"
-						:min="0"
-						:precision="2"
-					></a-input-number
-				></a-col>
+					<a-input-number class="full-width" v-model:value="transaction.amount" placeholder="Enter an amount"
+						:min="0" :precision="2"></a-input-number>
+				</a-col>
 				<a-col :span="12">
 					<p>Category</p>
 					<a-select class="full-width" ref="select" v-model:value="transaction.category">
-						<a-select-option
-							v-for="category in categories"
-							:key="category.id"
-							:value="category.id"
-							>{{ category.name.toLowerCase() }}</a-select-option
-						>
+						<a-select-option v-for="category in categories" :key="category.id" :value="category.id">{{
+							category.name.toLowerCase() }}</a-select-option>
 					</a-select>
 				</a-col>
 			</a-row>
 			<div v-if="type === 'expense'" class="full-width">
 				<a-divider />
-				<a-checkbox
-					style="margin-top: 10px"
-					v-model:checked="periodic"
-					@change="setUpPeriodicity"
-					>Periodic</a-checkbox
-				>
+				<a-checkbox style="margin-top: 10px" v-model:checked="periodic"
+					@change="setUpPeriodicity">Periodic</a-checkbox>
 				<a-row style="margin-top: 10px" v-if="periodic">
 					<p>Frequency</p>
-					<a-select
-						v-if="transaction.periodicity"
-						class="full-width"
-						v-model:value="transaction.periodicity.frequency"
-					>
-						<a-select-option
-							v-for="frequency in frequencyOptions"
-							:key="frequency"
-							:value="frequency"
-							>{{ frequency }}</a-select-option
-						>
+					<a-select v-if="transaction.periodicity" class="full-width"
+						v-model:value="transaction.periodicity.frequency">
+						<a-select-option v-for="frequency in frequencyOptions" :key="frequency" :value="frequency">{{
+							frequency }}</a-select-option>
 					</a-select>
 				</a-row>
 				<a-divider />
@@ -80,26 +45,15 @@
 				<a-row style="margin-top: 10px" class="full-width" v-if="periodic">
 					<a-col :span="12">
 						<p>Ending Date</p>
-						<a-input
-							v-if="transaction.periodicity && transaction.periodicity.endDate"
-							class="full-width"
-							type="date"
-							v-model:value="transaction.periodicity.endDate"
-							:min="transaction.date"
-							placeholder="End date"
-							:disabled="!endWithDate"
-						/>
+						<a-input v-if="transaction.periodicity && transaction.periodicity.endDate" class="full-width"
+							type="date" v-model:value="transaction.periodicity.endDate" :min="transaction.date"
+							placeholder="End date" :disabled="!endWithDate" />
 					</a-col>
 					<a-col :span="12" style="padding-left: 10px">
 						<p>Repeats</p>
-						<a-input-number
-							v-if="transaction.periodicity && transaction.periodicity.repeats"
-							class="full-width"
-							v-model:value="transaction.periodicity.repeats"
-							placeholder="How many times it repeats"
-							:min="1"
-							:disabled="endWithDate"
-						></a-input-number>
+						<a-input-number v-if="transaction.periodicity && transaction.periodicity.repeats" class="full-width"
+							v-model:value="transaction.periodicity.repeats" placeholder="How many times it repeats" :min="1"
+							:disabled="endWithDate"></a-input-number>
 					</a-col>
 				</a-row>
 			</div>
@@ -107,19 +61,12 @@
 		</div>
 		<template #footer>
 			<a-button key="back" @click="emits('close')">Return</a-button>
-			<a-button
-				key="submit"
-				type="primary"
-				:loading="loading"
-				@click="handleOk"
-				:disabled="
-					!transaction.amount ||
-					!transaction.date ||
-					!transaction.description ||
-					!transaction.category
-				"
-				>Create</a-button
-			>
+			<a-button key="submit" type="primary" :loading="loading" @click="handleOk" :disabled="
+				!transaction.amount ||
+				!transaction.date ||
+				!transaction.description ||
+				!transaction.category
+			">Create</a-button>
 		</template>
 	</a-modal>
 </template>
@@ -216,7 +163,7 @@ const handleOk = () => {
 				'Success',
 				'Transaction ' + transaction.description + ' saved'
 			);
-			useTransactionStore().addTransaction(transaction);
+			// useTransactionStore().addTransaction(transaction);
 			resetTransaction();
 			emits('close');
 		})

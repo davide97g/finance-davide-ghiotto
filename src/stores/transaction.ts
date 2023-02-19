@@ -25,8 +25,13 @@ export const useTransactionStore = defineStore('transaction', {
 			presentTransactions.forEach(t => this.updateTransaction(t));
 		},
 		addTransaction(transaction: Transaction) {
-			if (transaction.type === 'earning') this.earnings.push(transaction);
-			else this.expenses.push(transaction);
+			if (transaction.type === 'earning') {
+				if (this.earnings.findIndex(t => t.id === transaction.id) !== -1) return;
+				this.earnings.push(transaction);
+			} else {
+				if (this.expenses.findIndex(t => t.id === transaction.id) !== -1) return;
+				this.expenses.push(transaction);
+			}
 			this.sortTransactions();
 		},
 		removeTransaction(transaction: Transaction) {
