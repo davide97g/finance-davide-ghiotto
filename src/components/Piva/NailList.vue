@@ -6,7 +6,12 @@
 	/>
 	<a-list item-layout="horizontal" :data-source="nails" size="medium" class="nail-list">
 		<template #renderItem="{ item }">
-			<a-list-item class="left" @click="openNailDetails(item)">
+			<a-list-item
+				class="left"
+				:class="{ invoice: item.hasInvoice }"
+				@click="openNailDetails(item)"
+				style="padding: 10px"
+			>
 				<div style="position: relative; width: 100%; padding-right: 5px">
 					<a-row style="width: 100%">
 						<a-col :span="16" class="ellipsis">
@@ -152,7 +157,6 @@ const formatDate = (date: string) => {
 	width: 100%;
 	height: calc(100vh - 410px);
 	overflow: auto;
-	padding: 10px;
 	padding-bottom: 20px;
 	background-color: #e2f0e2;
 	box-shadow: inset 0 0 12px #ccc;
@@ -161,5 +165,9 @@ const formatDate = (date: string) => {
 	margin-top: 10px;
 	justify-content: space-around;
 	height: 30px;
+}
+
+.invoice {
+	background-color: #e2e7f0;
 }
 </style>
