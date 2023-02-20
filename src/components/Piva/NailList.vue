@@ -18,11 +18,17 @@
 					</a-row>
 					<a-row style="width: 100%">
 						<a-col :span="6" class="ellipsis">€ {{ item.amount }} </a-col>
-						<a-col :span="16" class="left">
+						<a-col :span="14" class="left">
 							<TagCategory
 								:category="getCategory(item.category)!"
 								v-if="getCategory(item.category)"
 							/>
+						</a-col>
+						<a-col :span="2" class="right" @click.stop="">
+							<a-tooltip v-if="item.hasInvoice">
+								<template #title>Invoice emitted</template>
+								<FileDoneOutlined />
+							</a-tooltip>
 						</a-col>
 						<a-popconfirm
 							@click.stop=""
@@ -77,6 +83,7 @@ import {
 	ArrowDownOutlined,
 	ArrowUpOutlined,
 	FilterOutlined,
+	FileDoneOutlined,
 } from '@ant-design/icons-vue/lib/icons';
 import { computed, ref } from 'vue';
 import { DataBaseClient } from '../../api/db';
