@@ -1,7 +1,10 @@
 <template>
 	<Avatar :position="'topLeft'" />
 	<h1>Family</h1>
-	<a-tabs id="tabs" v-model:activeKey="activeYear">
+	<a-tabs
+		v-model:activeKey="activeYear"
+		style="padding: 10px; height: calc(100vh - 100px); position: relative"
+	>
 		<a-tab-pane :key="year" :tab="year" v-for="year in YEARS">
 			<a-tabs v-model:activeKey="activeMonth">
 				<a-tab-pane :key="month" :tab="month" v-for="month in MONTHS">
@@ -9,6 +12,9 @@
 				</a-tab-pane>
 			</a-tabs>
 		</a-tab-pane>
+		<span class="stats-icon">
+			<LineChartOutlined style="cursor: pointer" @click="openPopupForYearlyStats" />
+		</span>
 	</a-tabs>
 	<div class="flex-center" style="justify-content: space-around">
 		<a-button
@@ -31,17 +37,24 @@
 		:type="type"
 		@close="newTransactionPopupIsVisibile = false"
 	/>
-
+	<YearStatsPopup
+		:year="activeYear"
+		:earnings="yearlyEarnings"
+		:expenses="yearlyExpenses"
+		:visible="yearStatsPopupVisible"
+		@close="yearStatsPopupVisible = false"
+	/>
 	<SettingOutlined @click="sideMenuVisible = true" id="icon-open-settings" />
 	<Settings :visible="sideMenuVisible" @close="sideMenuVisible = false" />
 </template>
 
 <script setup lang="ts">
-import { SettingOutlined, PlusOutlined } from '@ant-design/icons-vue/lib/icons';
+import { SettingOutlined, PlusOutlined, LineChartOutlined } from '@ant-design/icons-vue/lib/icons';
 import { ref } from 'vue';
 import { DataBaseClient } from '../api/db';
 import Avatar from '../components/Avatar.vue';
 import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
+import YearStatsPopup from '../components/Family/YearStatsPopup.vue';
 import Settings from '../components/Family/Settings.vue';
 import { MONTHS, YEARS, setIsLoading } from '../services/utils';
 import { useCategoryStore } from '../stores/category';
@@ -65,6 +78,14 @@ const openPopupFor = (_type: 'expense' | 'earning') => {
 	newTransactionPopupIsVisibile.value = true;
 };
 
+// *** stats popup
+const yearStatsPopupVisible = ref(false);
+const yearlyEarnings = ref([]);
+const yearlyExpenses = ref([]);
+const openPopupForYearlyStats = () => {
+	yearStatsPopupVisible.value = true;
+};
+
 // *** side menu
 
 const sideMenuVisible = ref<boolean>(false);
@@ -80,8 +101,14 @@ getCategories();
 	height: 25px;
 	width: 25px;
 }
-#tabs {
+.stats-icon {
+	position: absolute;
+	top: 20px;
+	right: 10px;
+	height: 25px;
+	width: 25px;
 	padding: 10px;
-	height: calc(100vh - 100px);
+	display: flex;
+	align-items: center;
 }
 </style>

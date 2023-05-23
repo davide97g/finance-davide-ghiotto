@@ -32,6 +32,7 @@ declare module '@vue/runtime-core' {
     ATag: typeof import('ant-design-vue/es')['Tag']
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
     Avatar: typeof import('./src/components/Avatar.vue')['default']
+    copy: typeof import('./src/components/Family/MonthStatsPopup copy.vue')['default']
     FiltersPopup: typeof import('./src/components/Family/FiltersPopup.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']
     MonthBalance: typeof import('./src/components/Family/MonthBalance.vue')['default']
@@ -46,5 +47,6 @@ declare module '@vue/runtime-core' {
     TransactionList: typeof import('./src/components/Family/TransactionList.vue')['default']
     UpdateCategoryPopup: typeof import('./src/components/Family/UpdateCategoryPopup.vue')['default']
     UpdateTransactionPopup: typeof import('./src/components/Family/UpdateTransactionPopup.vue')['default']
+    YearStatsPopup: typeof import('./src/components/Family/YearStatsPopup.vue')['default']
   }
 }
