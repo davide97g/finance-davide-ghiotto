@@ -121,5 +121,8 @@ getTransactions();
 	right: 0;
 	top: 0;
 	padding: 10px;
+	height: 46px;
+	display: flex;
+	align-items: center;
 }
 </style>

@@ -1,4 +1,4 @@
-export type CategoryType = 'expense' | 'earning' | 'nail';
+export type CategoryType = 'expense' | 'earning';
 export interface ICategory {
 	name: string;
 	type: CategoryType;

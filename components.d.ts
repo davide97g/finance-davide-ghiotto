@@ -35,11 +35,8 @@ declare module '@vue/runtime-core' {
     FiltersPopup: typeof import('./src/components/Family/FiltersPopup.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']
     MonthBalance: typeof import('./src/components/Family/MonthBalance.vue')['default']
-    MonthNails: typeof import('./src/components/Piva/MonthNails.vue')['default']
     MonthStatsPopup: typeof import('./src/components/Family/MonthStatsPopup.vue')['default']
-    NailList: typeof import('./src/components/Piva/NailList.vue')['default']
     NewCategoryPopup: typeof import('./src/components/Family/NewCategoryPopup.vue')['default']
-    NewNailPopup: typeof import('./src/components/Piva/NewNailPopup.vue')['default']
     NewTransactionPopup: typeof import('./src/components/Family/NewTransactionPopup.vue')['default']
     ProgressBar: typeof import('./src/components/ProgressBar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
@@ -48,7 +45,6 @@ declare module '@vue/runtime-core' {
     TagCategory: typeof import('./src/components/Family/TagCategory.vue')['default']
     TransactionList: typeof import('./src/components/Family/TransactionList.vue')['default']
     UpdateCategoryPopup: typeof import('./src/components/Family/UpdateCategoryPopup.vue')['default']
-    UpdateNailPopup: typeof import('./src/components/Piva/UpdateNailPopup.vue')['default']
     UpdateTransactionPopup: typeof import('./src/components/Family/UpdateTransactionPopup.vue')['default']
   }
 }

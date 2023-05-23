@@ -47,62 +47,6 @@
 					</a-select>
 				</a-col>
 			</a-row>
-			<div v-if="type === 'expense'" class="full-width">
-				<a-divider />
-				<a-checkbox
-					style="margin-top: 10px"
-					v-model:checked="periodic"
-					@change="setUpPeriodicity"
-					>Periodic</a-checkbox
-				>
-				<a-row style="margin-top: 10px" v-if="periodic">
-					<p>Frequency</p>
-					<a-select
-						v-if="transaction.periodicity"
-						class="full-width"
-						v-model:value="transaction.periodicity.frequency"
-					>
-						<a-select-option
-							v-for="frequency in frequencyOptions"
-							:key="frequency"
-							:value="frequency"
-							>{{ frequency }}</a-select-option
-						>
-					</a-select>
-				</a-row>
-				<a-divider />
-				<a-row style="margin-top: 10px" v-if="periodic">
-					<p>Ending type:</p>
-					<p style="margin-left: 10px">{{ endWithDate ? 'Date' : 'Repeats' }}</p>
-					<a-switch style="margin-left: 10px" v-model:checked="endWithDate" />
-				</a-row>
-				<a-row style="margin-top: 10px" class="full-width" v-if="periodic">
-					<a-col :span="12">
-						<p>Ending Date</p>
-						<a-input
-							v-if="transaction.periodicity && transaction.periodicity.endDate"
-							class="full-width"
-							type="date"
-							v-model:value="transaction.periodicity.endDate"
-							:min="transaction.date"
-							placeholder="End date"
-							:disabled="!endWithDate"
-						/>
-					</a-col>
-					<a-col :span="12" style="padding-left: 10px">
-						<p>Repeats</p>
-						<a-input-number
-							v-if="transaction.periodicity && transaction.periodicity.repeats"
-							class="full-width"
-							v-model:value="transaction.periodicity.repeats"
-							placeholder="How many times it repeats"
-							:min="1"
-							:disabled="endWithDate"
-						></a-input-number>
-					</a-col>
-				</a-row>
-			</div>
-			<!-- TODO: add preview total cost -->
 		</div>
 		<template #footer>
 			<a-button key="back" @click="emits('close')">Return</a-button>
@@ -139,7 +83,6 @@ import { useCategoryStore } from '../../stores/category';
 const props = defineProps<{
 	visible: boolean;
 	type: 'expense' | 'earning';
-	isNail?: boolean;
 }>();
 
 const emits = defineEmits(['close', 'ok']);
@@ -185,26 +128,7 @@ watch(
 );
 
 const allCategories = computed(() => useCategoryStore().categories);
-const categories = computed(() => {
-	if (props.isNail) return allCategories.value.filter(c => c.id === 'WuNj7dDtoKstlO5VTFXz');
-	else return allCategories.value.filter(c => c.type === props.type);
-});
-
-const frequencyOptions = ['monthly', 'weekly', 'daily', 'yearly'];
-const periodic = ref(false);
-const endWithDate = ref(false);
-const setUpPeriodicity = () => {
-	if (!transaction.value.periodicity) {
-		const endingDate = new Date();
-		endingDate.setMonth(endingDate.getMonth() + 1);
-		transaction.value.periodicity = {
-			frequency: 'monthly',
-			endDate: formatDate(endingDate.toISOString()),
-			startDate: formatDate(new Date().toISOString()),
-			repeats: 1,
-		};
-	}
-};
+const categories = computed(() => allCategories.value.filter(c => c.type === props.type));
 
 const handleOk = () => {
 	setIsLoading(true);

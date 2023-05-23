@@ -32,16 +32,6 @@
 			/>
 		</div>
 		<a-divider />
-		<p>Nails</p>
-		<div class="flex-gap" style="max-height: 300px; overflow: auto">
-			<TagCategory
-				:removable="true"
-				:category="category"
-				@click="onCategorySelected(category)"
-				v-for="category in categories.filter(c => c.type == 'nail')"
-			/>
-		</div>
-		<a-divider />
 	</a-drawer>
 </template>
 

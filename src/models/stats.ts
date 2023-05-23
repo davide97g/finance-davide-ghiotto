@@ -2,7 +2,7 @@ export interface IStats {
 	month: string;
 	year: string;
 	total: number;
-	type: 'expense' | 'earning' | 'nail-expense' | 'nail-earning';
+	type: 'expense' | 'earning';
 }
 
 export interface Stats extends IStats {

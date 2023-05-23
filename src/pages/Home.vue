@@ -24,9 +24,6 @@
 				<router-link :to="{ name: FamilyPageName }" class="m1">
 					<a-button type="primary"> <HomeOutlined /> Family Balance</a-button>
 				</router-link>
-				<router-link :to="{ name: PivaPageName }">
-					<a-button type="primary"><EuroCircleTwoTone /> Kristina Piva</a-button>
-				</router-link>
 			</div>
 		</div>
 		<div v-else>
@@ -37,9 +34,9 @@
 </template>
 
 <script setup lang="ts">
-import { HomeOutlined, EuroCircleTwoTone } from '@ant-design/icons-vue';
+import { HomeOutlined } from '@ant-design/icons-vue';
 import Avatar from '../components/Avatar.vue';
 import Footer from '../components/Footer.vue';
-import { FamilyPageName, LoginPageName, PivaPageName } from '../router';
+import { FamilyPageName, LoginPageName } from '../router';
 import { isAdmin, isLoggedIn } from '../services/utils';
 </script>

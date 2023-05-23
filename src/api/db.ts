@@ -14,7 +14,6 @@ import {
 import { doc, getDoc, enableIndexedDbPersistence } from 'firebase/firestore';
 import { ITransaction, Transaction } from '../models/transaction';
 import { Category, CategoryType, ICategory } from '../models/category';
-import { INail, Nail } from '../models/nail';
 import { formatDate } from '../services/utils';
 import { IStats, Stats } from '../models/stats';
 
@@ -190,89 +189,6 @@ export const DataBaseClient = {
 			try {
 				await deleteDoc(doc(collection(db, this.collection), categoryId));
 				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-	},
-	Nail: {
-		collection: 'nails',
-		async get(month?: string, year?: string): Promise<Nail[]> {
-			const constraints = [];
-			if (month) constraints.push(where('month', '==', month));
-			if (year) constraints.push(where('year', '==', year));
-			const q = query(collection(db, this.collection), ...constraints);
-			const querySnapshot = await getDocs(q);
-			return querySnapshot.docs.map(doc => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Nail[];
-		},
-		async create(iNail: INail): Promise<Nail> {
-			try {
-				const res = await addDoc(
-					collection(db, this.collection),
-					JSON.parse(JSON.stringify(iNail))
-				);
-				return {
-					id: res.id,
-					...iNail,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async update(nail: Nail): Promise<boolean> {
-			try {
-				await setDoc(
-					doc(collection(db, this.collection), nail.id),
-					JSON.parse(JSON.stringify(nail)),
-					{
-						merge: true,
-					}
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async delete(nailId: string): Promise<boolean> {
-			try {
-				await deleteDoc(doc(collection(db, this.collection), nailId));
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async closeMonth(month: string, year: string): Promise<boolean> {
-			try {
-				const nails = await this.get(month, year);
-				const total = nails.reduce((acc, nail) => acc + nail.amount, 0);
-				const iTransaction: ITransaction = {
-					amount: total,
-					category: 'l99HyP3OYayjb2ra9uKQ',
-					type: 'earning',
-					date: formatDate(new Date().toISOString()),
-					description: `Nail earnings for ${month} ${year}`,
-					month,
-					year,
-				};
-				await DataBaseClient.Transaction.create(iTransaction);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async bulkAdd(nails: INail[]): Promise<Nail[]> {
-			try {
-				const nailsCreation: Promise<Nail>[] = [];
-				nails.forEach(nail => nailsCreation.push(this.create(nail)));
-				return await Promise.all(nailsCreation);
 			} catch (err) {
 				console.error(err);
 				throw err;
