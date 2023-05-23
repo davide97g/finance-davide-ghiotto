@@ -5,56 +5,86 @@
 		@cancel="emits('close')"
 		:disabled="true"
 	>
-		<a-tabs v-model:activeKey="activeKey">
-			<a-tab-pane key="1" tab="Expenses By Category">
+		<a-tabs v-model:activeKey="activeKey" v-if="earnings.length || expenses.length">
+			<a-tab-pane key="1" tab="Monthly Overview">
 				<div style="height: 450px; width: 100%">
-					<Doughnut
-						:data="dataExpenses"
-						:options="(options as any)"
-						id="stats-expenses"
-					/>
-				</div>
-			</a-tab-pane>
-			<a-tab-pane key="2" tab="Earnings By Category">
-				<div style="height: 450px; width: 100%">
-					<Doughnut
-						:data="dataEarnings"
-						:options="(options as any)"
-						id="stats-earnings"
-					/>
+					<Bar :data="dataMonthly" :options="(options as any)" id="stats-monthly" />
 				</div>
 			</a-tab-pane>
 		</a-tabs>
+		<div v-else>
+			<p>No data available for this year</p>
+			<p>Would you like to freeze this year?</p>
+			<a-button type="primary" @click="emits('freeze')">Freeze</a-button>
+		</div>
 		<template #footer>
 			<a-button key="back" @click="emits('close')">Close</a-button>
+			<a-button type="primary" key="enter" @click="emits('freeze')">Freeze</a-button>
 		</template>
 	</a-modal>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useCategoryStore } from '../../stores/category';
 
-import { Transaction } from '../../models/transaction';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Doughnut } from 'vue-chartjs';
-import { Category } from '../../models/category';
+import {
+	Chart as ChartJS,
+	ArcElement,
+	Tooltip,
+	Legend,
+	CategoryScale,
+	LinearScale,
+	BarElement,
+} from 'chart.js';
+import { Bar } from 'vue-chartjs';
+import { Stats } from '../../models/stats';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 const props = defineProps<{
 	visible: boolean;
 	year: string;
-	expenses: Transaction[];
-	earnings: Transaction[];
+	expenses: Stats[];
+	earnings: Stats[];
 }>();
 
-const emits = defineEmits(['close']);
+const emits = defineEmits(['close', 'freeze']);
 
 const activeKey = ref('1');
-const allCategories = computed(() => useCategoryStore().categories);
 
 const visible = ref<boolean>(false);
+
+const dataMonthly = computed(() => {
+	const months = props.expenses
+		.map(e => e.month)
+		.sort((a, b) => {
+			const aDate = new Date(`1 ${a}`);
+			const bDate = new Date(`1 ${b}`);
+			console.log(aDate, bDate);
+			return aDate.getTime() - bDate.getTime();
+		});
+	const monthsEarnings = months.map(m => props.earnings.find(e => e.month === m)!);
+	const monthsExpenses = months.map(m => props.expenses.find(e => e.month === m)!);
+	const data = {
+		labels: months,
+		datasets: [
+			{
+				label: 'Expenses',
+				backgroundColor: '#cf1322',
+				data: monthsExpenses.map(e => e.total),
+				// change color
+				color: '#ababab',
+			},
+			{
+				label: 'Earnings',
+				backgroundColor: '#3f8600',
+				data: monthsEarnings.map(e => e.total),
+			},
+		],
+	};
+	console.log(data);
+	return data;
+});
 
 watch(
 	() => props.visible,
@@ -67,97 +97,6 @@ watch(
 		if (!visible.value) emits('close');
 	}
 );
-
-interface LegendRow {
-	name: string;
-	amount: number;
-	percentage: number;
-	color: string;
-}
-
-const legendExpenses = ref([] as LegendRow[]);
-const legendEarnings = ref([] as LegendRow[]);
-
-const categories = computed(() =>
-	useCategoryStore().categories.filter(c => c.type === 'earning' || c.type === 'expense')
-);
-const getCategory = (categoryId: string) => categories.value.find(c => c.id === categoryId);
-
-const dataExpenses = computed(() => {
-	const categoriesMap: any = {};
-	props.expenses
-		.filter(t => !getCategory(t.category)?.excludeFromBudget)
-		.forEach(t => {
-			if (!categoriesMap[t.category]) {
-				categoriesMap[t.category] = {
-					amount: 0,
-					category: {} as Category,
-				};
-			}
-			categoriesMap[t.category].amount += t.amount;
-		});
-	const aggregatedCategory = Object.keys(categoriesMap).map(c => ({
-		...categoriesMap[c],
-		category: allCategories.value.find(cat => cat.id === c),
-	}));
-	const total = aggregatedCategory.reduce((acc, c) => acc + c.amount, 0);
-	aggregatedCategory.sort((a, b) => b.amount - a.amount);
-	legendExpenses.value = aggregatedCategory.map(c => ({
-		name: c.category.name,
-		amount: c.amount,
-		percentage: Math.round((c.amount / total) * 100),
-		color: c.category.color,
-	}));
-	return {
-		labels: legendExpenses.value.map(
-			c => c.name + ' ' + Math.round((c.amount / total) * 100) + '%'
-		),
-		datasets: [
-			{
-				backgroundColor: aggregatedCategory.map(c => c.category.color),
-				data: aggregatedCategory.map(c => Math.round((c.amount / total) * 100)),
-			},
-		],
-	};
-});
-
-const dataEarnings = computed(() => {
-	const categoriesMap: any = {};
-	props.earnings
-		.filter(t => !getCategory(t.category)?.excludeFromBudget)
-		.forEach(t => {
-			if (!categoriesMap[t.category]) {
-				categoriesMap[t.category] = {
-					amount: 0,
-					category: {} as Category,
-				};
-			}
-			categoriesMap[t.category].amount += t.amount;
-		});
-	const aggregatedCategory = Object.keys(categoriesMap).map(c => ({
-		...categoriesMap[c],
-		category: allCategories.value.find(cat => cat.id === c),
-	}));
-	const total = aggregatedCategory.reduce((acc, c) => acc + c.amount, 0);
-	aggregatedCategory.sort((a, b) => b.amount - a.amount);
-	legendEarnings.value = aggregatedCategory.map(c => ({
-		name: c.category.name,
-		amount: c.amount,
-		percentage: Math.round((c.amount / total) * 100),
-		color: c.category.color,
-	}));
-	return {
-		labels: legendEarnings.value.map(
-			c => c.name + ' ' + Math.round((c.amount / total) * 100) + '%'
-		),
-		datasets: [
-			{
-				backgroundColor: aggregatedCategory.map(c => c.category.color),
-				data: aggregatedCategory.map(c => Math.round((c.amount / total) * 100)),
-			},
-		],
-	};
-});
 
 const options = {
 	responsive: true,

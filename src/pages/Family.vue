@@ -43,6 +43,7 @@
 		:expenses="yearlyExpenses"
 		:visible="yearStatsPopupVisible"
 		@close="yearStatsPopupVisible = false"
+		@freeze="freezeYear"
 	/>
 	<SettingOutlined @click="sideMenuVisible = true" id="icon-open-settings" />
 	<Settings :visible="sideMenuVisible" @close="sideMenuVisible = false" />
@@ -50,7 +51,7 @@
 
 <script setup lang="ts">
 import { SettingOutlined, PlusOutlined, LineChartOutlined } from '@ant-design/icons-vue/lib/icons';
-import { ref } from 'vue';
+import { ComputedRef, computed, ref } from 'vue';
 import { DataBaseClient } from '../api/db';
 import Avatar from '../components/Avatar.vue';
 import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
@@ -58,6 +59,9 @@ import YearStatsPopup from '../components/Family/YearStatsPopup.vue';
 import Settings from '../components/Family/Settings.vue';
 import { MONTHS, YEARS, setIsLoading } from '../services/utils';
 import { useCategoryStore } from '../stores/category';
+import { useStatsStore } from '../stores/stats';
+import { IStats } from '../models/stats';
+import { Transaction } from '../models/transaction';
 
 const activeMonth = ref(MONTHS[new Date().getMonth()]);
 const activeYear = ref(new Date().getFullYear().toString());
@@ -80,10 +84,55 @@ const openPopupFor = (_type: 'expense' | 'earning') => {
 
 // *** stats popup
 const yearStatsPopupVisible = ref(false);
-const yearlyEarnings = ref([]);
-const yearlyExpenses = ref([]);
-const openPopupForYearlyStats = () => {
+const yearlyEarnings: ComputedRef<IStats[]> = computed(() => {
+	return useStatsStore().stats.filter(s => s.type === 'earning' && s.year === activeYear.value);
+});
+const yearlyExpenses: ComputedRef<IStats[]> = computed(() => {
+	return useStatsStore().stats.filter(s => s.type === 'expense' && s.year === activeYear.value);
+});
+const openPopupForYearlyStats = async () => {
 	yearStatsPopupVisible.value = true;
+	setIsLoading(true);
+	await DataBaseClient.Stats.getByYear(activeYear.value).then(results =>
+		useStatsStore().setStats(results)
+	);
+	setIsLoading(false);
+};
+
+// *** freeze year
+const freezeYear = async () => {
+	const year = activeYear.value;
+	setIsLoading(true);
+	const yearTransactions: Transaction[] = await DataBaseClient.Transaction.get({
+		year,
+	});
+
+	// compute yearly stats summing up all transactions for each month
+	const yearStats: IStats[] = [];
+
+	const months = new Set(yearTransactions.map(t => t.month));
+	months.forEach(month => {
+		const monthTransactions = yearTransactions.filter(t => t.month === month);
+		const monthEarnings = monthTransactions.filter(t => t.type === 'earning');
+		const monthExpenses = monthTransactions.filter(t => t.type === 'expense');
+		const monthEarningsSum = monthEarnings.reduce((acc, curr) => acc + curr.amount, 0);
+		const monthExpensesSum = monthExpenses.reduce((acc, curr) => acc + curr.amount, 0);
+		yearStats.push({
+			month,
+			year,
+			type: 'earning',
+			total: monthEarningsSum,
+		});
+		yearStats.push({
+			month,
+			year,
+			type: 'expense',
+			total: monthExpensesSum,
+		});
+	});
+	console.log(yearStats);
+	await DataBaseClient.Stats.bulkAdd(yearStats);
+	setIsLoading(false);
 };
 
 // *** side menu

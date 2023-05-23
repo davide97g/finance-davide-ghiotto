@@ -14,7 +14,6 @@ import {
 import { doc, getDoc, enableIndexedDbPersistence } from 'firebase/firestore';
 import { ITransaction, Transaction } from '../models/transaction';
 import { Category, CategoryType, ICategory } from '../models/category';
-import { formatDate } from '../services/utils';
 import { IStats, Stats } from '../models/stats';
 
 const db = getFirestore();
@@ -208,6 +207,14 @@ export const DataBaseClient = {
 				id: doc.id,
 				...doc.data(),
 			}))[0] as Stats;
+		},
+		async getByYear(year: string): Promise<Stats[]> {
+			const q = query(collection(db, this.collection), where('year', '==', year));
+			const querySnapshot = await getDocs(q);
+			return querySnapshot.docs.map(doc => ({
+				id: doc.id,
+				...doc.data(),
+			})) as Stats[];
 		},
 		async create(iStats: IStats): Promise<Stats> {
 			try {
