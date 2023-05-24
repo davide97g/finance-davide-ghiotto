@@ -37,15 +37,15 @@ import {
 	BarElement,
 } from 'chart.js';
 import { Bar } from 'vue-chartjs';
-import { Stats } from '../../models/stats';
+import { IStats } from '../../models/stats';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 const props = defineProps<{
 	visible: boolean;
 	year: string;
-	expenses: Stats[];
-	earnings: Stats[];
+	expenses: IStats[];
+	earnings: IStats[];
 }>();
 
 const emits = defineEmits(['close', 'freeze']);
