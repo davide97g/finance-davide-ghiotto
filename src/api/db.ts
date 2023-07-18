@@ -262,6 +262,17 @@ export const DataBaseClient = {
 				throw err;
 			}
 		},
+		async bulkDelete(statsIds: string[]): Promise<boolean> {
+			try {
+				const statsDeletion: Promise<boolean>[] = [];
+				statsIds.forEach(statsId => statsDeletion.push(this.delete(statsId)));
+				await Promise.all(statsDeletion);
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
 		async bulkAdd(stats: IStats[]): Promise<Stats[]> {
 			try {
 				const statsCreation: Promise<Stats>[] = [];

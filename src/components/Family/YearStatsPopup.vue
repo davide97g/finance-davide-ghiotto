@@ -63,6 +63,8 @@ const dataMonthly = computed(() => {
 			console.log(aDate, bDate);
 			return aDate.getTime() - bDate.getTime();
 		});
+
+	console.log(months);
 	const monthsEarnings = months.map(m => props.earnings.find(e => e.month === m)!);
 	const monthsExpenses = months.map(m => props.expenses.find(e => e.month === m)!);
 	const data = {

@@ -72,6 +72,14 @@ const getCategories = async () => {
 	setIsLoading(false);
 };
 
+const categories = computed(() =>
+	useCategoryStore().categories.filter(c => c.type === 'earning' || c.type === 'expense')
+);
+
+const includedCategoriesIds = computed(() =>
+	categories.value.filter(c => !c.excludeFromBudget).map(c => c.id)
+);
+
 // *** add new transaction popup
 
 const newTransactionPopupIsVisibile = ref(false);
@@ -100,39 +108,77 @@ const openPopupForYearlyStats = async () => {
 };
 
 // *** freeze year
+
+const getMonthSummaryByCategory = (transactions: Transaction[]) => {
+	const categories = [...new Set(transactions.map(t => t.category))];
+	const summary = categories.map(category => {
+		const categoryTransactions = transactions.filter(t => t.category === category);
+		const categoryTransactionsSum = categoryTransactions.reduce(
+			(acc, curr) => acc + curr.amount,
+			0
+		);
+		return {
+			categoryId: category,
+			total: categoryTransactionsSum,
+		};
+	});
+	return summary;
+};
+
 const freezeYear = async () => {
 	const year = activeYear.value;
 	setIsLoading(true);
-	const yearTransactions: Transaction[] = await DataBaseClient.Transaction.get({
-		year,
-	});
-
-	// compute yearly stats summing up all transactions for each month
-	const yearStats: IStats[] = [];
-
-	const months = new Set(yearTransactions.map(t => t.month));
-	months.forEach(month => {
-		const monthTransactions = yearTransactions.filter(t => t.month === month);
-		const monthEarnings = monthTransactions.filter(t => t.type === 'earning');
-		const monthExpenses = monthTransactions.filter(t => t.type === 'expense');
-		const monthEarningsSum = monthEarnings.reduce((acc, curr) => acc + curr.amount, 0);
-		const monthExpensesSum = monthExpenses.reduce((acc, curr) => acc + curr.amount, 0);
-		yearStats.push({
-			month,
+	try {
+		// get transaction for all the year
+		const yearTransactions: Transaction[] = await DataBaseClient.Transaction.get({
 			year,
-			type: 'earning',
-			total: monthEarningsSum,
 		});
-		yearStats.push({
-			month,
-			year,
-			type: 'expense',
-			total: monthExpensesSum,
-		});
-	});
-	console.log(yearStats);
-	await DataBaseClient.Stats.bulkAdd(yearStats);
-	setIsLoading(false);
+
+		const yearStats: IStats[] = [];
+
+		const months = [...new Set(yearTransactions.map(t => t.month))];
+		console.info(includedCategoriesIds.value);
+		months
+			.sort((a, b) => {
+				const aDate = new Date(`1 ${a}`);
+				const bDate = new Date(`1 ${b}`);
+				return aDate.getTime() - bDate.getTime();
+			})
+			.forEach(month => {
+				const monthTransactions = yearTransactions
+					.filter(t => t.month === month)
+					.filter(t => includedCategoriesIds.value.includes(t.category));
+				const monthEarnings = monthTransactions.filter(t => t.type === 'earning');
+				const monthExpenses = monthTransactions.filter(t => t.type === 'expense');
+				const monthEarningsSum = monthEarnings.reduce((acc, curr) => acc + curr.amount, 0);
+				const monthExpensesSum = monthExpenses.reduce((acc, curr) => acc + curr.amount, 0);
+				const monthEarningsSummary = getMonthSummaryByCategory(monthEarnings);
+				const monthExpensesSummary = getMonthSummaryByCategory(monthExpenses);
+				yearStats.push({
+					month,
+					year,
+					type: 'earning',
+					total: monthEarningsSum,
+					categorySummary: monthEarningsSummary,
+					lastUpdate: new Date().toDateString(),
+				});
+				yearStats.push({
+					month,
+					year,
+					type: 'expense',
+					categorySummary: monthExpensesSummary,
+					total: monthExpensesSum,
+					lastUpdate: new Date().toDateString(),
+				});
+			});
+		if (useStatsStore().stats.length)
+			await DataBaseClient.Stats.bulkDelete(useStatsStore().stats.map(s => s.id));
+		await DataBaseClient.Stats.bulkAdd(yearStats);
+	} catch (e) {
+		console.log(e);
+	} finally {
+		setIsLoading(false);
+	}
 };
 
 // *** side menu
