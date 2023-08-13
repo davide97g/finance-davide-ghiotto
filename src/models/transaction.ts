@@ -6,6 +6,7 @@ export interface ITransaction {
 	description: string;
 	category: string;
 	type: 'expense' | 'earning';
+	tag?: string;
 }
 
 export interface Transaction extends ITransaction {

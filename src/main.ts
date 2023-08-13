@@ -9,6 +9,5 @@ import { checkUserIsLoggedIn } from './api/auth';
 
 const pinia = createPinia();
 
-checkUserIsLoggedIn();
-
-createApp(App).use(router).use(pinia).use(Antd).mount('#app');
+const app = createApp(App).use(router).use(pinia).use(Antd);
+checkUserIsLoggedIn().finally(() => app.mount('#app'));

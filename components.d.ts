@@ -30,6 +30,7 @@ declare module '@vue/runtime-core' {
     ATabs: typeof import('ant-design-vue/es')['Tabs']
     ATag: typeof import('ant-design-vue/es')['Tag']
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
+    ATypographyParagraph: typeof import('ant-design-vue/es')['TypographyParagraph']
     Avatar: typeof import('./src/components/Avatar.vue')['default']
     FiltersPopup: typeof import('./src/components/Family/FiltersPopup.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']

@@ -15,6 +15,7 @@ import { doc, getDoc, enableIndexedDbPersistence } from 'firebase/firestore';
 import { ITransaction, Transaction } from '../models/transaction';
 import { Category, CategoryType, ICategory } from '../models/category';
 import { IStats, Stats } from '../models/stats';
+import { ITag, Tag } from '../models/tag';
 
 const db = getFirestore();
 
@@ -187,6 +188,55 @@ export const DataBaseClient = {
 		async delete(categoryId: string): Promise<boolean> {
 			try {
 				await deleteDoc(doc(collection(db, this.collection), categoryId));
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+	},
+	Tag: {
+		collection: 'tags',
+		async get(): Promise<Tag[]> {
+			const querySnapshot = await getDocs(collection(db, this.collection));
+			return querySnapshot.docs.map(doc => ({
+				id: doc.id,
+				...doc.data(),
+			})) as Category[];
+		},
+		async create(iTag: ITag): Promise<Tag> {
+			try {
+				const res = await addDoc(
+					collection(db, this.collection),
+					JSON.parse(JSON.stringify(iTag))
+				);
+				return {
+					id: res.id,
+					...iTag,
+				};
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async update(tag: Tag): Promise<boolean> {
+			try {
+				await setDoc(
+					doc(collection(db, this.collection), tag.id),
+					JSON.parse(JSON.stringify(tag)),
+					{
+						merge: true,
+					}
+				);
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async delete(tagId: string): Promise<boolean> {
+			try {
+				await deleteDoc(doc(collection(db, this.collection), tagId));
 				return true;
 			} catch (err) {
 				console.error(err);

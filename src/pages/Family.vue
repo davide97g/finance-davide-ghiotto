@@ -62,6 +62,7 @@ import { useCategoryStore } from '../stores/category';
 import { useStatsStore } from '../stores/stats';
 import { IStats } from '../models/stats';
 import { Transaction } from '../models/transaction';
+import { useTagStore } from '../stores/tag';
 
 const activeMonth = ref(MONTHS[new Date().getMonth()]);
 const activeYear = ref(new Date().getFullYear().toString());
@@ -69,6 +70,12 @@ const activeYear = ref(new Date().getFullYear().toString());
 const getCategories = async () => {
 	setIsLoading(true);
 	await DataBaseClient.Category.get().then(results => useCategoryStore().setCategories(results));
+	setIsLoading(false);
+};
+
+const getTags = async () => {
+	setIsLoading(true);
+	await DataBaseClient.Tag.get().then(results => useTagStore().setTags(results));
 	setIsLoading(false);
 };
 
@@ -186,6 +193,7 @@ const freezeYear = async () => {
 const sideMenuVisible = ref<boolean>(false);
 
 getCategories();
+getTags();
 </script>
 
 <style scoped lang="scss">

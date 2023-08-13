@@ -7,41 +7,54 @@
 		:disabled="true"
 	>
 		<div class="input-form">
-			<a-input
-				class="full-width"
-				type="date"
-				v-model:value="transaction.date"
-				placeholder="Choose a date"
-				style="margin-top: 10px"
-			></a-input>
-			<a-input
-				class="full-width"
-				type="text"
-				v-model:value="transaction.description"
-				placeholder="Enter a description"
-				style="margin-top: 10px"
-			></a-input>
-			<a-input-number
-				class="full-width"
-				v-model:value="transaction.amount"
-				placeholder="Enter an amount"
-				:min="0"
-				:precision="2"
-				style="margin-top: 10px"
-			></a-input-number>
-			<a-select
-				class="full-width"
-				ref="select"
-				v-model:value="transaction.category"
-				style="margin-top: 10px"
-			>
-				<a-select-option
-					v-for="category in categories"
-					:key="category.id"
-					:value="category.id"
-					>{{ category.name }}</a-select-option
-				>
-			</a-select>
+			<a-row>
+				<p>Date</p>
+				<a-input
+					class="full-width"
+					type="date"
+					v-model:value="transaction.date"
+					placeholder="Choose a date"
+				></a-input>
+			</a-row>
+			<a-row>
+				<p>Description</p>
+				<a-input
+					class="full-width"
+					type="text"
+					v-model:value="transaction.description"
+					placeholder="Enter a description"
+				></a-input>
+			</a-row>
+			<a-row>
+				<p>Amount</p>
+				<a-input-number
+					class="full-width"
+					v-model:value="transaction.amount"
+					placeholder="Enter an amount"
+					:min="0"
+					:precision="2"
+					addon-after="€"
+				/>
+			</a-row>
+			<a-row class="full-width">
+				<p>Category</p>
+				<a-select class="full-width" ref="select" v-model:value="transaction.category">
+					<a-select-option
+						v-for="category in categories"
+						:key="category.id"
+						:value="category.id"
+						>{{ category.name }}</a-select-option
+					>
+				</a-select>
+			</a-row>
+			<a-row class="full-width">
+				<p>Tag</p>
+				<a-select class="full-width" ref="select" v-model:value="transaction.tag">
+					<a-select-option v-for="tag in tags" :key="tag.id" :value="tag.id">{{
+						tag.name
+					}}</a-select-option>
+				</a-select>
+			</a-row>
 		</div>
 		<template #footer>
 			<a-button key="back" @click="emits('close')">Cancel</a-button>
@@ -75,6 +88,7 @@ import {
 } from '../../services/utils';
 import { DataBaseClient } from '../../api/db';
 import { useCategoryStore } from '../../stores/category';
+import { useTagStore } from '../../stores/tag';
 import { useTransactionStore } from '../../stores/transaction';
 
 const props = defineProps<{
@@ -106,6 +120,7 @@ watch(
 const categories = computed(() =>
 	useCategoryStore().categories.filter(c => c.type === transaction.value.type)
 );
+const tags = computed(() => useTagStore().tags);
 
 const handleOk = () => {
 	setIsLoading(true);
@@ -130,5 +145,6 @@ const handleOk = () => {
 	flex-direction: column;
 	justify-content: flex-start;
 	align-items: flex-start;
+	gap: 0.75rem;
 }
 </style>
