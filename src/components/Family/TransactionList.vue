@@ -39,7 +39,7 @@
 								class="excluded-badge"
 								v-if="getCategory(item.category)?.excludeFromBudget"
 							>
-								<a-tag :color="'gray'">Excluded</a-tag>
+								<a-tag :color="'gray'">E</a-tag>
 							</div>
 						</a-col>
 						<a-popconfirm
@@ -185,6 +185,9 @@ const formatDate = (date: string) => {
 	padding-bottom: 20px;
 	background-color: #e2f0e2;
 	box-shadow: inset 0 0 12px #ccc;
+	.ant-list-item {
+		border-width: 3px;
+	}
 }
 .actions {
 	margin-top: 10px;

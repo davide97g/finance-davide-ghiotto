@@ -104,6 +104,7 @@ const newTransaction = () => ({
 	type: props.type,
 	month: MONTHS[new Date().getMonth()],
 	year: new Date().getFullYear().toString(),
+	tag: 'XB0kK9DnZIIEsPKsaWEB',
 });
 
 const transaction = ref<Partial<ITransaction>>(newTransaction());
