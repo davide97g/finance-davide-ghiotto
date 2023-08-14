@@ -20,11 +20,27 @@ export const getPhotoURL = (user: User | null) => {
 export const isLoggedIn = computed(() => useUserStore().isLoggedIn);
 export const isAdmin = computed(() => useUserStore().isAdmin);
 
-export const formatDate = (date: string) => {
-	var d = new Date(date),
-		month = '' + (d.getMonth() + 1),
-		day = '' + d.getDate(),
-		year = d.getFullYear();
+const nthNumber = (number: number) => {
+	if (number > 3 && number < 21) return 'th';
+	switch (number % 10) {
+		case 1:
+			return 'st';
+		case 2:
+			return 'nd';
+		case 3:
+			return 'rd';
+		default:
+			return 'th';
+	}
+};
+
+export const formatDate = (date: string, onlyDay?: boolean) => {
+	const d = new Date(date);
+	let month = '' + (d.getMonth() + 1);
+	let day = '' + d.getDate();
+	let year = d.getFullYear();
+
+	if (onlyDay) return day + nthNumber(d.getDate());
 
 	if (month.length < 2) month = '0' + month;
 	if (day.length < 2) day = '0' + day;

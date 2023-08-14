@@ -14,7 +14,7 @@
 		/>
 		<p>Expenses</p>
 		<div class="flex-gap" style="max-height: 300px; overflow: auto">
-			<TagCategory
+			<CategoryBadge
 				:removable="true"
 				:category="category"
 				@click="onCategorySelected(category)"
@@ -24,7 +24,7 @@
 		<a-divider />
 		<p>Earnings</p>
 		<div class="flex-gap" style="max-height: 300px; overflow: auto">
-			<TagCategory
+			<CategoryBadge
 				:removable="true"
 				:category="category"
 				@click="onCategorySelected(category)"
@@ -40,7 +40,7 @@ import { watch, ref, computed } from 'vue';
 import { Category } from '../../models/category';
 import { useCategoryStore } from '../../stores/category';
 import NewCategoryPopup from './NewCategoryPopup.vue';
-import TagCategory from './TagCategory.vue';
+import CategoryBadge from '../Badges/Category.vue';
 import UpdateCategoryPopup from './UpdateCategoryPopup.vue';
 
 const props = defineProps<{

@@ -202,7 +202,7 @@ export const DataBaseClient = {
 			return querySnapshot.docs.map(doc => ({
 				id: doc.id,
 				...doc.data(),
-			})) as Category[];
+			})) as Tag[];
 		},
 		async create(iTag: ITag): Promise<Tag> {
 			try {

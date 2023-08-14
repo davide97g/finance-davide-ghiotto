@@ -12,53 +12,7 @@
 	>
 		<template #renderItem="{ item }">
 			<a-list-item class="left" @click="openTransactionDetails(item)">
-				<div style="position: relative; width: 100%; padding-right: 5px">
-					<a-row style="width: 100%" :class="{ future: isFuture(item.date) }">
-						<a-col :span="16" class="ellipsis">
-							{{ item.description }}
-						</a-col>
-						<a-col :span="8" class="right">
-							{{ formatDate(item.date) }}
-						</a-col>
-					</a-row>
-					<a-row
-						style="width: 100%"
-						:class="{
-							future: isFuture(item.date),
-						}"
-					>
-						<a-col :span="6" class="ellipsis">€ {{ item.amount }} </a-col>
-						<a-col :span="12" class="left">
-							<TagCategory
-								:category="getCategory(item.category)!"
-								v-if="getCategory(item.category)"
-							/>
-						</a-col>
-						<a-col :span="4">
-							<div
-								class="excluded-badge"
-								v-if="getCategory(item.category)?.excludeFromBudget"
-							>
-								<a-tag :color="'gray'">E</a-tag>
-							</div>
-						</a-col>
-						<a-popconfirm
-							@click.stop=""
-							title="Are you sure delete this transaction?"
-							ok-text="Yes"
-							placement="left"
-							cancel-text="No"
-							@confirm="deleteTransaction(item)"
-						>
-							<a-col :span="2" class="right">
-								<DeleteOutlined />
-							</a-col>
-						</a-popconfirm>
-					</a-row>
-					<div class="future-badge" v-if="isFuture(item.date)">
-						<a-tag :color="'blue'">Future</a-tag>
-					</div>
-				</div>
+				<TransactionItem :item="item" />
 			</a-list-item>
 		</template>
 	</a-list>
@@ -94,21 +48,18 @@
 
 <script setup lang="ts">
 import {
-	DeleteOutlined,
 	ArrowDownOutlined,
 	ArrowUpOutlined,
 	FilterOutlined,
 } from '@ant-design/icons-vue/lib/icons';
 import { computed, ref } from 'vue';
-import { DataBaseClient } from '../../api/db';
 import { Transaction } from '../../models/transaction';
-import { openNotificationWithIcon } from '../../services/utils';
-import { useCategoryStore } from '../../stores/category';
 import { useTransactionStore } from '../../stores/transaction';
-import TagCategory from './TagCategory.vue';
+
 import FiltersPopup from './FiltersPopup.vue';
 import { CategoryType } from '../../models/category';
 import UpdateTransactionPopup from './UpdateTransactionPopup.vue';
+import TransactionItem from '../TransactionItem.vue';
 
 export interface Filters {
 	categoryIds?: string[];
@@ -128,31 +79,6 @@ const transactions = computed(() => {
 	} else return props.transactions;
 });
 
-const deleteTransaction = (transaction: Transaction) => {
-	DataBaseClient.Transaction.delete(transaction.id)
-		.then(() => {
-			openNotificationWithIcon(
-				'success',
-				'Success',
-				'Deleted transaction with id: ' + transaction.id
-			);
-			useTransactionStore().removeTransaction(transaction);
-		})
-		.catch(err => {
-			console.error(err);
-			openNotificationWithIcon(
-				'error',
-				'Error',
-				'Failed deleting transaction with id:' + transaction.id
-			);
-		});
-};
-
-const categories = computed(() =>
-	useCategoryStore().categories.filter(c => c.type === 'earning' || c.type === 'expense')
-);
-const getCategory = (categoryId: string) => categories.value.find(c => c.id === categoryId);
-
 const filtersPopupVisible = ref(false);
 
 const filterTransactions = (newFilters: Filters) => {
@@ -166,13 +92,6 @@ const selectedTransaction = ref<Transaction>();
 const openTransactionDetails = (transaction: Transaction) => {
 	selectedTransaction.value = transaction;
 	updateTransactionPopupVisible.value = true;
-};
-
-const isFuture = (date: string) => new Date().getTime() < new Date(date).getTime();
-
-const formatDate = (date: string) => {
-	const d = new Date(date);
-	return d.toLocaleDateString('it-IT');
 };
 </script>
 
@@ -193,15 +112,5 @@ const formatDate = (date: string) => {
 	margin-top: 10px;
 	justify-content: space-around;
 	height: 30px;
-}
-
-.future {
-	opacity: 0.5;
-}
-.future-badge {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
 }
 </style>
