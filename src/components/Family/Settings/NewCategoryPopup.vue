@@ -1,7 +1,7 @@
 <template>
 	<a-modal
 		v-model:visible="visible"
-		title="Modify Category"
+		title="New Category"
 		@cancel="emits('close')"
 		:loading="loading"
 		:disabled="true"
@@ -36,34 +36,14 @@
 						placeholder="Background color"
 					></a-input>
 				</a-col>
+				<a-col :span="14">
+					<p>Type</p>
+					<a-radio-group v-model:value="category.type">
+						<a-radio-button value="expense">Expense</a-radio-button>
+						<a-radio-button value="earning">Earning</a-radio-button>
+					</a-radio-group>
+				</a-col>
 			</a-row>
-		</div>
-		<a-divider></a-divider>
-		<a-row v-if="props.category">
-			<a-col :span="12">
-				<div class="category-preview flex-center">
-					<p>Previous</p>
-					<a-tooltip>
-						<template #title v-if="props.category.description">{{
-							props.category.description
-						}}</template>
-						<a-tag :color="props.category.color" size="large">{{
-							props.category.name
-						}}</a-tag>
-					</a-tooltip>
-				</div>
-			</a-col>
-			<a-col :span="12">
-				<div class="category-preview flex-center" v-if="category.name">
-					<p>Preview</p>
-					<a-tooltip>
-						<template #title v-if="category.description">{{
-							category.description
-						}}</template>
-						<a-tag :color="category.color" size="large">{{ category.name }}</a-tag>
-					</a-tooltip>
-				</div>
-			</a-col>
 			<a-row class="full-width" style="margin-top: 20px">
 				<a-col :span="24">
 					<a-checkbox v-model:checked="category.excludeFromBudget"
@@ -71,7 +51,15 @@
 					>
 				</a-col>
 			</a-row>
-		</a-row>
+		</div>
+		<a-divider></a-divider>
+		<div class="category-preview flex-center" v-if="category.name">
+			<p>Preview</p>
+			<a-tooltip>
+				<template #title v-if="category.description">{{ category.description }}</template>
+				<a-tag :color="category.color" size="large">{{ category.name }}</a-tag>
+			</a-tooltip>
+		</div>
 		<template #footer>
 			<a-button key="back" @click="emits('close')">Cancel</a-button>
 			<a-button
@@ -80,7 +68,7 @@
 				:loading="loading"
 				@click="handleOk"
 				:disabled="!category.name"
-				>Update</a-button
+				>Create</a-button
 			>
 		</template>
 	</a-modal>
@@ -88,28 +76,32 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { Category } from '../../models/category';
-import { loading, openNotificationWithIcon, setIsLoading } from '../../services/utils';
-import { DataBaseClient } from '../../api/db';
-import { useCategoryStore } from '../../stores/category';
+import { ICategory } from '../../../models/category';
+import { loading, openNotificationWithIcon, setIsLoading } from '../../../services/utils';
+import { DataBaseClient } from '../../../api/db';
+import { useCategoryStore } from '../../../stores/category';
 
 const props = defineProps<{
 	visible: boolean;
-	category?: Category;
 }>();
+
 const emits = defineEmits(['close', 'ok']);
 
 const visible = ref<boolean>(false);
-const category = ref<Category>(JSON.parse(JSON.stringify(props.category || {})));
+const newCategory = (): ICategory => ({
+	name: '',
+	type: 'expense',
+	description: undefined,
+	color: '#ababab',
+});
+const category = ref<ICategory>(newCategory());
+const resetCategory = () => (category.value = newCategory());
 
 watch(
 	() => props.visible,
 	() => (visible.value = props.visible)
 );
-watch(
-	() => props.category,
-	() => (category.value = JSON.parse(JSON.stringify(props.category || {})))
-);
+
 watch(
 	() => visible.value,
 	() => {
@@ -119,14 +111,15 @@ watch(
 
 const handleOk = () => {
 	setIsLoading(true);
-	DataBaseClient.Category.update(category.value)
-		.then(() => {
+	DataBaseClient.Category.create(category.value)
+		.then(category => {
 			openNotificationWithIcon(
 				'success',
 				'Success',
-				'Category ' + category.value.name + ' updated'
+				'Category ' + category.name + ' created'
 			);
-			useCategoryStore().updateCategory(category.value);
+			useCategoryStore().addCategory(category);
+			resetCategory();
 			emits('close');
 		})
 		.catch(err => console.error(err))

@@ -9,6 +9,7 @@
 			justify-content: center;
 		"
 	>
+		<Version />
 		<h1>Personal Finance</h1>
 		<p>Welcome to the Finance part of my website</p>
 		<p>Here I managed my personal finances.</p>
@@ -29,14 +30,13 @@
 		<div v-else>
 			<a-spin size="large" />
 		</div>
-		<Footer />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { HomeOutlined } from '@ant-design/icons-vue';
 import Avatar from '../components/Avatar.vue';
-import Footer from '../components/Footer.vue';
+import Version from '../components/Version.vue';
 import { FamilyPageName, LoginPageName } from '../router';
 import { isAdmin, isLoggedIn } from '../services/utils';
 </script>

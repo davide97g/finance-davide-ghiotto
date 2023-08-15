@@ -56,7 +56,7 @@ import { DataBaseClient } from '../api/db';
 import Avatar from '../components/Avatar.vue';
 import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
 import YearStatsPopup from '../components/Family/YearStatsPopup.vue';
-import Settings from '../components/Family/Settings.vue';
+import Settings from '../components/Family/Settings/Settings.vue';
 import { MONTHS, YEARS, setIsLoading } from '../services/utils';
 import { useCategoryStore } from '../stores/category';
 import { useStatsStore } from '../stores/stats';

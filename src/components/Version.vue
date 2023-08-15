@@ -8,11 +8,6 @@ import packageJson from '../../package.json';
 
 <style scoped>
 #version {
-	margin: 0;
-	position: absolute;
-	bottom: 5px;
-	right: 5px;
-	text-align: right;
 	font-size: 10px;
 }
 </style>

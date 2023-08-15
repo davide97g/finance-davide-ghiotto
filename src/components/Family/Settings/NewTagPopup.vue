@@ -1,7 +1,7 @@
 <template>
 	<a-modal
 		v-model:visible="visible"
-		title="New Category"
+		title="New Tag"
 		@cancel="emits('close')"
 		:loading="loading"
 		:disabled="true"
@@ -12,8 +12,9 @@
 				<a-input
 					class="full-width"
 					type="text"
-					v-model:value="category.name"
-					placeholder="Category name"
+					v-model:value="tag.name"
+					placeholder="Ex. ABC23"
+					:maxlength="5"
 				/>
 			</a-row>
 			<a-row class="full-width" style="margin-top: 10px">
@@ -22,7 +23,7 @@
 					name="description"
 					class="full-width"
 					type="text"
-					v-model:value="category.description"
+					v-model:value="tag.description"
 					placeholder="Optional description"
 				/>
 			</a-row>
@@ -32,32 +33,18 @@
 					<a-input
 						name="color"
 						type="color"
-						v-model:value="category.color"
+						v-model:value="tag.color"
 						placeholder="Background color"
 					></a-input>
-				</a-col>
-				<a-col :span="14">
-					<p>Type</p>
-					<a-radio-group v-model:value="category.type">
-						<a-radio-button value="expense">Expense</a-radio-button>
-						<a-radio-button value="earning">Earning</a-radio-button>
-					</a-radio-group>
-				</a-col>
-			</a-row>
-			<a-row class="full-width" style="margin-top: 20px">
-				<a-col :span="24">
-					<a-checkbox v-model:checked="category.excludeFromBudget"
-						>Exclude From Budget</a-checkbox
-					>
 				</a-col>
 			</a-row>
 		</div>
 		<a-divider></a-divider>
-		<div class="category-preview flex-center" v-if="category.name">
+		<div class="tag-preview flex-center" v-if="tag.name">
 			<p>Preview</p>
 			<a-tooltip>
-				<template #title v-if="category.description">{{ category.description }}</template>
-				<a-tag :color="category.color" size="large">{{ category.name }}</a-tag>
+				<template #title v-if="tag.description">{{ tag.description }}</template>
+				<a-tag :color="tag.color" size="large">{{ tag.name }}</a-tag>
 			</a-tooltip>
 		</div>
 		<template #footer>
@@ -67,7 +54,7 @@
 				type="primary"
 				:loading="loading"
 				@click="handleOk"
-				:disabled="!category.name"
+				:disabled="!tag.name"
 				>Create</a-button
 			>
 		</template>
@@ -76,10 +63,10 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { ICategory } from '../../models/category';
-import { loading, openNotificationWithIcon, setIsLoading } from '../../services/utils';
-import { DataBaseClient } from '../../api/db';
-import { useCategoryStore } from '../../stores/category';
+import { ITag } from '../../../models/tag';
+import { loading, openNotificationWithIcon, setIsLoading } from '../../../services/utils';
+import { DataBaseClient } from '../../../api/db';
+import { useTagStore } from '../../../stores/tag';
 
 const props = defineProps<{
 	visible: boolean;
@@ -88,14 +75,13 @@ const props = defineProps<{
 const emits = defineEmits(['close', 'ok']);
 
 const visible = ref<boolean>(false);
-const newCategory = (): ICategory => ({
+const newTag = (): ITag => ({
 	name: '',
-	type: 'expense',
 	description: undefined,
 	color: '#ababab',
 });
-const category = ref<ICategory>(newCategory());
-const resetCategory = () => (category.value = newCategory());
+const tag = ref<ITag>(newTag());
+const resetTag = () => (tag.value = newTag());
 
 watch(
 	() => props.visible,
@@ -111,15 +97,11 @@ watch(
 
 const handleOk = () => {
 	setIsLoading(true);
-	DataBaseClient.Category.create(category.value)
-		.then(category => {
-			openNotificationWithIcon(
-				'success',
-				'Success',
-				'Category ' + category.name + ' created'
-			);
-			useCategoryStore().addCategory(category);
-			resetCategory();
+	DataBaseClient.Tag.create(tag.value)
+		.then(tag => {
+			openNotificationWithIcon('success', 'Success', 'Tag ' + tag.name + ' created');
+			useTagStore().addTag(tag);
+			resetTag();
 			emits('close');
 		})
 		.catch(err => console.error(err))
@@ -134,7 +116,7 @@ const handleOk = () => {
 	justify-content: flex-start;
 	align-items: flex-start;
 }
-.category-preview {
+.tag-preview {
 	justify-content: space-around;
 	p {
 		margin-bottom: 0;

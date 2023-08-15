@@ -2,7 +2,7 @@
 	<a-tooltip>
 		<template #title v-if="tag.description">{{ tag.description }}</template>
 		<a-popconfirm
-			:title="'Delete ' + tag.shortName + '?'"
+			:title="'Delete ' + tag.name + '?'"
 			:visible="removeConfirmVisibile"
 			:loading="loading"
 			ok-text="Yes"
@@ -14,7 +14,7 @@
 				:color="tag.color"
 				:closable="removable"
 				@close.prevent="removeConfirmVisibile = true"
-				>{{ tag.shortName.toUpperCase() }}</a-tag
+				>{{ tag.name.toUpperCase() }}</a-tag
 			>
 		</a-popconfirm>
 	</a-tooltip>
