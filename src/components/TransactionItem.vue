@@ -16,7 +16,7 @@
 				</a-typography-text>
 			</a-col>
 			<a-col :span="8" class="right" style="display: flex; justify-content: flex-end">
-				<div v-if="true || getCategory(item.category)?.excludeFromBudget">
+				<div v-if="getCategory(item.category)?.excludeFromBudget">
 					<a-tag :color="'gray'">E</a-tag>
 				</div>
 				<a-typography-text keyboard>{{ item.amount }} €</a-typography-text>

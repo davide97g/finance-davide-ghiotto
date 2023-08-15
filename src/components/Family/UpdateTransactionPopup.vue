@@ -14,7 +14,7 @@
 					type="date"
 					v-model:value="transaction.date"
 					placeholder="Choose a date"
-				></a-input>
+				/>
 			</a-row>
 			<a-row>
 				<p>Description</p>
@@ -23,7 +23,7 @@
 					type="text"
 					v-model:value="transaction.description"
 					placeholder="Enter a description"
-				></a-input>
+				/>
 			</a-row>
 			<a-row>
 				<p>Amount</p>
