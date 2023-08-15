@@ -35,7 +35,6 @@ declare module '@vue/runtime-core' {
     CategoriesSettings: typeof import('./src/components/Family/Settings/CategoriesSettings.vue')['default']
     Category: typeof import('./src/components/Badges/Category.vue')['default']
     FiltersPopup: typeof import('./src/components/Family/FiltersPopup.vue')['default']
-    Footer: typeof import('./src/components/Footer.vue')['default']
     MonthBalance: typeof import('./src/components/Family/MonthBalance.vue')['default']
     MonthStatsPopup: typeof import('./src/components/Family/MonthStatsPopup.vue')['default']
     NewCategoryPopup: typeof import('./src/components/Family/Settings/NewCategoryPopup.vue')['default']

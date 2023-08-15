@@ -1,7 +1,7 @@
 {
 	"name": "finance-davide-ghiotto",
 	"private": false,
-	"version": "1.3.1",
+	"version": "1.3.2",
 	"type": "module",
 	"website": "https://finance.davideghiotto.it",
 	"scripts": {

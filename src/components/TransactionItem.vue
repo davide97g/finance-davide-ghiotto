@@ -16,7 +16,8 @@
 				style="text-transform: capitalize; display: flex; align-items: center; gap: 0.25rem"
 			>
 				<img
-					src="https://lh3.googleusercontent.com/a/AEdFTp5iR_5o8Urff7Ap2QmaQYZlDmFtvM63pTjaTRowz0o=s96-c"
+					v-if="useUserStore().user?.photoURL"
+					:src="useUserStore().user?.photoURL!"
 					height="20"
 					width="20"
 					alt="author_img_pic"
@@ -79,6 +80,7 @@ import { useTagStore } from '../stores/tag';
 import { DeleteOutlined, CalendarOutlined } from '@ant-design/icons-vue/lib/icons';
 import Category from './Badges/Category.vue';
 import Tag from './Badges/Tag.vue';
+import { useUserStore } from '../stores/user';
 
 const props = defineProps<{
 	item: Transaction;
