@@ -10,13 +10,24 @@
 		"
 	>
 		<a-row style="width: 100%">
-			<a-col :span="16" class="ellipsis" style="text-transform: capitalize">
+			<a-col
+				:span="16"
+				class="ellipsis"
+				style="text-transform: capitalize; display: flex; align-items: center; gap: 0.25rem"
+			>
+				<img
+					src="https://lh3.googleusercontent.com/a/AEdFTp5iR_5o8Urff7Ap2QmaQYZlDmFtvM63pTjaTRowz0o=s96-c"
+					height="20"
+					width="20"
+					alt="author_img_pic"
+					style="border-radius: 50%"
+				/>
 				<a-typography-text strong>
 					{{ item.description }}
 				</a-typography-text>
 			</a-col>
 			<a-col :span="8" class="right" style="display: flex; justify-content: flex-end">
-				<div v-if="getCategory(item.category)?.excludeFromBudget">
+				<div v-if="true || getCategory(item.category)?.excludeFromBudget">
 					<a-tag :color="'gray'">E</a-tag>
 				</div>
 				<a-typography-text keyboard>{{ item.amount }} €</a-typography-text>
