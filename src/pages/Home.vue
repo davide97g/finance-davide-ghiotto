@@ -23,7 +23,10 @@
 			</p>
 			<div class="flex-center column" v-else>
 				<router-link :to="{ name: FamilyPageName }" class="m1">
-					<a-button type="primary"> <HomeOutlined /> Family Balance</a-button>
+					<a-button type="primary"> <EuroCircleOutlined /> Family Balance</a-button>
+				</router-link>
+				<router-link :to="{ name: GroceriesPageName }" class="m1">
+					<a-button type="primary"> <OrderedListOutlined /> Groceries</a-button>
 				</router-link>
 			</div>
 		</div>
@@ -34,9 +37,9 @@
 </template>
 
 <script setup lang="ts">
-import { HomeOutlined } from '@ant-design/icons-vue';
+import { OrderedListOutlined, EuroCircleOutlined } from '@ant-design/icons-vue';
 import Avatar from '../components/Avatar.vue';
 import Version from '../components/Version.vue';
-import { FamilyPageName, LoginPageName } from '../router';
+import { FamilyPageName, GroceriesPageName, LoginPageName } from '../router';
 import { isAdmin, isLoggedIn } from '../services/utils';
 </script>
