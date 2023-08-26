@@ -17,6 +17,7 @@ import { Category, CategoryType, ICategory } from '../models/category';
 import { IStats, Stats } from '../models/stats';
 import { ITag, Tag } from '../models/tag';
 import { setIsLoading } from '../services/utils';
+import { Grocery, IGrocery } from '../models/grocery';
 
 const db = getFirestore();
 
@@ -333,6 +334,69 @@ export const DataBaseClient = {
 				const result = await Promise.all(statsCreation);
 				return result;
 			} catch (err) {
+				throw err;
+			}
+		},
+	},
+	Grocery: {
+		collection: 'groceries',
+		async get(): Promise<Grocery[]> {
+			setIsLoading(true);
+			const querySnapshot = await getDocs(collection(db, this.collection));
+			setIsLoading(false);
+			return querySnapshot.docs.map(doc => ({
+				id: doc.id,
+				...doc.data(),
+			})) as Grocery[];
+		},
+		async getRT(callback: (groceries: Grocery[]) => void): Promise<Unsubscribe> {
+			return onSnapshot(collection(db, this.collection), querySnapshot => {
+				const groceries = querySnapshot.docs.map(doc => ({
+					id: doc.id,
+					...doc.data(),
+				})) as Grocery[];
+				callback(groceries);
+			});
+		},
+		async create(grocery: IGrocery): Promise<Grocery> {
+			try {
+				const res = await addDoc(
+					collection(db, this.collection),
+					JSON.parse(JSON.stringify(grocery))
+				);
+				return {
+					id: res.id,
+					...grocery,
+				};
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async update(grocery: Grocery): Promise<boolean> {
+			try {
+				setIsLoading(true);
+				await setDoc(
+					doc(collection(db, this.collection), grocery.id),
+					JSON.parse(JSON.stringify(grocery)),
+					{
+						merge: true,
+					}
+				);
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			} finally {
+				setIsLoading(false);
+			}
+		},
+		async delete(groceryId: string): Promise<boolean> {
+			try {
+				await deleteDoc(doc(collection(db, this.collection), groceryId));
+				return true;
+			} catch (err) {
+				console.error(err);
 				throw err;
 			}
 		},
