@@ -16,13 +16,24 @@ export const useTransactionStore = defineStore('transaction', {
 					!this.earnings.find(t => t.id === e.id) &&
 					!this.expenses.find(t => t.id === e.id)
 			);
-			newTransactions.forEach(t => this.addTransaction(t));
-
+			this.bulkAddTransactions(newTransactions);
 			const presentTransactions = transactions.filter(
 				e =>
 					this.earnings.find(t => t.id === e.id) || this.expenses.find(t => t.id === e.id)
 			);
-			presentTransactions.forEach(t => this.updateTransaction(t));
+			this.bulkUpdateTransactions(presentTransactions);
+		},
+		bulkAddTransactions(transactions: Transaction[]) {
+			transactions.forEach(transaction => {
+				if (transaction.type === 'earning') {
+					if (this.earnings.findIndex(t => t.id === transaction.id) !== -1) return;
+					this.earnings.push(transaction);
+				} else {
+					if (this.expenses.findIndex(t => t.id === transaction.id) !== -1) return;
+					this.expenses.push(transaction);
+				}
+			});
+			this.sortTransactions();
 		},
 		addTransaction(transaction: Transaction) {
 			if (transaction.type === 'earning') {
@@ -51,6 +62,14 @@ export const useTransactionStore = defineStore('transaction', {
 			const transactions = transaction.type === 'expense' ? this.expenses : this.earnings;
 			const i = transactions.findIndex(t => t.id === transaction.id);
 			transactions[i] = transaction;
+		},
+		bulkUpdateTransactions(transactions: Transaction[]) {
+			transactions.forEach(transaction => {
+				const transactions = transaction.type === 'expense' ? this.expenses : this.earnings;
+				const i = transactions.findIndex(t => t.id === transaction.id);
+				transactions[i] = transaction;
+			});
+			this.sortTransactions();
 		},
 		sortTransactions(ascending?: boolean) {
 			this.sorting = ascending ? 'ascending' : 'descending';

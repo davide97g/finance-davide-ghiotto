@@ -82,11 +82,9 @@ import Category from './Badges/Category.vue';
 import Tag from './Badges/Tag.vue';
 import { useUserStore } from '../stores/user';
 
-const props = defineProps<{
+defineProps<{
 	item: Transaction;
 }>();
-
-const item = props.item;
 
 const deleteTransaction = (transaction: Transaction) => {
 	DataBaseClient.Transaction.delete(transaction.id)

@@ -54,7 +54,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { DataBaseClient } from '../../api/db';
-import { setIsLoading } from '../../services/utils';
 import { useTransactionStore } from '../../stores/transaction';
 import { useCategoryStore } from '../../stores/category';
 import { LineChartOutlined } from '@ant-design/icons-vue';
@@ -68,17 +67,16 @@ const props = defineProps<{
 
 const statsPopupVisible = ref(false);
 
-const getTransactions = async () => {
-	setIsLoading(true);
+const { setTransactions } = useTransactionStore();
 
-	await DataBaseClient.Transaction.getRT(
-		(transactions: Transaction[]) => useTransactionStore().setTransactions(transactions),
+const getTransactions = async () => {
+	DataBaseClient.Transaction.getRT(
+		(transactions: Transaction[]) => setTransactions(transactions),
 		{
 			month: props.month,
 			year: props.year,
 		}
 	);
-	setIsLoading(false);
 };
 
 const categories = computed(() =>
@@ -102,6 +100,7 @@ const totalSumEarnings = computed(() => {
 		.forEach(t => (tot += t.amount));
 	return tot;
 });
+
 // *** transaction list
 const activeKey = ref('1');
 

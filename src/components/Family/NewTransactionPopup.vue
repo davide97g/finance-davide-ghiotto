@@ -151,7 +151,6 @@ const handleOk = () => {
 				'Success',
 				'Transaction ' + transaction.description + ' saved'
 			);
-			// useTransactionStore().addTransaction(transaction);
 			resetTransaction();
 			emits('close');
 		})

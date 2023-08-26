@@ -16,6 +16,7 @@ import { ITransaction, Transaction } from '../models/transaction';
 import { Category, CategoryType, ICategory } from '../models/category';
 import { IStats, Stats } from '../models/stats';
 import { ITag, Tag } from '../models/tag';
+import { setIsLoading } from '../services/utils';
 
 const db = getFirestore();
 
@@ -59,12 +60,14 @@ export const DataBaseClient = {
 			month?: string;
 			year?: string;
 		}): Promise<Transaction[]> {
+			setIsLoading(true);
 			const constraints = [];
 			if (filters?.type) constraints.push(where('type', '==', filters.type));
 			if (filters?.month) constraints.push(where('month', '==', filters.month));
 			if (filters?.year) constraints.push(where('year', '==', filters.year));
 			const q = query(collection(db, this.collection), ...constraints);
 			const querySnapshot = await getDocs(q);
+			setIsLoading(false);
 			return querySnapshot.docs.map(doc => ({
 				id: doc.id,
 				...doc.data(),
