@@ -21,7 +21,7 @@
 		"
 	>
 		<div
-			v-for="(item, i) in items"
+			v-for="(item, i) in sortedItems"
 			:key="i"
 			style="display: flex; justify-content: space-between; align-items: center; width: 100%"
 		>
@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import Avatar from '../components/Avatar.vue';
 import { loading } from '../services/utils';
 import { PlusOutlined, CloseOutlined } from '@ant-design/icons-vue';
@@ -46,6 +46,16 @@ import { DataBaseClient } from '../api/db';
 import { Grocery } from '../models/grocery';
 
 const items = ref<Grocery[]>([]);
+
+const sortedItems = computed(() => {
+	return items.value.sort((i1, i2) => {
+		const c1 = i1.checked ? 1 : -1;
+		const c2 = i2.checked ? 1 : -1;
+		const diff = c1 - c2;
+		if (!diff) return i1.label.localeCompare(i2.label);
+		return c1 - c2;
+	});
+});
 
 const newItem = ref('');
 

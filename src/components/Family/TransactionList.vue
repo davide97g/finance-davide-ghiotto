@@ -11,7 +11,7 @@
 		class="transaction-list"
 	>
 		<template #renderItem="{ item }">
-			<a-list-item class="left" @click="openTransactionDetails(item)">
+			<a-list-item class="left" @click="openTransactionDetails(item)" v-if="filterItem(item)">
 				<TransactionItem :item="item" />
 			</a-list-item>
 		</template>
@@ -71,6 +71,7 @@ const props = defineProps<{
 	title: string;
 	type: CategoryType;
 	transactions: Transaction[];
+	search?: string;
 }>();
 
 const transactions = computed(() => {
@@ -92,6 +93,11 @@ const selectedTransaction = ref<Transaction>();
 const openTransactionDetails = (transaction: Transaction) => {
 	selectedTransaction.value = transaction;
 	updateTransactionPopupVisible.value = true;
+};
+
+const filterItem = (item: Transaction) => {
+	if (!props.search) return true;
+	return item.description.toLowerCase().includes(props.search?.toLowerCase());
 };
 </script>
 

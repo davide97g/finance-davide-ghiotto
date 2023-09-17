@@ -32,12 +32,25 @@
 	</a-row>
 	<a-tabs v-model:activeKey="activeKey" style="position: relative">
 		<a-tab-pane key="1" tab="Expenses">
-			<TransactionList :type="'expense'" :title="'Expenses'" :transactions="expenses" />
+			<a-input
+				v-if="searchBarVisible"
+				class="full-width"
+				type="text"
+				v-model:value="search"
+				placeholder="Search"
+			/>
+			<TransactionList
+				:type="'expense'"
+				:title="'Expenses'"
+				:transactions="expenses"
+				:search="search"
+			/>
 		</a-tab-pane>
 		<a-tab-pane key="2" tab="Earnings">
 			<TransactionList :type="'earning'" :title="'Earnings'" :transactions="earnings" />
 		</a-tab-pane>
 		<span class="stats-icon" v-if="earnings.length || expenses.length">
+			<SearchOutlined style="cursor: pointer" @click="searchBarVisible = !searchBarVisible" />
 			<LineChartOutlined style="cursor: pointer" @click="statsPopupVisible = true" />
 		</span>
 	</a-tabs>
@@ -56,7 +69,7 @@ import { computed, ref } from 'vue';
 import { DataBaseClient } from '../../api/db';
 import { useTransactionStore } from '../../stores/transaction';
 import { useCategoryStore } from '../../stores/category';
-import { LineChartOutlined } from '@ant-design/icons-vue';
+import { LineChartOutlined, SearchOutlined } from '@ant-design/icons-vue';
 import MonthStatsPopup from './MonthStatsPopup.vue';
 import { Transaction } from '../../models/transaction';
 
@@ -66,6 +79,7 @@ const props = defineProps<{
 }>();
 
 const statsPopupVisible = ref(false);
+const searchBarVisible = ref(false);
 
 const { setTransactions } = useTransactionStore();
 
@@ -104,6 +118,10 @@ const totalSumEarnings = computed(() => {
 // *** transaction list
 const activeKey = ref('1');
 
+// search value
+
+const search = ref('');
+
 const earnings = computed(() =>
 	useTransactionStore().earnings.filter(t => t.month === props.month && t.year === props.year)
 );
@@ -123,5 +141,6 @@ getTransactions();
 	height: 46px;
 	display: flex;
 	align-items: center;
+	gap: 1rem;
 }
 </style>
