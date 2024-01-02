@@ -5,6 +5,37 @@
 		@cancel="emits('close')"
 		:disabled="true"
 	>
+		<a-row>
+			<a-col :span="8">
+				<a-statistic
+					title="Balance"
+					:value="totalSumEarnings + totalSumExpenses"
+					:precision="0"
+					suffix="€"
+					:value-style="{
+						color: totalSumEarnings > -totalSumExpenses ? '#3f8600' : '#cf1322',
+					}"
+				/>
+			</a-col>
+			<a-col :span="8">
+				<a-statistic
+					title="Tot Earnings"
+					:value="totalSumEarnings"
+					:precision="0"
+					suffix="€"
+					:value-style="{ color: '#3f8600' }"
+				/>
+			</a-col>
+			<a-col :span="8">
+				<a-statistic
+					title="Tot Expenses"
+					:value="totalSumExpenses"
+					:precision="0"
+					suffix="€"
+					:value-style="{ color: '#cf1322' }"
+				/>
+			</a-col>
+		</a-row>
 		<a-tabs v-model:activeKey="activeKey" v-if="earnings.length || expenses.length">
 			<a-tab-pane key="1" tab="Monthly Overview">
 				<div style="height: 450px; width: 100%">
@@ -60,11 +91,9 @@ const dataMonthly = computed(() => {
 		.sort((a, b) => {
 			const aDate = new Date(`1 ${a}`);
 			const bDate = new Date(`1 ${b}`);
-			console.log(aDate, bDate);
 			return aDate.getTime() - bDate.getTime();
 		});
 
-	console.log(months);
 	const monthsEarnings = months.map(m => props.earnings.find(e => e.month === m)!);
 	const monthsExpenses = months.map(m => props.expenses.find(e => e.month === m)!);
 	const data = {
@@ -84,9 +113,13 @@ const dataMonthly = computed(() => {
 			},
 		],
 	};
-	console.log(data);
 	return data;
 });
+
+const totalSumExpenses = computed(
+	() => -1 * props.expenses.reduce((acc, curr) => acc + curr.total, 0)
+);
+const totalSumEarnings = computed(() => props.earnings.reduce((acc, curr) => acc + curr.total, 0));
 
 watch(
 	() => props.visible,
