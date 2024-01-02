@@ -83,7 +83,7 @@ const dataExpenses = computed(() => {
 
 const dataEarnings = computed(() => {
 	const categoriesMap: any = {};
-	const total = props.expenses.reduce((acc, curr) => acc + curr.total, 0);
+	const total = props.earnings.reduce((acc, curr) => acc + curr.total, 0);
 	props.earnings.forEach(monthEarnings => {
 		monthEarnings.categorySummary.forEach(({ categoryId, total }) => {
 			if (!categoriesMap[categoryId]) categoriesMap[categoryId] = 0;

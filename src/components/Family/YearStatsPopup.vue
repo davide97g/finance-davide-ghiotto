@@ -6,7 +6,7 @@
 		:disabled="true"
 	>
 		<a-row>
-			<a-col :span="8">
+			<a-col :span="6">
 				<a-statistic
 					title="Balance"
 					:value="totalSumEarnings + totalSumExpenses"
@@ -17,7 +17,7 @@
 					}"
 				/>
 			</a-col>
-			<a-col :span="8">
+			<a-col :span="6">
 				<a-statistic
 					title="Tot Earnings"
 					:value="totalSumEarnings"
@@ -26,13 +26,24 @@
 					:value-style="{ color: '#3f8600' }"
 				/>
 			</a-col>
-			<a-col :span="8">
+			<a-col :span="6">
 				<a-statistic
 					title="Tot Expenses"
 					:value="totalSumExpenses"
 					:precision="0"
 					suffix="€"
 					:value-style="{ color: '#cf1322' }"
+				/>
+			</a-col>
+			<a-col :span="6">
+				<a-statistic
+					title="Saving Rate"
+					:value="savingRate"
+					:precision="2"
+					suffix="%"
+					:value-style="{
+						color: savingRate ? '#3f8600' : '#cf1322',
+					}"
 				/>
 			</a-col>
 		</a-row>
@@ -126,6 +137,10 @@ const totalSumExpenses = computed(
 	() => -1 * props.expenses.reduce((acc, curr) => acc + curr.total, 0)
 );
 const totalSumEarnings = computed(() => props.earnings.reduce((acc, curr) => acc + curr.total, 0));
+
+const savingRate = computed(
+	() => (100 * (totalSumEarnings.value + totalSumExpenses.value)) / totalSumEarnings.value
+);
 
 watch(
 	() => props.visible,
