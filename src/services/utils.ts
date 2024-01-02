@@ -63,7 +63,12 @@ export function equals<T>(obj1: T, obj2: T): boolean {
 	return JSON.stringify(obj1) === JSON.stringify(obj2);
 }
 
-export const YEARS = ['2022', '2023'];
+const currentYear = new Date().getFullYear();
+const yearsList = Array.from(Array(currentYear - 2021).keys(), index => 2022 + index);
+
+export const YEARS = Array.from(Array(currentYear - 2021).keys(), index => 2022 + index).map(y =>
+	y.toString()
+);
 export const MONTHS = [
 	'January',
 	'February',
