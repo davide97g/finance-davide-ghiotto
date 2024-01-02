@@ -8,6 +8,9 @@ export const useStatsStore = defineStore('stats', {
 		};
 	},
 	actions: {
+		reset() {
+			this.stats = [];
+		},
 		setStats(stats: Stats[]) {
 			const newStats = stats.filter(e => !this.stats.find(t => t.id === e.id));
 			newStats.forEach(t => this.addStats(t));

@@ -15,14 +15,14 @@
 				class="ellipsis"
 				style="text-transform: capitalize; display: flex; align-items: center; gap: 0.25rem"
 			>
-				<img
+				<!-- <img
 					v-if="useUserStore().user?.photoURL"
 					:src="useUserStore().user?.photoURL!"
 					height="20"
 					width="20"
 					alt="author_img_pic"
 					style="border-radius: 50%"
-				/>
+				/> -->
 				<a-typography-text strong>
 					{{ item.description }}
 				</a-typography-text>

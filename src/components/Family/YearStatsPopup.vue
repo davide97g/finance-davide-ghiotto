@@ -50,7 +50,9 @@
 		</div>
 		<template #footer>
 			<a-button key="back" @click="emits('close')">Close</a-button>
-			<a-button type="primary" key="enter" @click="emits('freeze')">Freeze</a-button>
+			<a-button type="primary" key="enter" @click="emits('freeze')">{{
+				expenses.length > 0 || earnings.length > 0 ? 'Update' : 'Freeze'
+			}}</a-button>
 		</template>
 	</a-modal>
 </template>

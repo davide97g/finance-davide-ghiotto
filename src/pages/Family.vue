@@ -144,7 +144,7 @@ const freezeYear = async () => {
 		const yearStats: IStats[] = [];
 
 		const months = [...new Set(yearTransactions.map(t => t.month))];
-		console.info(includedCategoriesIds.value);
+
 		months
 			.sort((a, b) => {
 				const aDate = new Date(`1 ${a}`);
@@ -181,6 +181,7 @@ const freezeYear = async () => {
 		if (useStatsStore().stats.length)
 			await DataBaseClient.Stats.bulkDelete(useStatsStore().stats.map(s => s.id));
 		await DataBaseClient.Stats.bulkAdd(yearStats);
+		useStatsStore().reset();
 	} catch (e) {
 		console.log(e);
 	} finally {
