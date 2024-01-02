@@ -35,6 +35,7 @@ declare module '@vue/runtime-core' {
     Avatar: typeof import('./src/components/Avatar.vue')['default']
     CategoriesSettings: typeof import('./src/components/Family/Settings/CategoriesSettings.vue')['default']
     Category: typeof import('./src/components/Badges/Category.vue')['default']
+    copy: typeof import('./src/components/Family/MonthStatsPopup copy.vue')['default']
     FiltersPopup: typeof import('./src/components/Family/FiltersPopup.vue')['default']
     MonthBalance: typeof import('./src/components/Family/MonthBalance.vue')['default']
     MonthStatsPopup: typeof import('./src/components/Family/MonthStatsPopup.vue')['default']
@@ -53,6 +54,7 @@ declare module '@vue/runtime-core' {
     UpdateTagPopup: typeof import('./src/components/Family/Settings/UpdateTagPopup.vue')['default']
     UpdateTransactionPopup: typeof import('./src/components/Family/UpdateTransactionPopup.vue')['default']
     Version: typeof import('./src/components/Version.vue')['default']
+    YearStatsCategories: typeof import('./src/components/Family/YearStatsCategories.vue')['default']
     YearStatsPopup: typeof import('./src/components/Family/YearStatsPopup.vue')['default']
   }
 }

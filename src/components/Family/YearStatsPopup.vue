@@ -42,6 +42,9 @@
 					<Bar :data="dataMonthly" :options="(options as any)" id="stats-monthly" />
 				</div>
 			</a-tab-pane>
+			<a-tab-pane key="2" tab="Categories">
+				<YearStatsCategories :expenses="expenses" :earnings="earnings" />
+			</a-tab-pane>
 		</a-tabs>
 		<div v-else>
 			<p>No data available for this year</p>
@@ -71,6 +74,7 @@ import {
 } from 'chart.js';
 import { Bar } from 'vue-chartjs';
 import { IStats } from '../../models/stats';
+import YearStatsCategories from './YearStatsCategories.vue';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
