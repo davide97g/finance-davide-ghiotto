@@ -28,6 +28,9 @@
 				<router-link :to="{ name: GroceriesPageName }" class="m1">
 					<a-button type="primary"> <OrderedListOutlined /> Groceries</a-button>
 				</router-link>
+				<router-link :to="{ name: TodoPageName }" class="m1">
+					<a-button type="primary"> <CheckSquareOutlined /> Todo</a-button>
+				</router-link>
 			</div>
 		</div>
 		<div v-else>
@@ -37,9 +40,13 @@
 </template>
 
 <script setup lang="ts">
-import { OrderedListOutlined, EuroCircleOutlined } from '@ant-design/icons-vue';
+import {
+	OrderedListOutlined,
+	EuroCircleOutlined,
+	CheckSquareOutlined,
+} from '@ant-design/icons-vue';
 import Avatar from '../components/Avatar.vue';
 import Version from '../components/Version.vue';
-import { FamilyPageName, GroceriesPageName, LoginPageName } from '../router';
+import { FamilyPageName, GroceriesPageName, LoginPageName, TodoPageName } from '../router';
 import { isAdmin, isLoggedIn } from '../services/utils';
 </script>

@@ -18,6 +18,7 @@ import { IStats, Stats } from '../models/stats';
 import { ITag, Tag } from '../models/tag';
 import { setIsLoading } from '../services/utils';
 import { Grocery, IGrocery } from '../models/grocery';
+import { ITodo, Todo } from '../models/todo';
 
 const db = getFirestore();
 
@@ -394,6 +395,69 @@ export const DataBaseClient = {
 		async delete(groceryId: string): Promise<boolean> {
 			try {
 				await deleteDoc(doc(collection(db, this.collection), groceryId));
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+	},
+	Todo: {
+		collection: 'todo',
+		async get(): Promise<Todo[]> {
+			setIsLoading(true);
+			const querySnapshot = await getDocs(collection(db, this.collection));
+			setIsLoading(false);
+			return querySnapshot.docs.map(doc => ({
+				id: doc.id,
+				...doc.data(),
+			})) as Todo[];
+		},
+		async getRT(callback: (todos: Todo[]) => void): Promise<Unsubscribe> {
+			return onSnapshot(collection(db, this.collection), querySnapshot => {
+				const todos = querySnapshot.docs.map(doc => ({
+					id: doc.id,
+					...doc.data(),
+				})) as Todo[];
+				callback(todos);
+			});
+		},
+		async create(todo: ITodo): Promise<Todo> {
+			try {
+				const res = await addDoc(
+					collection(db, this.collection),
+					JSON.parse(JSON.stringify(todo))
+				);
+				return {
+					id: res.id,
+					...todo,
+				};
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async update(todo: Todo): Promise<boolean> {
+			try {
+				setIsLoading(true);
+				await setDoc(
+					doc(collection(db, this.collection), todo.id),
+					JSON.parse(JSON.stringify(todo)),
+					{
+						merge: true,
+					}
+				);
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			} finally {
+				setIsLoading(false);
+			}
+		},
+		async delete(todoId: string): Promise<boolean> {
+			try {
+				await deleteDoc(doc(collection(db, this.collection), todoId));
 				return true;
 			} catch (err) {
 				console.error(err);
