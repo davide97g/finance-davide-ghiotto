@@ -1,16 +1,16 @@
 import {
 	getAuth,
-	signInWithPopup,
 	GoogleAuthProvider,
-	signOut,
 	onAuthStateChanged,
+	signInWithPopup,
+	signOut,
 } from 'firebase/auth';
-import { useUserStore } from '../stores/user';
 import { HomePageName, router } from '../router';
 import { setIsLoading } from '../services/utils';
+import { useUserStore } from '../stores/user';
 
-import { initializeApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
+import { initializeApp } from 'firebase/app';
 
 const firebaseConfig = {
 	apiKey: 'AIzaSyAJxoJsYk8XAyFwxMk8fCmh2F8IaCxncg0',
@@ -38,7 +38,10 @@ export const checkUserIsLoggedIn = () => {
 				if (user) {
 					useUserStore().setUser(user);
 					resolve(user);
-				} else reject(false);
+				} else {
+					if (window.location.pathname !== '/login') window.location.href = '/login';
+					reject(new Error('User not logged in'));
+				}
 			},
 			err => {
 				useUserStore().setUser(null);
