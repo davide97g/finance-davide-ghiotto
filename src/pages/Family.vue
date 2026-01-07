@@ -1,6 +1,7 @@
 <template>
 	<Avatar :position="'topLeft'" />
 	<h1>Family</h1>
+	<ExportButtons />
 	<a-tabs
 		v-model:activeKey="activeYear"
 		style="padding: 10px; height: calc(100vh - 100px); position: relative"
@@ -50,18 +51,19 @@
 </template>
 
 <script setup lang="ts">
-import { SettingOutlined, PlusOutlined, LineChartOutlined } from '@ant-design/icons-vue/lib/icons';
+import { LineChartOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons-vue/lib/icons';
 import { ComputedRef, computed, ref } from 'vue';
 import { DataBaseClient } from '../api/db';
 import Avatar from '../components/Avatar.vue';
+import ExportButtons from '../components/ExportButtons.vue';
 import NewTransactionPopup from '../components/Family/NewTransactionPopup.vue';
-import YearStatsPopup from '../components/Family/YearStatsPopup.vue';
 import Settings from '../components/Family/Settings/Settings.vue';
+import YearStatsPopup from '../components/Family/YearStatsPopup.vue';
+import { IStats } from '../models/stats';
+import { Transaction } from '../models/transaction';
 import { MONTHS, YEARS, setIsLoading } from '../services/utils';
 import { useCategoryStore } from '../stores/category';
 import { useStatsStore } from '../stores/stats';
-import { IStats } from '../models/stats';
-import { Transaction } from '../models/transaction';
 import { useTagStore } from '../stores/tag';
 
 const activeMonth = ref(MONTHS[new Date().getMonth()]);
