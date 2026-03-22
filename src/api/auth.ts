@@ -5,7 +5,6 @@ import {
 	signInWithPopup,
 	signOut,
 } from 'firebase/auth';
-import { HomePageName, router } from '../router';
 import { setIsLoading } from '../services/utils';
 import { useUserStore } from '../stores/user';
 
@@ -36,7 +35,7 @@ export const checkUserIsLoggedIn = () => {
 			async user => {
 				setIsLoading(false);
 				if (user) {
-					useUserStore().setUser(user);
+					useUserStore.getState().setUser(user);
 					resolve(user);
 				} else {
 					if (window.location.pathname !== '/login') window.location.href = '/login';
@@ -44,7 +43,7 @@ export const checkUserIsLoggedIn = () => {
 				}
 			},
 			err => {
-				useUserStore().setUser(null);
+				useUserStore.getState().setUser(null);
 				setIsLoading(false);
 				reject(err);
 			}
@@ -57,14 +56,14 @@ export const FirebaseAuth = {
 		signInWithPopup(auth, provider)
 			.then(result => GoogleAuthProvider.credentialFromResult(result))
 			.catch(() => {
-				useUserStore().setUser(null);
+				useUserStore.getState().setUser(null);
 				return null;
 			}),
 
 	signOut: () => {
 		signOut(auth).then(() => {
-			router.push({ name: HomePageName });
-			useUserStore().setUser(null);
+			window.location.href = '/';
+			useUserStore.getState().setUser(null);
 		});
 	},
 };

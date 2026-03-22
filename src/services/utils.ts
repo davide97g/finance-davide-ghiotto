@@ -1,24 +1,12 @@
 import { User } from 'firebase/auth';
-import { computed, ref } from 'vue';
-import { useUserStore } from '../stores/user';
-import { notification } from 'ant-design-vue';
+import { toast } from 'sonner';
+import { setIsLoading } from '../stores/loading';
 
-const windowWidth = ref(window.innerWidth);
-window.addEventListener('resize', () => (windowWidth.value = window.innerWidth));
-
-const isLoading = ref(true);
-
-export const setIsLoading = (loading: boolean) => (isLoading.value = loading);
-
-export const loading = computed(() => isLoading.value);
-export const isMobile = computed(() => windowWidth.value < 600);
+export { setIsLoading };
 
 export const getPhotoURL = (user: User | null) => {
-	return new URL(user?.photoURL || '../assets/img/default-profile-pic.svg', import.meta.url).href;
+	return user?.photoURL || '/img/default-profile-pic.svg';
 };
-
-export const isLoggedIn = computed(() => useUserStore().isLoggedIn);
-export const isAdmin = computed(() => useUserStore().isAdmin);
 
 const nthNumber = (number: number) => {
 	if (number > 3 && number < 21) return 'th';
@@ -49,11 +37,15 @@ export const formatDate = (date: string, onlyDay?: boolean) => {
 };
 
 export const openNotificationWithIcon = (type: string, message: string, description?: string) => {
-	(notification as any)[type]({
-		message,
-		description,
-		duration: 2,
-	});
+	if (type === 'success') {
+		toast.success(message, { description, duration: 2000 });
+	} else if (type === 'error') {
+		toast.error(message, { description, duration: 2000 });
+	} else if (type === 'warning') {
+		toast.warning(message, { description, duration: 2000 });
+	} else {
+		toast.info(message, { description, duration: 2000 });
+	}
 };
 
 export function clone<T>(object: T): T {
@@ -64,7 +56,6 @@ export function equals<T>(obj1: T, obj2: T): boolean {
 }
 
 const currentYear = new Date().getFullYear();
-const yearsList = Array.from(Array(currentYear - 2021).keys(), index => 2022 + index);
 
 export const YEARS = Array.from(Array(currentYear - 2021).keys(), index => 2022 + index).map(y =>
 	y.toString()

@@ -1,35 +1,38 @@
-import { defineStore } from 'pinia';
+import { create } from 'zustand';
 import { Stats } from '../models/stats';
 
-export const useStatsStore = defineStore('stats', {
-	state: () => {
-		return {
-			stats: [] as Stats[],
-		};
-	},
-	actions: {
-		reset() {
-			this.stats = [];
-		},
-		setStats(stats: Stats[]) {
-			const newStats = stats.filter(e => !this.stats.find(t => t.id === e.id));
-			newStats.forEach(t => this.addStats(t));
+interface StatsState {
+	stats: Stats[];
+	reset: () => void;
+	setStats: (stats: Stats[]) => void;
+	addStats: (stats: Stats) => void;
+	removeStats: (stats: Stats) => void;
+	updateStats: (stats: Stats) => void;
+}
 
-			const presentStats = stats.filter(e => this.stats.find(t => t.id === e.id));
-			presentStats.forEach(t => this.updateStats(t));
-		},
-		addStats(stats: Stats) {
-			this.stats.push(stats);
-		},
-		removeStats(stats: Stats) {
-			this.stats.splice(
-				this.stats.findIndex(t => t.id === stats.id),
-				1
-			);
-		},
-		updateStats(stats: Stats) {
-			const i = this.stats.findIndex(t => t.id === stats.id);
-			this.stats[i] = stats;
-		},
+export const useStatsStore = create<StatsState>(set => ({
+	stats: [],
+	reset: () => set({ stats: [] }),
+	setStats: (stats: Stats[]) => {
+		set(state => {
+			const newStats = stats.filter(e => !state.stats.find(t => t.id === e.id));
+			const presentStats = stats.filter(e => state.stats.find(t => t.id === e.id));
+			let updated = [...state.stats];
+			presentStats.forEach(s => {
+				updated = updated.map(existing => (existing.id === s.id ? s : existing));
+			});
+			return { stats: [...updated, ...newStats] };
+		});
 	},
-});
+	addStats: (stats: Stats) => {
+		set(state => ({ stats: [...state.stats, stats] }));
+	},
+	removeStats: (stats: Stats) => {
+		set(state => ({ stats: state.stats.filter(t => t.id !== stats.id) }));
+	},
+	updateStats: (stats: Stats) => {
+		set(state => ({
+			stats: state.stats.map(t => (t.id === stats.id ? stats : t)),
+		}));
+	},
+}));

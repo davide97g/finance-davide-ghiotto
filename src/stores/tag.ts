@@ -1,32 +1,38 @@
-import { defineStore } from 'pinia';
+import { create } from 'zustand';
 import { Tag } from '../models/tag';
 
-export const useTagStore = defineStore('tag', {
-	state: () => {
-		return {
-			tags: [] as Tag[],
-		};
-	},
-	actions: {
-		setTags(tags: Tag[]) {
-			const newTags = tags.filter(e => !this.tags.find(t => t.id === e.id));
-			newTags.forEach(c => this.addTag(c));
+interface TagState {
+	tags: Tag[];
+	setTags: (tags: Tag[]) => void;
+	addTag: (tag: Tag) => void;
+	updateTag: (tag: Tag) => void;
+	removeTag: (tag: Tag) => void;
+}
 
-			const presentTags = tags.filter(e => this.tags.find(c => c.id === e.id));
-			presentTags.forEach(c => this.updateTag(c));
-		},
-		addTag(tag: Tag) {
-			this.tags.push(tag);
-		},
-		updateTag(tag: Tag) {
-			const i = this.tags.findIndex(c => c.id === tag.id);
-			this.tags[i] = tag;
-		},
-		removeTag(tag: Tag) {
-			this.tags.splice(
-				this.tags.findIndex(c => c.id === tag.id),
-				1
-			);
-		},
+export const useTagStore = create<TagState>(set => ({
+	tags: [],
+	setTags: (tags: Tag[]) => {
+		set(state => {
+			const newTags = tags.filter(e => !state.tags.find(t => t.id === e.id));
+			const presentTags = tags.filter(e => state.tags.find(c => c.id === e.id));
+			let updated = [...state.tags];
+			presentTags.forEach(c => {
+				updated = updated.map(existing => (existing.id === c.id ? c : existing));
+			});
+			return { tags: [...updated, ...newTags] };
+		});
 	},
-});
+	addTag: (tag: Tag) => {
+		set(state => ({ tags: [...state.tags, tag] }));
+	},
+	updateTag: (tag: Tag) => {
+		set(state => ({
+			tags: state.tags.map(t => (t.id === tag.id ? tag : t)),
+		}));
+	},
+	removeTag: (tag: Tag) => {
+		set(state => ({
+			tags: state.tags.filter(t => t.id !== tag.id),
+		}));
+	},
+}));

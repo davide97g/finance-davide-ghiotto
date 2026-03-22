@@ -16,7 +16,7 @@ import { ITransaction, Transaction } from '../models/transaction';
 import { Category, CategoryType, ICategory } from '../models/category';
 import { IStats, Stats } from '../models/stats';
 import { ITag, Tag } from '../models/tag';
-import { setIsLoading } from '../services/utils';
+import { setIsLoading } from '../stores/loading';
 import { Grocery, IGrocery } from '../models/grocery';
 import { ITodo, Todo } from '../models/todo';
 

@@ -1,13 +1,10 @@
-import vue from '@vitejs/plugin-vue';
+import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
-import Components from 'unplugin-vue-components/vite';
-
 export default defineConfig({
 	plugins: [
-		vue(),
+		react(),
 		VitePWA({
 			registerType: 'autoUpdate',
 			mode: 'production',
@@ -76,9 +73,6 @@ export default defineConfig({
 			workbox: {
 				globPatterns: ['**/*.{js,css,html,ico,png,svg,ttf}'],
 			},
-		}),
-		Components({
-			resolvers: [AntDesignVueResolver()],
 		}),
 	],
 	build: {

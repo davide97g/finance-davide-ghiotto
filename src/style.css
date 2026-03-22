@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @font-face {
 	font-family: 'Montserrat';
 	src: url('/fonts/Montserrat-VariableFont_wght.ttf');
@@ -12,8 +16,6 @@
 	font-size: 16px;
 	line-height: 24px;
 	font-weight: 400;
-
-	color-scheme: light dark;
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
@@ -33,9 +35,10 @@ html,
 body {
 	width: 100%;
 	height: 100%;
+	margin: 0;
 }
 
-input {
+input[type='date'] {
 	color-scheme: dark;
 }
 ::-webkit-calendar-picker-indicator {
@@ -47,45 +50,4 @@ input {
 	text-align: center;
 	height: 100vh;
 	width: 100vw;
-}
-
-.full-width {
-	width: 100%;
-}
-.full-height {
-	height: 100%;
-}
-
-.flex-center {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-}
-.column {
-	display: flex;
-	flex-direction: column;
-}
-.flex-gap {
-	display: inline-flex;
-	flex-wrap: wrap;
-	gap: 10px;
-}
-
-.left {
-	text-align: left;
-}
-.right {
-	text-align: right;
-}
-.center {
-	text-align: center;
-}
-.ellipsis {
-	text-overflow: ellipsis;
-	white-space: pre;
-	overflow: hidden;
-}
-
-.m1 {
-	margin: 10px;
 }

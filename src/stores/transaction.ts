@@ -1,88 +1,130 @@
-import { defineStore } from 'pinia';
+import { create } from 'zustand';
 import { Transaction } from '../models/transaction';
 
-export const useTransactionStore = defineStore('transaction', {
-	state: () => {
-		return {
-			expenses: [] as Transaction[],
-			earnings: [] as Transaction[],
-			sorting: 'descending' as 'descending' | 'ascending',
-		};
+interface TransactionState {
+	expenses: Transaction[];
+	earnings: Transaction[];
+	sorting: 'descending' | 'ascending';
+	setTransactions: (transactions: Transaction[]) => void;
+	bulkAddTransactions: (transactions: Transaction[]) => void;
+	addTransaction: (transaction: Transaction) => void;
+	removeTransaction: (transaction: Transaction) => void;
+	updateTransaction: (transaction: Transaction) => void;
+	bulkUpdateTransactions: (transactions: Transaction[]) => void;
+	sortTransactions: (ascending?: boolean) => void;
+}
+
+const sortByDate = (list: Transaction[], ascending: boolean) =>
+	[...list].sort(
+		(t1, t2) =>
+			(new Date(t1.date).getTime() - new Date(t2.date).getTime()) * (ascending ? 1 : -1)
+	);
+
+export const useTransactionStore = create<TransactionState>((set, get) => ({
+	expenses: [],
+	earnings: [],
+	sorting: 'descending',
+	setTransactions: (transactions: Transaction[]) => {
+		const { earnings, expenses } = get();
+		const newTransactions = transactions.filter(
+			e => !earnings.find(t => t.id === e.id) && !expenses.find(t => t.id === e.id)
+		);
+		const presentTransactions = transactions.filter(
+			e => earnings.find(t => t.id === e.id) || expenses.find(t => t.id === e.id)
+		);
+		get().bulkAddTransactions(newTransactions);
+		get().bulkUpdateTransactions(presentTransactions);
 	},
-	actions: {
-		setTransactions(transactions: Transaction[]) {
-			const newTransactions = transactions.filter(
-				e =>
-					!this.earnings.find(t => t.id === e.id) &&
-					!this.expenses.find(t => t.id === e.id)
-			);
-			this.bulkAddTransactions(newTransactions);
-			const presentTransactions = transactions.filter(
-				e =>
-					this.earnings.find(t => t.id === e.id) || this.expenses.find(t => t.id === e.id)
-			);
-			this.bulkUpdateTransactions(presentTransactions);
-		},
-		bulkAddTransactions(transactions: Transaction[]) {
+	bulkAddTransactions: (transactions: Transaction[]) => {
+		set(state => {
+			const newExpenses = [...state.expenses];
+			const newEarnings = [...state.earnings];
 			transactions.forEach(transaction => {
 				if (transaction.type === 'earning') {
-					if (this.earnings.findIndex(t => t.id === transaction.id) !== -1) return;
-					this.earnings.push(transaction);
+					if (newEarnings.findIndex(t => t.id === transaction.id) === -1)
+						newEarnings.push(transaction);
 				} else {
-					if (this.expenses.findIndex(t => t.id === transaction.id) !== -1) return;
-					this.expenses.push(transaction);
+					if (newExpenses.findIndex(t => t.id === transaction.id) === -1)
+						newExpenses.push(transaction);
 				}
 			});
-			this.sortTransactions();
-		},
-		addTransaction(transaction: Transaction) {
-			if (transaction.type === 'earning') {
-				if (this.earnings.findIndex(t => t.id === transaction.id) !== -1) return;
-				this.earnings.push(transaction);
-			} else {
-				if (this.expenses.findIndex(t => t.id === transaction.id) !== -1) return;
-				this.expenses.push(transaction);
-			}
-			this.sortTransactions();
-		},
-		removeTransaction(transaction: Transaction) {
-			if (transaction.type === 'earning')
-				this.earnings.splice(
-					this.earnings.findIndex(t => t.id === transaction.id),
-					1
-				);
-			else
-				this.expenses.splice(
-					this.expenses.findIndex(t => t.id === transaction.id),
-					1
-				);
-			this.sortTransactions();
-		},
-		updateTransaction(transaction: Transaction) {
-			const transactions = transaction.type === 'expense' ? this.expenses : this.earnings;
-			const i = transactions.findIndex(t => t.id === transaction.id);
-			transactions[i] = transaction;
-		},
-		bulkUpdateTransactions(transactions: Transaction[]) {
-			transactions.forEach(transaction => {
-				const transactions = transaction.type === 'expense' ? this.expenses : this.earnings;
-				const i = transactions.findIndex(t => t.id === transaction.id);
-				transactions[i] = transaction;
-			});
-			this.sortTransactions();
-		},
-		sortTransactions(ascending?: boolean) {
-			this.sorting = ascending ? 'ascending' : 'descending';
-			this.expenses = this.expenses.sort(
-				(t1, t2) =>
-					(new Date(t1.date).getTime() - new Date(t2.date).getTime()) *
-					(ascending ? 1 : -1)
-			);
-			this.earnings = this.earnings.sort(
-				(t1, t2) =>
-					(new Date(t1.date).getTime() - new Date(t2.date).getTime()) *
-					(ascending ? 1 : -1)
-			);
-		},
+			const ascending = state.sorting === 'ascending';
+			return {
+				expenses: sortByDate(newExpenses, ascending),
+				earnings: sortByDate(newEarnings, ascending),
+			};
+		});
 	},
-});
+	addTransaction: (transaction: Transaction) => {
+		set(state => {
+			if (transaction.type === 'earning') {
+				if (state.earnings.findIndex(t => t.id === transaction.id) !== -1) return state;
+				const newEarnings = [...state.earnings, transaction];
+				return {
+					earnings: sortByDate(newEarnings, state.sorting === 'ascending'),
+				};
+			} else {
+				if (state.expenses.findIndex(t => t.id === transaction.id) !== -1) return state;
+				const newExpenses = [...state.expenses, transaction];
+				return {
+					expenses: sortByDate(newExpenses, state.sorting === 'ascending'),
+				};
+			}
+		});
+	},
+	removeTransaction: (transaction: Transaction) => {
+		set(state => {
+			if (transaction.type === 'earning') {
+				return {
+					earnings: state.earnings.filter(t => t.id !== transaction.id),
+				};
+			} else {
+				return {
+					expenses: state.expenses.filter(t => t.id !== transaction.id),
+				};
+			}
+		});
+	},
+	updateTransaction: (transaction: Transaction) => {
+		set(state => {
+			if (transaction.type === 'expense') {
+				return {
+					expenses: state.expenses.map(t => (t.id === transaction.id ? transaction : t)),
+				};
+			} else {
+				return {
+					earnings: state.earnings.map(t => (t.id === transaction.id ? transaction : t)),
+				};
+			}
+		});
+	},
+	bulkUpdateTransactions: (transactions: Transaction[]) => {
+		set(state => {
+			let newExpenses = [...state.expenses];
+			let newEarnings = [...state.earnings];
+			transactions.forEach(transaction => {
+				if (transaction.type === 'expense') {
+					newExpenses = newExpenses.map(t =>
+						t.id === transaction.id ? transaction : t
+					);
+				} else {
+					newEarnings = newEarnings.map(t =>
+						t.id === transaction.id ? transaction : t
+					);
+				}
+			});
+			const ascending = state.sorting === 'ascending';
+			return {
+				expenses: sortByDate(newExpenses, ascending),
+				earnings: sortByDate(newEarnings, ascending),
+			};
+		});
+	},
+	sortTransactions: (ascending?: boolean) => {
+		set(state => ({
+			sorting: ascending ? 'ascending' : 'descending',
+			expenses: sortByDate(state.expenses, !!ascending),
+			earnings: sortByDate(state.earnings, !!ascending),
+		}));
+	},
+}));
