@@ -60,7 +60,9 @@ export default function ChecklistPage({
 
 	const handleAdd = () => {
 		if (newItem.trim()) {
-			onAdd(newItem.trim()).then(() => setNewItem(''));
+			const value = newItem.trim();
+			setNewItem('');
+			onAdd(value);
 		}
 	};
 
