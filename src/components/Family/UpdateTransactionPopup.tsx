@@ -106,7 +106,7 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 			.finally(() => setIsLoading(false));
 	};
 
-	const isDisabled = !transaction.amount || !transaction.date || !transaction.description || !transaction.category || equals(transaction, propTransaction);
+	const isDisabled = !transaction.amount || !transaction.date || !transaction.category || equals(transaction, propTransaction);
 	const isExpense = transaction.type === 'expense';
 	const accentColor = isExpense ? '#cf1322' : '#3f8600';
 	const hasChanges = !equals(transaction, propTransaction);
@@ -152,15 +152,25 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 				<div className="px-5 py-4 space-y-3">
 					<div className="space-y-1.5">
 						<Label className="text-xs text-muted-foreground flex items-center gap-1.5">
-							<FileText className="h-3 w-3" /> Description
+							<FolderOpen className="h-3 w-3" /> Category
 						</Label>
-						<Input
-							type="text"
-							value={transaction.description}
-							onChange={e => updateField('description', e.target.value)}
-							placeholder="What was it for?"
-							className="h-10 bg-white/80 border-black/8 rounded-xl text-sm placeholder:text-muted-foreground/50"
-						/>
+						<Select value={transaction.category} onValueChange={v => updateField('category', v)}>
+							<SelectTrigger className="h-10 bg-white/80 border-black/8 rounded-xl text-sm">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{categories.map(c => (
+									<SelectItem key={c.id} value={c.id}>
+										<span
+											className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold text-white"
+											style={{ backgroundColor: c.color || '#ababab' }}
+										>
+											{c.name}
+										</span>
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
 
 					<div className="space-y-1.5">
@@ -184,25 +194,15 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 
 					<div className="space-y-1.5">
 						<Label className="text-xs text-muted-foreground flex items-center gap-1.5">
-							<FolderOpen className="h-3 w-3" /> Category
+							<FileText className="h-3 w-3" /> Description
 						</Label>
-						<Select value={transaction.category} onValueChange={v => updateField('category', v)}>
-							<SelectTrigger className="h-10 bg-white/80 border-black/8 rounded-xl text-sm">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{categories.map(c => (
-									<SelectItem key={c.id} value={c.id}>
-										<span
-											className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold text-white"
-											style={{ backgroundColor: c.color || '#ababab' }}
-										>
-											{c.name}
-										</span>
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						<Input
+							type="text"
+							value={transaction.description}
+							onChange={e => updateField('description', e.target.value)}
+							placeholder="Optional"
+							className="h-10 bg-white/80 border-black/8 rounded-xl text-sm placeholder:text-muted-foreground/50"
+						/>
 					</div>
 				</div>
 

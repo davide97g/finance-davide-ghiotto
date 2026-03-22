@@ -48,15 +48,15 @@ export default function TransactionItem({ item }: Props) {
 	const tag = getTag(item.tag);
 
 	return (
-		<div className="relative w-full pr-[5px] flex flex-col gap-2">
-			<div className="flex w-full">
-				<div className="w-2/3 text-left truncate capitalize flex items-center gap-1">
-					<strong>{item.description}</strong>
-				</div>
-				<div className="w-1/3 text-right flex justify-end items-center gap-1">
+		<div className="relative w-full pr-[5px] flex flex-col gap-1.5">
+			<div className="flex w-full items-center">
+				<div className="w-2/3 text-left truncate capitalize flex items-center gap-1.5">
+					{category && <CategoryBadge category={category} />}
 					{category?.excludeFromBudget && (
 						<Badge variant="secondary" className="text-xs">E</Badge>
 					)}
+				</div>
+				<div className="w-1/3 text-right flex justify-end items-center gap-1">
 					<span className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">{item.amount} €</span>
 				</div>
 			</div>
@@ -64,9 +64,9 @@ export default function TransactionItem({ item }: Props) {
 				<span className="bg-muted px-1 py-0.5 rounded text-xs font-mono shrink-0">
 					{formatDate(item.date, true)} <Calendar className="inline h-3 w-3" />
 				</span>
-				<div className="shrink-0">
-					{category && <CategoryBadge category={category} />}
-				</div>
+				{item.description && (
+					<span className="text-xs text-muted-foreground truncate capitalize">{item.description}</span>
+				)}
 				<div className="flex-1 min-w-0" />
 				{tag && item.tag !== 'XB0kK9DnZIIEsPKsaWEB' && (
 					<div className="shrink-0">
