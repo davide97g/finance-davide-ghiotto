@@ -60,19 +60,20 @@ export default function TransactionItem({ item }: Props) {
 					<span className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">{item.amount} €</span>
 				</div>
 			</div>
-			<div className="flex w-full items-center">
-				<div className="w-1/5 text-left">
-					<span className="bg-muted px-1 py-0.5 rounded text-xs font-mono">
-						{formatDate(item.date, true)} <Calendar className="inline h-3 w-3" />
-					</span>
-				</div>
-				<div className="w-[54%] text-left">
+			<div className="flex w-full items-center gap-1.5">
+				<span className="bg-muted px-1 py-0.5 rounded text-xs font-mono shrink-0">
+					{formatDate(item.date, true)} <Calendar className="inline h-3 w-3" />
+				</span>
+				<div className="shrink-0">
 					{category && <CategoryBadge category={category} />}
 				</div>
-				<div className="w-[17%] text-left">
-					{tag && item.tag !== 'XB0kK9DnZIIEsPKsaWEB' && <TagBadge tag={tag} />}
-				</div>
-				<div className="w-[8%] text-center" onClick={e => e.stopPropagation()}>
+				<div className="flex-1 min-w-0" />
+				{tag && item.tag !== 'XB0kK9DnZIIEsPKsaWEB' && (
+					<div className="shrink-0">
+						<TagBadge tag={tag} />
+					</div>
+				)}
+				<div className="shrink-0" onClick={e => e.stopPropagation()}>
 					<AlertDialog>
 						<AlertDialogTrigger asChild>
 							<Trash2 className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-destructive" />

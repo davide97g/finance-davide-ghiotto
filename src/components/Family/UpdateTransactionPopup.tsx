@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { CalendarDays, FileText, Tag as TagIcon, FolderOpen, Euro } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Dialog, DialogContent } from '../ui/dialog';
 import { clone, equals, openNotificationWithIcon, setIsLoading } from '../../services/utils';
+import { cn } from '../../lib/utils';
 import { DataBaseClient } from '../../api/db';
 import { useCategoryStore } from '../../stores/category';
 import { useTagStore } from '../../stores/tag';
@@ -15,6 +16,58 @@ interface Props {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	transaction: Transaction;
+}
+
+function TagChip({ value, tags, onChange }: { value: string; tags: { id: string; name: string }[]; onChange: (v: string) => void }) {
+	const [expanded, setExpanded] = useState(false);
+	const ref = useRef<HTMLDivElement>(null);
+	const current = tags.find(t => t.id === value);
+
+	useEffect(() => {
+		const handleClick = (e: MouseEvent) => {
+			if (ref.current && !ref.current.contains(e.target as Node)) setExpanded(false);
+		};
+		if (expanded) document.addEventListener('mousedown', handleClick);
+		return () => document.removeEventListener('mousedown', handleClick);
+	}, [expanded]);
+
+	return (
+		<div ref={ref} className="relative">
+			<button
+				onClick={() => setExpanded(!expanded)}
+				className={cn(
+					'flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full transition-all duration-200',
+					expanded
+						? 'bg-foreground/10 text-foreground'
+						: 'bg-foreground/[0.05] text-muted-foreground hover:bg-foreground/[0.08]'
+				)}
+			>
+				<TagIcon className="h-2.5 w-2.5" />
+				{current?.name || 'Tag'}
+			</button>
+
+			{expanded && (
+				<div className="absolute right-0 top-full mt-1.5 z-50 bg-white rounded-xl shadow-lg border border-black/[0.06] p-1.5 flex flex-wrap gap-1 min-w-[140px] max-w-[200px]"
+					style={{ animation: 'fadeSlideIn 0.15s ease-out both' }}
+				>
+					{tags.map(t => (
+						<button
+							key={t.id}
+							onClick={() => { onChange(t.id); setExpanded(false); }}
+							className={cn(
+								'text-[10px] font-medium px-2.5 py-1 rounded-lg transition-all duration-150 whitespace-nowrap',
+								t.id === value
+									? 'bg-foreground/10 text-foreground shadow-sm'
+									: 'text-muted-foreground hover:bg-foreground/[0.05] hover:text-foreground'
+							)}
+						>
+							{t.name}
+						</button>
+					))}
+				</div>
+			)}
+		</div>
+	);
 }
 
 export default function UpdateTransactionPopup({ open, onOpenChange, transaction: propTransaction }: Props) {
@@ -50,16 +103,16 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="p-0 gap-0 overflow-hidden max-w-[360px] rounded-2xl border-0 shadow-2xl">
+			<DialogContent className="p-0 gap-0 max-w-[360px] rounded-2xl border-0 shadow-2xl overflow-visible">
 				{/* Colored header strip */}
-				<div className="px-5 pt-5 pb-4" style={{ background: `linear-gradient(135deg, ${accentColor}12, ${accentColor}06)` }}>
+				<div className="px-5 pt-5 pb-4 rounded-t-2xl" style={{ background: `linear-gradient(135deg, ${accentColor}12, ${accentColor}06)` }}>
 					<div className="flex items-center gap-2 mb-3">
 						<div className="h-2 w-2 rounded-full" style={{ backgroundColor: accentColor }} />
 						<span className="text-xs font-semibold uppercase tracking-widest" style={{ color: accentColor }}>
 							Edit {transaction.type}
 						</span>
 						{hasChanges && (
-							<span className="ml-auto text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+							<span className="ml-auto mr-6 text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
 								Modified
 							</span>
 						)}
@@ -95,33 +148,23 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 						/>
 					</div>
 
-					<div className="grid grid-cols-2 gap-3">
-						<div className="space-y-1.5">
+					<div className="space-y-1.5">
+						<div className="flex items-center justify-between">
 							<Label className="text-xs text-muted-foreground flex items-center gap-1.5">
-								<CalendarDays className="h-3 w-3" /> Date
+								<CalendarDays className="h-3 w-3 shrink-0" /> Date
 							</Label>
-							<Input
-								type="date"
-								value={transaction.date}
-								onChange={e => updateField('date', e.target.value)}
-								className="h-10 bg-white/80 border-black/8 rounded-xl text-sm"
+							<TagChip
+								value={transaction.tag || ''}
+								tags={tags}
+								onChange={v => updateField('tag', v)}
 							/>
 						</div>
-						<div className="space-y-1.5">
-							<Label className="text-xs text-muted-foreground flex items-center gap-1.5">
-								<TagIcon className="h-3 w-3" /> Tag
-							</Label>
-							<Select value={transaction.tag || ''} onValueChange={v => updateField('tag', v)}>
-								<SelectTrigger className="h-10 bg-white/80 border-black/8 rounded-xl text-sm">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{tags.map(t => (
-										<SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
+						<Input
+							type="date"
+							value={transaction.date}
+							onChange={e => updateField('date', e.target.value)}
+							className="h-10 bg-white/80 border-black/8 rounded-xl text-sm pr-3 [&::-webkit-calendar-picker-indicator]:hidden"
+						/>
 					</div>
 
 					<div className="space-y-1.5">
