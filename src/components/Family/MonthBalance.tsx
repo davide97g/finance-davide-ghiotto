@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { LineChart, Search } from 'lucide-react';
+import { ArrowUp, ArrowDown, Filter, LineChart, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import TransactionList from './TransactionList';
-import MonthStatsPopup from './MonthStatsPopup';
+import FiltersPopup from './FiltersPopup';
+import { Filters } from './TransactionList';
 import { DataBaseClient } from '../../api/db';
 import { useTransactionStore } from '../../stores/transaction';
 import { useCategoryStore } from '../../stores/category';
@@ -15,14 +17,19 @@ interface Props {
 }
 
 export default function MonthBalance({ month, year }: Props) {
-	const [statsPopupVisible, setStatsPopupVisible] = useState(false);
+	const navigate = useNavigate();
 	const [searchBarVisible, setSearchBarVisible] = useState(false);
 	const [search, setSearch] = useState('');
 	const [activeKey, setActiveKey] = useState('1');
+	const [expenseFilters, setExpenseFilters] = useState<Filters>({});
+	const [earningFilters, setEarningFilters] = useState<Filters>({});
+	const [filtersPopupVisible, setFiltersPopupVisible] = useState(false);
 
 	const allEarnings = useTransactionStore(s => s.earnings);
 	const allExpenses = useTransactionStore(s => s.expenses);
 	const setTransactions = useTransactionStore(s => s.setTransactions);
+	const sorting = useTransactionStore(s => s.sorting);
+	const sortTransactions = useTransactionStore(s => s.sortTransactions);
 	const categories = useCategoryStore(s => s.categories);
 
 	const getCategory = (categoryId: string) => categories.find(c => c.id === categoryId);
@@ -63,6 +70,23 @@ export default function MonthBalance({ month, year }: Props) {
 
 	const balance = totalSumEarnings + totalSumExpenses;
 
+	const openMonthStats = () => {
+		const section = activeKey === '1' ? 'expenses' : 'earnings';
+		navigate(`/stats/month?month=${encodeURIComponent(month)}&year=${year}&section=${section}`);
+	};
+
+	const activeFilters = activeKey === '1' ? expenseFilters : earningFilters;
+	const activeFilterCount = activeFilters.categoryIds?.length || 0;
+
+	const applyFilters = (newFilters: Filters) => {
+		if (activeKey === '1') {
+			setExpenseFilters(newFilters);
+		} else {
+			setEarningFilters(newFilters);
+		}
+		setFiltersPopupVisible(false);
+	};
+
 	return (
 		<>
 			<div className="grid grid-cols-3 gap-2 mb-4">
@@ -86,6 +110,44 @@ export default function MonthBalance({ month, year }: Props) {
 					<TabsTrigger value="1">Expenses</TabsTrigger>
 					<TabsTrigger value="2">Earnings</TabsTrigger>
 				</TabsList>
+				{(earnings.length > 0 || expenses.length > 0) && (
+					<div className="flex items-center justify-between mt-2 mb-1 px-0.5">
+						<div className="flex items-center bg-white/60 backdrop-blur-sm rounded-full p-0.5 shadow-sm border border-black/5">
+							<button
+								onClick={() => sortTransactions(true)}
+								className={`flex items-center justify-center gap-1 py-1 px-2.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 ${
+									sorting === 'ascending'
+										? 'bg-foreground text-white shadow-md'
+										: 'text-muted-foreground hover:text-foreground'
+								}`}
+							>
+								<ArrowUp className="h-3 w-3" /> Old
+							</button>
+							<button
+								onClick={() => sortTransactions(false)}
+								className={`flex items-center justify-center gap-1 py-1 px-2.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 ${
+									sorting === 'descending'
+										? 'bg-foreground text-white shadow-md'
+										: 'text-muted-foreground hover:text-foreground'
+								}`}
+							>
+								<ArrowDown className="h-3 w-3" /> Recent
+							</button>
+						</div>
+						<div className="flex items-center gap-3">
+							<span className="relative cursor-pointer" onClick={() => setFiltersPopupVisible(true)}>
+								<Filter className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+								{activeFilterCount > 0 && (
+									<span className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 flex items-center justify-center rounded-full bg-foreground text-white text-[9px] font-bold shadow-sm">
+										{activeFilterCount}
+									</span>
+								)}
+							</span>
+							<Search className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground transition-colors" onClick={() => setSearchBarVisible(!searchBarVisible)} />
+							<LineChart className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground transition-colors" onClick={openMonthStats} />
+						</div>
+					</div>
+				)}
 				<TabsContent value="1">
 					{searchBarVisible && (
 						<Input
@@ -96,25 +158,18 @@ export default function MonthBalance({ month, year }: Props) {
 							className="mb-2"
 						/>
 					)}
-					<TransactionList type="expense" title="Expenses" transactions={expenses} search={search} />
+					<TransactionList type="expense" title="Expenses" transactions={expenses} search={search} filters={expenseFilters} />
 				</TabsContent>
 				<TabsContent value="2">
-					<TransactionList type="earning" title="Earnings" transactions={earnings} />
+					<TransactionList type="earning" title="Earnings" transactions={earnings} filters={earningFilters} />
 				</TabsContent>
-				{(earnings.length > 0 || expenses.length > 0) && (
-					<span className="absolute right-0 top-0 p-2.5 h-[46px] flex items-center gap-4">
-						<Search className="h-4 w-4 cursor-pointer" onClick={() => setSearchBarVisible(!searchBarVisible)} />
-						<LineChart className="h-4 w-4 cursor-pointer" onClick={() => setStatsPopupVisible(true)} />
-					</span>
-				)}
 			</Tabs>
-			<MonthStatsPopup
-				open={statsPopupVisible}
-				onOpenChange={setStatsPopupVisible}
-				month={month}
-				year={year}
-				expenses={expenses}
-				earnings={earnings}
+			<FiltersPopup
+				type={activeKey === '1' ? 'expense' : 'earning'}
+				open={filtersPopupVisible}
+				onOpenChange={setFiltersPopupVisible}
+				filters={activeFilters}
+				onApply={applyFilters}
 			/>
 		</>
 	);

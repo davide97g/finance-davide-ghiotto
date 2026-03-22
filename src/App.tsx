@@ -9,6 +9,8 @@ const Profile = React.lazy(() => import('./pages/Profile'));
 const Family = React.lazy(() => import('./pages/Family'));
 const Groceries = React.lazy(() => import('./pages/Groceries'));
 const Todo = React.lazy(() => import('./pages/Todo'));
+const MonthStats = React.lazy(() => import('./pages/MonthStats'));
+const YearStats = React.lazy(() => import('./pages/YearStats'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
 	const isLoggedIn = useUserStore(s => s.isLoggedIn);
@@ -39,6 +41,22 @@ export default function App() {
 							element={
 								<ProtectedRoute>
 									<Family />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path="/stats/month"
+							element={
+								<ProtectedRoute>
+									<MonthStats />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path="/stats/year"
+							element={
+								<ProtectedRoute>
+									<YearStats />
 								</ProtectedRoute>
 							}
 						/>
