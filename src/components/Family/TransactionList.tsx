@@ -45,11 +45,11 @@ export default function TransactionList({ title, type, transactions: rawTransact
 					transaction={selectedTransaction}
 				/>
 			)}
-			<div className="w-full h-[calc(100vh-330px)] overflow-auto p-2.5 pb-5 bg-[#e2f0e2] shadow-[inset_0_0_12px_#ccc]">
-				{transactions.map(item => (
+			<div className="w-full h-[calc(100dvh-260px)] overflow-auto p-2.5 pb-14 bg-[#e2f0e2] shadow-[inset_0_0_12px_#ccc] rounded-lg">
+				{transactions.map((item, index) => (
 					<div
 						key={item.id}
-						className="text-left py-2 border-b-2 cursor-pointer"
+						className={`text-left py-2 border-b cursor-pointer ${index % 2 === 0 ? 'bg-white/40' : 'bg-white/0'} px-2 rounded`}
 						onClick={() => openTransactionDetails(item)}
 					>
 						<TransactionItem item={item} />

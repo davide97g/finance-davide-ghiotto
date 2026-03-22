@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../ui/button';
-import { Checkbox } from '../ui/checkbox';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { useCategoryStore } from '../../stores/category';
 import { CategoryType } from '../../models/category';
@@ -32,24 +31,47 @@ export default function FiltersPopup({ type, open, onOpenChange, filters: propFi
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>Filters</DialogTitle>
+			<DialogContent className="max-w-[340px] rounded-2xl border-0 shadow-2xl p-0 gap-0 overflow-hidden">
+				<DialogHeader className="px-5 pt-5 pb-3">
+					<DialogTitle className="text-base">Filter by category</DialogTitle>
 				</DialogHeader>
-				<div className="flex flex-col gap-2 items-start">
-					<p className="text-sm">Categories to filter</p>
-					{categories.map(c => (
-						<div key={c.id} className="flex items-center gap-2">
-							<Checkbox checked={categoryIds.includes(c.id)} onCheckedChange={() => toggleCategory(c.id)} />
-							<span className="text-sm">{c.name}</span>
-						</div>
-					))}
+				<div className="px-5 pb-4 flex flex-wrap gap-2">
+					{categories.map(c => {
+						const isActive = categoryIds.includes(c.id);
+						return (
+							<button
+								key={c.id}
+								onClick={() => toggleCategory(c.id)}
+								className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 active:scale-95"
+								style={{
+									backgroundColor: isActive ? (c.color || '#ababab') : `${c.color || '#ababab'}18`,
+									color: isActive ? 'white' : (c.color || '#ababab'),
+									boxShadow: isActive ? `0 2px 8px ${c.color || '#ababab'}40` : 'none',
+								}}
+							>
+								{c.name}
+							</button>
+						);
+					})}
 				</div>
-				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-					<Button variant="destructive" onClick={clearFilters} disabled={!categoryIds.length}>Clear</Button>
-					<Button onClick={handleOk}>Apply</Button>
-				</DialogFooter>
+				<div className="px-5 pb-5 flex gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={clearFilters}
+						disabled={!categoryIds.length}
+						className="flex-1 rounded-xl h-9 text-xs"
+					>
+						Clear
+					</Button>
+					<Button
+						size="sm"
+						onClick={handleOk}
+						className="flex-1 rounded-xl h-9 text-xs"
+					>
+						Apply{categoryIds.length > 0 ? ` (${categoryIds.length})` : ''}
+					</Button>
+				</div>
 			</DialogContent>
 		</Dialog>
 	);
