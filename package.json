@@ -1,7 +1,7 @@
 {
 	"name": "finance-davide-ghiotto",
 	"private": false,
-	"version": "2.1.1",
+	"version": "2.2.0",
 	"type": "module",
 	"website": "https://finance.davideghiotto.it",
 	"scripts": {
@@ -10,7 +10,7 @@
 		"build": "vue-tsc && vite build",
 		"preview": "vite preview",
 		"prepare": "husky install",
-		"pwa": "npm run build && npm run pwa:preview",
+		"pwa": "bun run build && bun run pwa:preview",
 		"pwa:icons": "npx vue-pwa-asset-generator -a ./src/assets/img/logo.png -o public/img/icons --no-manifest",
 		"pwa:preview": "vite --config vite.config.js preview"
 	},
