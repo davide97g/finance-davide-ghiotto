@@ -16,6 +16,7 @@ import { ITransaction, Transaction } from '../models/transaction';
 import { Category, CategoryType, ICategory } from '../models/category';
 import { IStats, Stats } from '../models/stats';
 import { ITag, Tag } from '../models/tag';
+import { CategoryUsageData } from '../models/categoryUsage';
 import { setIsLoading } from '../stores/loading';
 import { Grocery, IGrocery } from '../models/grocery';
 import { ITodo, Todo } from '../models/todo';
@@ -463,6 +464,16 @@ export const DataBaseClient = {
 				console.error(err);
 				throw err;
 			}
+		},
+	},
+	CategoryUsage: {
+		async get(): Promise<CategoryUsageData | null> {
+			const docSnap = await getDoc(doc(db, 'settings', 'categoryUsage'));
+			if (docSnap.exists()) return docSnap.data() as CategoryUsageData;
+			return null;
+		},
+		async set(data: CategoryUsageData): Promise<void> {
+			await setDoc(doc(db, 'settings', 'categoryUsage'), data);
 		},
 	},
 };

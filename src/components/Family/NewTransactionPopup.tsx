@@ -7,6 +7,7 @@ import { Dialog, DialogContent } from '../ui/dialog';
 import { formatDate, MONTHS, openNotificationWithIcon, setIsLoading } from '../../services/utils';
 import { DataBaseClient } from '../../api/db';
 import { useCategoryStore } from '../../stores/category';
+import { useCategoryUsageStore } from '../../stores/categoryUsage';
 import { useTagStore } from '../../stores/tag';
 import { ITransaction } from '../../models/transaction';
 
@@ -29,8 +30,15 @@ export default function NewTransactionPopup({ open, onOpenChange, type }: Props)
 
 	const [transaction, setTransaction] = useState<Partial<ITransaction>>(newTransaction());
 	const allCategories = useCategoryStore(s => s.categories);
+	const usageCounts = useCategoryUsageStore(s => s.counts);
 	const tags = useTagStore(s => s.tags);
-	const categories = useMemo(() => allCategories.filter(c => c.type === type), [allCategories, type]);
+	const categories = useMemo(() => {
+		const filtered = allCategories.filter(c => c.type === type);
+		if (type === 'expense') {
+			return [...filtered].sort((a, b) => (usageCounts[b.id] || 0) - (usageCounts[a.id] || 0));
+		}
+		return filtered;
+	}, [allCategories, type, usageCounts]);
 
 	useEffect(() => {
 		setTransaction(newTransaction());

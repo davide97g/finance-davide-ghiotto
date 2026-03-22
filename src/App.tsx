@@ -1,5 +1,7 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useRegisterSW } from 'virtual:pwa-register/react';
+import { toast } from 'sonner';
 import ProgressBar from './components/ProgressBar';
 import { useUserStore } from './stores/user';
 
@@ -19,7 +21,28 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 	return <>{children}</>;
 }
 
+function useUpdatePrompt() {
+	const {
+		needRefresh: [needRefresh],
+		updateServiceWorker,
+	} = useRegisterSW();
+
+	useEffect(() => {
+		if (needRefresh) {
+			toast('Update available', {
+				description: 'A new version is ready.',
+				duration: Infinity,
+				action: {
+					label: 'Update',
+					onClick: () => updateServiceWorker(true),
+				},
+			});
+		}
+	}, [needRefresh, updateServiceWorker]);
+}
+
 export default function App() {
+	useUpdatePrompt();
 	return (
 		<>
 			<ProgressBar />

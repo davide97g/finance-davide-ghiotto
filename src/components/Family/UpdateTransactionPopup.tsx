@@ -8,6 +8,7 @@ import { clone, equals, openNotificationWithIcon, setIsLoading } from '../../ser
 import { cn } from '../../lib/utils';
 import { DataBaseClient } from '../../api/db';
 import { useCategoryStore } from '../../stores/category';
+import { useCategoryUsageStore } from '../../stores/categoryUsage';
 import { useTagStore } from '../../stores/tag';
 import { useTransactionStore } from '../../stores/transaction';
 import { Transaction } from '../../models/transaction';
@@ -73,8 +74,15 @@ function TagChip({ value, tags, onChange }: { value: string; tags: { id: string;
 export default function UpdateTransactionPopup({ open, onOpenChange, transaction: propTransaction }: Props) {
 	const [transaction, setTransaction] = useState<Transaction>(clone(propTransaction));
 	const allCategories = useCategoryStore(s => s.categories);
+	const usageCounts = useCategoryUsageStore(s => s.counts);
 	const tags = useTagStore(s => s.tags);
-	const categories = useMemo(() => allCategories.filter(c => c.type === transaction.type), [allCategories, transaction.type]);
+	const categories = useMemo(() => {
+		const filtered = allCategories.filter(c => c.type === transaction.type);
+		if (transaction.type === 'expense') {
+			return [...filtered].sort((a, b) => (usageCounts[b.id] || 0) - (usageCounts[a.id] || 0));
+		}
+		return filtered;
+	}, [allCategories, transaction.type, usageCounts]);
 
 	useEffect(() => {
 		setTransaction(clone(propTransaction));

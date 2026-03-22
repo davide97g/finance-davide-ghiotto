@@ -9,6 +9,7 @@ import NewTransactionPopup from '../components/Family/NewTransactionPopup';
 import SettingsPanel from '../components/Family/Settings/Settings';
 import { MONTHS, YEARS, setIsLoading } from '../services/utils';
 import { useCategoryStore } from '../stores/category';
+import { useCategoryUsageStore } from '../stores/categoryUsage';
 import { useTagStore } from '../stores/tag';
 import { DataBaseClient } from '../api/db';
 
@@ -33,12 +34,16 @@ export default function Family() {
 	useEffect(() => {
 		const load = async () => {
 			setIsLoading(true);
-			const [cats, tags] = await Promise.all([
+			const [cats, tags, categoryUsage] = await Promise.all([
 				DataBaseClient.Category.get(),
 				DataBaseClient.Tag.get(),
+				DataBaseClient.CategoryUsage.get(),
 			]);
 			useCategoryStore.getState().setCategories(cats);
 			useTagStore.getState().setTags(tags);
+			if (categoryUsage) {
+				useCategoryUsageStore.getState().setCategoryUsage(categoryUsage.counts, categoryUsage.lastRefreshed);
+			}
 			setIsLoading(false);
 		};
 		load();
