@@ -9,6 +9,9 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - uses: oven-sh/setup-bun@v2
+            - run: echo "$ENV_FILE" > .env
+              env:
+                  ENV_FILE: ${{ secrets.ENV_FILE }}
             - run: bun i && bun run build
             - uses: FirebaseExtended/action-hosting-deploy@v0
               with:
