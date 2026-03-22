@@ -29,6 +29,7 @@ export default function NewTransactionPopup({ open, onOpenChange, type }: Props)
 	});
 
 	const [transaction, setTransaction] = useState<Partial<ITransaction>>(newTransaction());
+	const [amountDisplay, setAmountDisplay] = useState('');
 	const allCategories = useCategoryStore(s => s.categories);
 	const usageCounts = useCategoryUsageStore(s => s.counts);
 	const tags = useTagStore(s => s.tags);
@@ -42,6 +43,7 @@ export default function NewTransactionPopup({ open, onOpenChange, type }: Props)
 
 	useEffect(() => {
 		setTransaction(newTransaction());
+		setAmountDisplay('');
 	}, [type]);
 
 	const updateField = (field: string, value: any) => {
@@ -62,6 +64,7 @@ export default function NewTransactionPopup({ open, onOpenChange, type }: Props)
 			.then(t => {
 				openNotificationWithIcon('success', 'Success', 'Transaction ' + t.description + ' saved');
 				setTransaction(newTransaction());
+				setAmountDisplay('');
 				onOpenChange(false);
 			})
 			.catch(err => console.error(err))
@@ -86,11 +89,16 @@ export default function NewTransactionPopup({ open, onOpenChange, type }: Props)
 					{/* Hero amount field */}
 					<div className="flex items-baseline gap-1 justify-center">
 						<input
-							type="number"
-							min={0}
-							step={0.01}
-							value={transaction.amount || ''}
-							onChange={e => updateField('amount', parseFloat(e.target.value) || 0)}
+							type="text"
+							inputMode="decimal"
+							value={amountDisplay}
+							onChange={e => {
+								const raw = e.target.value.replace(',', '.');
+								if (raw === '' || /^\d*\.?\d*$/.test(raw)) {
+									setAmountDisplay(e.target.value);
+									updateField('amount', raw === '' ? 0 : parseFloat(raw));
+								}
+							}}
 							placeholder="0.00"
 							className="bg-transparent border-none outline-none text-center text-4xl font-bold tracking-tight w-full placeholder:text-black/15"
 							style={{ color: accentColor }}

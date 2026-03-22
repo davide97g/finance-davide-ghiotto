@@ -12,7 +12,15 @@ ReactDOM.createRoot(document.getElementById('app')!).render(
 	<React.StrictMode>
 		<BrowserRouter>
 			<App />
-			<Toaster position="top-right" richColors />
+			<Toaster
+				position="top-center"
+				toastOptions={{
+					className: 'custom-toast',
+					style: {
+						fontFamily: "'Montserrat', sans-serif",
+					},
+				}}
+			/>
 		</BrowserRouter>
 	</React.StrictMode>
 );
