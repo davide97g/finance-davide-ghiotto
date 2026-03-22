@@ -28,3 +28,4 @@ dist-ssr
 .env
 tsconfig.tsbuildinfo
 tsconfig.node.tsbuildinfo
+/docs
