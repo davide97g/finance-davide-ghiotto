@@ -1,16 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Plus, X } from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Checkbox } from '../components/ui/checkbox';
-import { Separator } from '../components/ui/separator';
-import Avatar from '../components/Avatar';
+import { useState, useEffect } from 'react';
 import { DataBaseClient } from '../api/db';
 import { Grocery } from '../models/grocery';
+import ChecklistPage from '../components/ChecklistPage';
 
 export default function Groceries() {
 	const [items, setItems] = useState<Grocery[]>([]);
-	const [newItem, setNewItem] = useState('');
 
 	useEffect(() => {
 		let unsubscribe: (() => void) | undefined;
@@ -24,67 +18,19 @@ export default function Groceries() {
 		};
 	}, []);
 
-	const sortedItems = useMemo(() => {
-		return [...items]
-			.filter(item => !newItem || item.label.toLowerCase().includes(newItem.toLowerCase()))
-			.sort((i1, i2) => {
-				const c1 = i1.checked ? 1 : -1;
-				const c2 = i2.checked ? 1 : -1;
-				const diff = c1 - c2;
-				if (!diff) return i1.label.localeCompare(i2.label);
-				return c1 - c2;
-			});
-	}, [items, newItem]);
-
-	const addNewItem = () => {
-		if (newItem) {
-			DataBaseClient.Grocery.create({ label: newItem, checked: false }).then(() => {
-				setNewItem('');
-			});
-		}
-	};
-
-	const onCheck = (item: Grocery) => {
-		DataBaseClient.Grocery.update({ ...item, checked: !item.checked });
-	};
-
-	const deleteItem = (item: Grocery) => {
-		DataBaseClient.Grocery.delete(item.id);
-	};
-
 	return (
-		<>
-			<Avatar position="topLeft" />
-			<h1 className="text-2xl font-bold">Groceries</h1>
-			<p>Here is a list of groceries</p>
-			<div className="flex px-4">
-				<Input
-					value={newItem}
-					onChange={e => setNewItem(e.target.value)}
-					placeholder="Add new"
-					onKeyDown={e => e.key === 'Enter' && addNewItem()}
-				/>
-				<Button onClick={addNewItem} disabled={!newItem}>
-					Add <Plus className="ml-1 h-4 w-4" />
-				</Button>
-			</div>
-			<Separator className="my-4" />
-			<div className="px-4 flex flex-col gap-2 items-start max-h-[calc(100vh-200px)] overflow-y-auto">
-				{sortedItems.map(item => (
-					<div key={item.id} className="flex justify-between items-center w-full">
-						<div className="flex items-center gap-2">
-							<Checkbox
-								checked={item.checked}
-								onCheckedChange={() => onCheck(item)}
-							/>
-							<span className={item.checked ? 'line-through' : ''}>
-								{item.label}
-							</span>
-						</div>
-						<X className="h-4 w-4 cursor-pointer" onClick={() => deleteItem(item)} />
-					</div>
-				))}
-			</div>
-		</>
+		<ChecklistPage
+			title="Groceries"
+			icon="🛒"
+			items={items}
+			filterWhileTyping
+			onAdd={label =>
+				DataBaseClient.Grocery.create({ label, checked: false })
+			}
+			onCheck={item =>
+				DataBaseClient.Grocery.update({ ...item, checked: !item.checked })
+			}
+			onDelete={item => DataBaseClient.Grocery.delete(item.id)}
+		/>
 	);
 }

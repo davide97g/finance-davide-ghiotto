@@ -27,3 +27,4 @@ dist-ssr
 .firebase
 .env
 tsconfig.tsbuildinfo
+tsconfig.node.tsbuildinfo
