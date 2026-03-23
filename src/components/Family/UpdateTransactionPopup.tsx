@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { CalendarDays, FileText, Tag as TagIcon, FolderOpen, Euro } from 'lucide-react';
+import { CalendarDays, FileText, Tag as TagIcon, FolderOpen, Euro, Trash2 } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -74,6 +74,8 @@ function TagChip({ value, tags, onChange }: { value: string; tags: { id: string;
 export default function UpdateTransactionPopup({ open, onOpenChange, transaction: propTransaction }: Props) {
 	const [transaction, setTransaction] = useState<Transaction>(clone(propTransaction));
 	const [amountDisplay, setAmountDisplay] = useState(String(propTransaction.amount || ''));
+	const [confirmingDelete, setConfirmingDelete] = useState(false);
+	const removeTransaction = useTransactionStore(s => s.removeTransaction);
 	const allCategories = useCategoryStore(s => s.categories);
 	const usageCounts = useCategoryUsageStore(s => s.counts);
 	const tags = useTagStore(s => s.tags);
@@ -88,6 +90,7 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 	useEffect(() => {
 		setTransaction(clone(propTransaction));
 		setAmountDisplay(String(propTransaction.amount || ''));
+		setConfirmingDelete(false);
 	}, [propTransaction]);
 
 	const updateField = (field: string, value: any) => {
@@ -104,6 +107,24 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 			})
 			.catch(err => console.error(err))
 			.finally(() => setIsLoading(false));
+	};
+
+	const handleDelete = () => {
+		setIsLoading(true);
+		DataBaseClient.Transaction.delete(propTransaction.id)
+			.then(() => {
+				openNotificationWithIcon('success', 'Success', 'Transaction deleted');
+				removeTransaction(propTransaction);
+				onOpenChange(false);
+			})
+			.catch(err => {
+				console.error(err);
+				openNotificationWithIcon('error', 'Error', 'Failed to delete transaction');
+			})
+			.finally(() => {
+				setIsLoading(false);
+				setConfirmingDelete(false);
+			});
 	};
 
 	const isDisabled = !transaction.amount || !transaction.date || !transaction.category || equals(transaction, propTransaction);
@@ -219,12 +240,37 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 					>
 						Save changes
 					</button>
-					<button
-						onClick={() => onOpenChange(false)}
-						className="w-full h-9 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors"
-					>
-						Cancel
-					</button>
+
+					{/* Delete: two-step confirmation */}
+					{!confirmingDelete ? (
+						<button
+							onClick={() => setConfirmingDelete(true)}
+							className="w-full h-9 rounded-xl text-sm text-muted-foreground/60 hover:text-destructive flex items-center justify-center gap-1.5 transition-colors"
+						>
+							<Trash2 className="h-3.5 w-3.5" />
+							Delete
+						</button>
+					) : (
+						<div className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+							<p className="text-xs text-center text-destructive font-medium">
+								This will permanently delete this transaction.
+							</p>
+							<div className="flex gap-2">
+								<button
+									onClick={() => setConfirmingDelete(false)}
+									className="flex-1 h-9 rounded-xl text-sm font-medium border border-black/10 text-muted-foreground hover:text-foreground transition-colors"
+								>
+									Keep it
+								</button>
+								<button
+									onClick={handleDelete}
+									className="flex-1 h-9 rounded-xl text-sm font-semibold bg-destructive text-white hover:bg-destructive/90 active:scale-[0.98] transition-all shadow-sm"
+								>
+									Yes, delete
+								</button>
+							</div>
+						</div>
+					)}
 				</div>
 			</DialogContent>
 		</Dialog>
