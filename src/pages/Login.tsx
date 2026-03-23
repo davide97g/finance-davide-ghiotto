@@ -27,16 +27,18 @@ export default function Login() {
 			</div>
 
 			<div className="relative z-10 flex flex-1 flex-col items-center px-6 pt-8 pb-10">
-				{/* Back button */}
-				<Link
-					to="/"
-					className="self-start animate-[fadeSlideIn_0.5s_ease_both]"
-				>
-					<button className="flex items-center gap-1.5 text-sm text-stone-400 transition-colors hover:text-stone-600">
-						<ArrowLeft className="h-4 w-4" />
-						Home
-					</button>
-				</Link>
+				{/* Back button — only when already logged in */}
+				{isLoggedIn && (
+					<Link
+						to="/"
+						className="self-start animate-[fadeSlideIn_0.5s_ease_both]"
+					>
+						<button className="flex items-center gap-1.5 text-sm text-stone-400 transition-colors hover:text-stone-600">
+							<ArrowLeft className="h-4 w-4" />
+							Home
+						</button>
+					</Link>
+				)}
 
 				{isLoggedIn ? (
 					/* Already logged in state */

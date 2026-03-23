@@ -38,7 +38,7 @@ export const checkUserIsLoggedIn = () => {
 					useUserStore.getState().setUser(user);
 					resolve(user);
 				} else {
-					if (window.location.pathname !== '/login') window.location.href = '/login';
+					useUserStore.getState().setUser(null);
 					reject(new Error('User not logged in'));
 				}
 			},

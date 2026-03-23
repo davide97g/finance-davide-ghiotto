@@ -12,12 +12,22 @@ export default function SplashScreen() {
 
 	const [timerDone, setTimerDone] = useState(false);
 	const [fadingOut, setFadingOut] = useState(false);
-	const [hidden, setHidden] = useState(() => !!sessionStorage.getItem(SESSION_KEY));
+	const [hidden, setHidden] = useState(
+		() => !!sessionStorage.getItem(SESSION_KEY) || window.location.pathname === '/login'
+	);
 
 	useEffect(() => {
 		const id = setTimeout(() => setTimerDone(true), MINIMUM_DISPLAY_MS);
 		return () => clearTimeout(id);
 	}, []);
+
+	// If not logged in, dismiss immediately so the auth redirect can proceed
+	useEffect(() => {
+		if (isLoggedIn === false) {
+			sessionStorage.setItem(SESSION_KEY, '1');
+			setHidden(true);
+		}
+	}, [isLoggedIn]);
 
 	useEffect(() => {
 		if (timerDone && isLoggedIn !== undefined && !fadingOut) {
@@ -59,6 +69,8 @@ export default function SplashScreen() {
 						strokeWidth="2"
 						strokeLinecap="round"
 						strokeLinejoin="round"
+						aria-label="Logo"
+						role="img"
 					>
 						<path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
 					</svg>

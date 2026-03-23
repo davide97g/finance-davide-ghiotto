@@ -51,7 +51,7 @@ export default function App() {
 			<div id="router-view" className="h-screen overflow-auto">
 				<Suspense fallback={null}>
 					<Routes>
-						<Route path="/" element={<Home />} />
+						<Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
 						<Route path="/login" element={<Login />} />
 						<Route
 							path="/profile"
