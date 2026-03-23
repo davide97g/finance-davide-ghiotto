@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { toast } from 'sonner';
 import ProgressBar from './components/ProgressBar';
+import SplashScreen from './components/SplashScreen';
 import { useUserStore } from './stores/user';
 
 const Home = React.lazy(() => import('./pages/Home'));
@@ -45,6 +46,7 @@ export default function App() {
 	useUpdatePrompt();
 	return (
 		<>
+			<SplashScreen />
 			<ProgressBar />
 			<div id="router-view" className="h-screen overflow-auto">
 				<Suspense fallback={null}>
