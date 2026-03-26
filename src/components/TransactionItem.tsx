@@ -34,9 +34,10 @@ export default function TransactionItem({ item }: Props) {
 			className="flex items-stretch w-full rounded-xl overflow-hidden transition-all duration-150 shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
 			style={{
 				backgroundColor: `${categoryColor}10`,
-				border: `1px solid ${categoryColor}30`,
-				borderLeftWidth: tier === 'lg' ? 5 : tier === 'md' ? 4 : 3,
-				borderLeftColor: categoryColor,
+				borderTop: `1px solid ${categoryColor}30`,
+				borderRight: `1px solid ${categoryColor}30`,
+				borderBottom: `1px solid ${categoryColor}30`,
+				borderLeft: `${tier === 'lg' ? 5 : tier === 'md' ? 4 : 3}px solid ${categoryColor}`,
 			}}
 		>
 			<div className="flex-1 min-w-0 px-3 py-2 flex items-center gap-3">

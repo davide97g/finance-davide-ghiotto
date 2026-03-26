@@ -30,15 +30,15 @@ export default function SplashScreen() {
 	}, [isLoggedIn]);
 
 	useEffect(() => {
-		if (timerDone && isLoggedIn !== undefined && !fadingOut) {
-			setFadingOut(true);
-			const id = setTimeout(() => {
-				sessionStorage.setItem(SESSION_KEY, '1');
-				setHidden(true);
-			}, FADE_OUT_MS);
-			return () => clearTimeout(id);
-		}
-	}, [timerDone, isLoggedIn, fadingOut]);
+		if (!timerDone || isLoggedIn === undefined) return;
+		setFadingOut(true);
+		const id = setTimeout(() => {
+			sessionStorage.setItem(SESSION_KEY, '1');
+			setHidden(true);
+		}, FADE_OUT_MS);
+		return () => clearTimeout(id);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [timerDone, isLoggedIn]);
 
 	if (hidden) return null;
 
