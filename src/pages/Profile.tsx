@@ -1,6 +1,7 @@
-import { ArrowLeft, LogOut, Mail, Moon, Sun, User } from "lucide-react";
+import { ArrowLeft, LogOut, Mail, Moon, Rows3, Sun, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FirebaseAuth } from "../api/auth";
+import { useCompactMode } from "../hooks/useCompactMode";
 import { useTheme } from "../hooks/useTheme";
 import { getPhotoURL } from "../services/utils";
 import { useUserStore } from "../stores/user";
@@ -13,6 +14,7 @@ const themeOptions = [
 export default function Profile() {
 	const user = useUserStore((s) => s.user);
 	const { theme, setTheme } = useTheme();
+	const { compactMode, setCompactMode } = useCompactMode();
 
 	return (
 		<div className="relative min-h-screen flex flex-col overflow-hidden">
@@ -120,8 +122,42 @@ export default function Profile() {
 					</div>
 				</div>
 
+				{/* Compact mode toggle */}
+				<div className="w-full max-w-sm mt-6 animate-[fadeSlideIn_0.5s_0.3s_ease_both]">
+					<div className="rounded-2xl bg-card/70 backdrop-blur-sm border border-card/80 shadow-sm overflow-hidden">
+						<div className="flex items-center justify-between gap-4 px-5 py-4">
+							<div className="flex items-center gap-4">
+								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary text-muted-foreground">
+									<Rows3 className="h-4 w-4" strokeWidth={2} />
+								</div>
+								<div className="text-left">
+									<p className="text-sm font-medium text-foreground">
+										Compact list
+									</p>
+									<p className="text-[11px] text-muted-foreground">
+										Show emoji instead of category name
+									</p>
+								</div>
+							</div>
+							<button
+								type="button"
+								onClick={() => setCompactMode(!compactMode)}
+								className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 ${
+									compactMode ? "bg-primary" : "bg-secondary"
+								}`}
+							>
+								<span
+									className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+										compactMode ? "translate-x-6" : "translate-x-1"
+									}`}
+								/>
+							</button>
+						</div>
+					</div>
+				</div>
+
 				{/* Logout button */}
-				<div className="mt-8 animate-[fadeSlideIn_0.5s_0.3s_ease_both]">
+				<div className="mt-8 animate-[fadeSlideIn_0.5s_0.35s_ease_both]">
 					<button
 						type="button"
 						onClick={() => FirebaseAuth.signOut()}
