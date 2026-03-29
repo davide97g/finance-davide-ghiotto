@@ -26,9 +26,9 @@ import { setIsLoading } from "../stores/loading";
 const db = getFirestore();
 
 enableIndexedDbPersistence(db).catch((err) => {
-	if (err.code == "failed-precondition") {
+	if (err.code === "failed-precondition") {
 		console.info("offline init failed");
-	} else if (err.code == "unimplemented") {
+	} else if (err.code === "unimplemented") {
 		console.info("offline not supported");
 	}
 });
@@ -314,13 +314,7 @@ export const DataBaseClient = {
 			}
 		},
 		async delete(statsId: string): Promise<boolean> {
-			let document;
-			try {
-				document = doc(collection(db, this.collection), statsId);
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			const document = doc(collection(db, this.collection), statsId);
 			try {
 				await deleteDoc(document);
 				return true;
@@ -341,14 +335,10 @@ export const DataBaseClient = {
 			}
 		},
 		async bulkAdd(stats: IStats[]): Promise<Stats[]> {
-			try {
-				const statsCreation: Promise<Stats>[] = [];
-				stats.forEach((stat) => statsCreation.push(this.create(stat)));
-				const result = await Promise.all(statsCreation);
-				return result;
-			} catch (err) {
-				throw err;
-			}
+			const statsCreation: Promise<Stats>[] = [];
+			stats.forEach((stat) => statsCreation.push(this.create(stat)));
+			const result = await Promise.all(statsCreation);
+			return result;
 		},
 	},
 	Grocery: {

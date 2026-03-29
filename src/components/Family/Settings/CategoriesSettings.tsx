@@ -42,7 +42,19 @@ export default function CategoriesSettings() {
 				{categories
 					.filter((c) => c.type === "expense")
 					.map((category) => (
-						<div key={category.id} onClick={() => onCategorySelected(category)}>
+						// biome-ignore lint/a11y/useSemanticElements: wrapper div with role="button" preserves styling
+						<div
+							key={category.id}
+							role="button"
+							tabIndex={0}
+							onClick={() => onCategorySelected(category)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									e.preventDefault();
+									onCategorySelected(category);
+								}
+							}}
+						>
 							<CategoryBadge category={category} removable />
 						</div>
 					))}
@@ -53,7 +65,19 @@ export default function CategoriesSettings() {
 				{categories
 					.filter((c) => c.type === "earning")
 					.map((category) => (
-						<div key={category.id} onClick={() => onCategorySelected(category)}>
+						// biome-ignore lint/a11y/useSemanticElements: wrapper div with role="button" preserves styling
+						<div
+							key={category.id}
+							role="button"
+							tabIndex={0}
+							onClick={() => onCategorySelected(category)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									e.preventDefault();
+									onCategorySelected(category);
+								}
+							}}
+						>
 							<CategoryBadge category={category} removable />
 						</div>
 					))}

@@ -35,7 +35,7 @@ export default function NewCategoryPopup({ open, onOpenChange }: Props) {
 	});
 	const [category, setCategory] = useState<ICategory>(newCategory());
 
-	const updateField = (field: string, value: any) =>
+	const updateField = (field: string, value: string | number | boolean) =>
 		setCategory((prev) => ({ ...prev, [field]: value }));
 
 	const handleOk = () => {
@@ -45,7 +45,7 @@ export default function NewCategoryPopup({ open, onOpenChange }: Props) {
 				openNotificationWithIcon(
 					"success",
 					"Success",
-					"Category " + cat.name + " created",
+					`Category ${cat.name} created`,
 				);
 				useCategoryStore.getState().addCategory(cat);
 				setCategory(newCategory());

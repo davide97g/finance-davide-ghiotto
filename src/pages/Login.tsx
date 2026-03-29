@@ -5,7 +5,12 @@ import { useUserStore } from "../stores/user";
 
 function GoogleIcon({ className }: { className?: string }) {
 	return (
-		<svg className={className} viewBox="0 0 24 24" fill="none">
+		<svg
+			className={className}
+			viewBox="0 0 24 24"
+			fill="none"
+			aria-hidden="true"
+		>
 			<path
 				d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
 				fill="#4285F4"
@@ -34,8 +39,8 @@ export default function Login() {
 		<div className="relative min-h-screen flex flex-col overflow-hidden">
 			{/* Decorative background */}
 			<div className="pointer-events-none absolute inset-0">
-				<div className="absolute -top-32 -right-32 h-80 w-80 rounded-full bg-emerald-800/[0.04] blur-2xl" />
-				<div className="absolute bottom-1/4 -left-20 h-64 w-64 rounded-full bg-teal-700/[0.05] blur-3xl" />
+				<div className="absolute -top-32 -right-32 h-80 w-80 rounded-full bg-emerald-800/[0.04] dark:bg-emerald-400/[0.06] blur-2xl" />
+				<div className="absolute bottom-1/4 -left-20 h-64 w-64 rounded-full bg-teal-700/[0.05] dark:bg-teal-400/[0.06] blur-3xl" />
 			</div>
 
 			<div className="relative z-10 flex flex-1 flex-col items-center px-6 pt-8 pb-10">
@@ -45,7 +50,10 @@ export default function Login() {
 						to="/"
 						className="self-start animate-[fadeSlideIn_0.5s_ease_both]"
 					>
-						<button className="flex items-center gap-1.5 text-sm text-stone-400 transition-colors hover:text-stone-600">
+						<button
+							type="button"
+							className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+						>
 							<ArrowLeft className="h-4 w-4" />
 							Home
 						</button>
@@ -62,20 +70,23 @@ export default function Login() {
 									src={user?.photoURL || ""}
 									alt="profile"
 									referrerPolicy="no-referrer"
-									className="relative h-20 w-20 rounded-full border-[3px] border-white/90 shadow-lg shadow-stone-900/10"
+									className="relative h-20 w-20 rounded-full border-[3px] border-card/90 shadow-lg shadow-foreground/10"
 								/>
 							</div>
 						</div>
 
 						<div className="text-center mb-8 animate-[fadeSlideIn_0.5s_0.15s_ease_both]">
-							<p className="text-sm text-stone-400 mb-1">Signed in as</p>
-							<p className="text-lg font-bold text-stone-800">
+							<p className="text-sm text-muted-foreground mb-1">Signed in as</p>
+							<p className="text-lg font-bold text-foreground">
 								{user?.displayName}
 							</p>
 						</div>
 
 						<Link to="/" className="animate-[fadeSlideIn_0.5s_0.2s_ease_both]">
-							<button className="group flex items-center gap-2 rounded-xl bg-stone-800 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-stone-900/20 transition-all duration-200 hover:bg-stone-700 hover:shadow-xl active:scale-[0.98]">
+							<button
+								type="button"
+								className="group flex items-center gap-2 rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-foreground/10 transition-all duration-200 hover:opacity-90 hover:shadow-xl active:scale-[0.98]"
+							>
 								Go to dashboard
 								<ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
 							</button>
@@ -86,11 +97,12 @@ export default function Login() {
 					<div className="flex flex-1 flex-col items-center justify-center -mt-8">
 						{/* Lock icon area */}
 						<div className="mb-8 animate-[fadeSlideIn_0.5s_0.1s_ease_both]">
-							<div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/70 backdrop-blur-sm border border-white/80 shadow-sm">
+							<div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-card/70 backdrop-blur-sm border border-card/80 shadow-sm">
 								<svg
-									className="h-8 w-8 text-stone-400"
+									className="h-8 w-8 text-muted-foreground"
 									viewBox="0 0 24 24"
 									fill="none"
+									aria-hidden="true"
 									stroke="currentColor"
 									strokeWidth="1.5"
 									strokeLinecap="round"
@@ -103,10 +115,10 @@ export default function Login() {
 						</div>
 
 						<div className="text-center mb-10 animate-[fadeSlideIn_0.5s_0.15s_ease_both]">
-							<h2 className="text-[1.5rem] font-bold tracking-tight text-stone-800 mb-2">
+							<h2 className="text-[1.5rem] font-bold tracking-tight text-foreground mb-2">
 								Welcome back
 							</h2>
-							<p className="text-sm text-stone-500 leading-relaxed max-w-[260px] mx-auto">
+							<p className="text-sm text-muted-foreground leading-relaxed max-w-[260px] mx-auto">
 								Sign in with your Google account to access your personal finance
 								dashboard.
 							</p>
@@ -114,11 +126,12 @@ export default function Login() {
 
 						<div className="w-full max-w-sm animate-[fadeSlideIn_0.5s_0.2s_ease_both]">
 							<button
+								type="button"
 								onClick={() => FirebaseAuth.signInWithGoogle()}
-								className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-white/80 backdrop-blur-sm border border-stone-200/70 px-6 py-4 shadow-sm transition-all duration-200 hover:bg-white hover:shadow-md hover:shadow-stone-900/[0.06] hover:-translate-y-0.5 active:scale-[0.99]"
+								className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-card/80 backdrop-blur-sm border border-border px-6 py-4 shadow-sm transition-all duration-200 hover:bg-card hover:shadow-md hover:shadow-foreground/[0.06] hover:-translate-y-0.5 active:scale-[0.99]"
 							>
 								<GoogleIcon className="h-5 w-5" />
-								<span className="text-sm font-semibold text-stone-700">
+								<span className="text-sm font-semibold text-foreground">
 									Continue with Google
 								</span>
 							</button>

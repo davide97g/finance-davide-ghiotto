@@ -8,7 +8,10 @@ import { checkUserIsLoggedIn } from "./api/auth";
 
 checkUserIsLoggedIn().catch(() => {});
 
-ReactDOM.createRoot(document.getElementById("app")!).render(
+const rootElement = document.getElementById("app");
+if (!rootElement) throw new Error("Root element not found");
+
+ReactDOM.createRoot(rootElement).render(
 	<React.StrictMode>
 		<BrowserRouter>
 			<App />

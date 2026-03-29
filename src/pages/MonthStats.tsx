@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
 	Area,
@@ -96,7 +96,10 @@ export default function MonthStats() {
 			allCategories.filter((c) => c.type === "earning" || c.type === "expense"),
 		[allCategories],
 	);
-	const getCategory = (id: string) => categories.find((c) => c.id === id);
+	const getCategory = useCallback(
+		(id: string) => categories.find((c) => c.id === id),
+		[categories],
+	);
 
 	const totalExpenses = useMemo(() => {
 		let tot = 0;
@@ -104,7 +107,7 @@ export default function MonthStats() {
 			.filter((t) => !getCategory(t.category)?.excludeFromBudget)
 			.forEach((t) => (tot += t.amount));
 		return tot;
-	}, [expenses, categories]);
+	}, [expenses, getCategory]);
 
 	const totalEarnings = useMemo(() => {
 		let tot = 0;
@@ -112,7 +115,7 @@ export default function MonthStats() {
 			.filter((t) => !getCategory(t.category)?.excludeFromBudget)
 			.forEach((t) => (tot += t.amount));
 		return tot;
-	}, [earnings, categories]);
+	}, [earnings, getCategory]);
 
 	const balance = totalEarnings - totalExpenses;
 
@@ -141,9 +144,9 @@ export default function MonthStats() {
 			else daysMap[day].earnings += t.amount;
 		});
 		return Object.values(daysMap).sort(
-			(a, b) => parseInt(a.day) - parseInt(b.day),
+			(a, b) => parseInt(a.day, 10) - parseInt(b.day, 10),
 		);
-	}, [expenses, earnings, categories]);
+	}, [expenses, earnings, getCategory]);
 
 	const areaConfig: ChartConfig = {
 		expenses: { label: "Expenses", color: "#cf1322" },
@@ -274,6 +277,7 @@ function CategoryBreakdown({
 						paddingAngle={2}
 					>
 						{data.map((entry, i) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: Recharts Cell components require index-based keys
 							<Cell key={i} fill={entry.fill} />
 						))}
 					</Pie>

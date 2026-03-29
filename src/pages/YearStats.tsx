@@ -2,14 +2,13 @@ import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
-	Area,
-	AreaChart,
+	Bar,
+	BarChart,
 	CartesianGrid,
 	Cell,
+	LabelList,
 	Pie,
 	PieChart,
-	XAxis,
-	YAxis,
 } from "recharts";
 import { DataBaseClient } from "../api/db";
 import { Button } from "../components/ui/button";
@@ -27,7 +26,7 @@ import {
 } from "../components/ui/tabs";
 import type { IStats } from "../models/stats";
 import type { Transaction } from "../models/transaction";
-import { MONTHS, setIsLoading } from "../services/utils";
+import { setIsLoading } from "../services/utils";
 import { useCategoryStore } from "../stores/category";
 import { useStatsStore } from "../stores/stats";
 
@@ -82,50 +81,62 @@ export default function YearStats() {
 		[totalSumEarnings, totalSumExpenses],
 	);
 
-	// Monthly area chart data
+	// Monthly bar chart data (balance = earnings - expenses)
 	const monthlyData = useMemo(() => {
-		const months = yearlyExpenses
-			.map((e) => e.month)
-			.sort(
-				(a, b) => new Date(`1 ${a}`).getTime() - new Date(`1 ${b}`).getTime(),
-			);
-		return months.map((m) => ({
-			month: m.substring(0, 3),
-			expenses: yearlyExpenses.find((e) => e.month === m)?.total || 0,
-			earnings: yearlyEarnings.find((e) => e.month === m)?.total || 0,
-		}));
+		const allMonths = [
+			...new Set([
+				...yearlyExpenses.map((e) => e.month),
+				...yearlyEarnings.map((e) => e.month),
+			]),
+		].sort(
+			(a, b) => new Date(`1 ${a}`).getTime() - new Date(`1 ${b}`).getTime(),
+		);
+		return allMonths.map((m) => {
+			const earnings = yearlyEarnings.find((e) => e.month === m)?.total || 0;
+			const expenses = yearlyExpenses.find((e) => e.month === m)?.total || 0;
+			return {
+				month: m.substring(0, 3),
+				balance: Math.round(earnings - expenses),
+			};
+		});
 	}, [yearlyExpenses, yearlyEarnings]);
 
 	// Category breakdown
-	const getCategory = (id: string) => categories.find((c) => c.id === id);
+	const getCategory = useCallback(
+		(id: string) => categories.find((c) => c.id === id),
+		[categories],
+	);
 
-	const buildCategoryData = (statsList: IStats[]) => {
-		const categoriesMap: Record<string, number> = {};
-		const total = statsList.reduce((acc, curr) => acc + curr.total, 0);
-		statsList.forEach((monthStats) => {
-			monthStats.categorySummary.forEach(({ categoryId, total }) => {
-				if (!categoriesMap[categoryId]) categoriesMap[categoryId] = 0;
-				categoriesMap[categoryId] += total;
+	const buildCategoryData = useCallback(
+		(statsList: IStats[]) => {
+			const categoriesMap: Record<string, number> = {};
+			const total = statsList.reduce((acc, curr) => acc + curr.total, 0);
+			statsList.forEach((monthStats) => {
+				monthStats.categorySummary.forEach(({ categoryId, total }) => {
+					if (!categoriesMap[categoryId]) categoriesMap[categoryId] = 0;
+					categoriesMap[categoryId] += total;
+				});
 			});
-		});
-		const aggregated = Object.keys(categoriesMap)
-			.map((id) => ({ category: getCategory(id), amount: categoriesMap[id] }))
-			.sort((a, b) => b.amount - a.amount);
-		return aggregated.map((c) => ({
-			name: c.category?.name || "Unknown",
-			value: c.amount,
-			percentage: total > 0 ? Math.round((c.amount / total) * 100) : 0,
-			fill: c.category?.color || "#ababab",
-		}));
-	};
+			const aggregated = Object.keys(categoriesMap)
+				.map((id) => ({ category: getCategory(id), amount: categoriesMap[id] }))
+				.sort((a, b) => b.amount - a.amount);
+			return aggregated.map((c) => ({
+				name: c.category?.name || "Unknown",
+				value: c.amount,
+				percentage: total > 0 ? Math.round((c.amount / total) * 100) : 0,
+				fill: c.category?.color || "#ababab",
+			}));
+		},
+		[getCategory],
+	);
 
 	const pieExpenses = useMemo(
 		() => buildCategoryData(yearlyExpenses),
-		[yearlyExpenses, categories],
+		[yearlyExpenses, buildCategoryData],
 	);
 	const pieEarnings = useMemo(
 		() => buildCategoryData(yearlyEarnings),
-		[yearlyEarnings, categories],
+		[yearlyEarnings, buildCategoryData],
 	);
 
 	const includedCategoriesIds = useMemo(
@@ -209,9 +220,8 @@ export default function YearStats() {
 		}
 	}, [year, includedCategoriesIds]);
 
-	const areaConfig: ChartConfig = {
-		expenses: { label: "Expenses", color: "#cf1322" },
-		earnings: { label: "Earnings", color: "#3f8600" },
+	const barConfig: ChartConfig = {
+		balance: { label: "Balance" },
 	};
 
 	const hasData = yearlyEarnings.length > 0 || yearlyExpenses.length > 0;
@@ -268,37 +278,43 @@ export default function YearStats() {
 			{hasData ? (
 				<>
 					<div className="mb-6 bg-white rounded-lg shadow-sm p-4">
-						<h3 className="text-sm font-semibold mb-2">Monthly Overview</h3>
-						<ChartContainer config={areaConfig} className="h-[220px] w-full">
-							<AreaChart data={monthlyData}>
-								<CartesianGrid strokeDasharray="3 3" vertical={false} />
-								<XAxis dataKey="month" tickLine={false} axisLine={false} />
-								<YAxis
-									tickLine={false}
-									axisLine={false}
-									tickFormatter={(v) => `${v}€`}
-								/>
+						<h3 className="text-sm font-semibold mb-1">Monthly Overview</h3>
+						<p className="text-xs text-muted-foreground mb-3">
+							Monthly balance (earnings - expenses) for {year}
+						</p>
+						<ChartContainer config={barConfig} className="h-[220px] w-full">
+							<BarChart accessibilityLayer data={monthlyData}>
+								<CartesianGrid vertical={false} />
 								<ChartTooltip
-									content={<ChartTooltipContent formatter={(v) => `${v} €`} />}
+									cursor={false}
+									content={
+										<ChartTooltipContent
+											hideLabel
+											hideIndicator
+											formatter={(v) => `${v} €`}
+										/>
+									}
 								/>
-								<Area
-									type="monotone"
-									dataKey="earnings"
-									stroke="#3f8600"
-									fill="#3f8600"
-									fillOpacity={0.2}
-									strokeWidth={2}
-								/>
-								<Area
-									type="monotone"
-									dataKey="expenses"
-									stroke="#cf1322"
-									fill="#cf1322"
-									fillOpacity={0.2}
-									strokeWidth={2}
-								/>
-							</AreaChart>
+								<Bar dataKey="balance">
+									<LabelList
+										position="top"
+										dataKey="month"
+										fillOpacity={1}
+										className="fill-foreground"
+										fontSize={12}
+									/>
+									{monthlyData.map((item) => (
+										<Cell
+											key={item.month}
+											fill={item.balance >= 0 ? "#3f8600" : "#cf1322"}
+										/>
+									))}
+								</Bar>
+							</BarChart>
 						</ChartContainer>
+						<p className="text-xs text-muted-foreground mt-2">
+							Showing monthly balance for each month of the year
+						</p>
 					</div>
 
 					<Tabs defaultValue="expenses">
@@ -364,6 +380,7 @@ function CategoryBreakdown({
 						paddingAngle={2}
 					>
 						{data.map((entry, i) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: Recharts Cell components require index-based keys
 							<Cell key={i} fill={entry.fill} />
 						))}
 					</Pie>

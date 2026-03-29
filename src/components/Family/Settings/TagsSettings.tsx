@@ -36,7 +36,19 @@ export default function TagsSettings() {
 			)}
 			<div className="inline-flex flex-wrap gap-2.5 max-h-[300px] overflow-auto">
 				{tags.map((tag) => (
-					<div key={tag.id} onClick={() => onTagSelected(tag)}>
+					// biome-ignore lint/a11y/useSemanticElements: wrapper div with role="button" preserves styling
+					<div
+						key={tag.id}
+						role="button"
+						tabIndex={0}
+						onClick={() => onTagSelected(tag)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								onTagSelected(tag);
+							}
+						}}
+					>
 						<TagBadge tag={tag} removable />
 					</div>
 				))}

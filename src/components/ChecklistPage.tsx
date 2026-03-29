@@ -98,15 +98,15 @@ export default function ChecklistPage({
 	// SVG circle progress
 	const radius = isCompact ? 12 : 28;
 	const circumference = 2 * Math.PI * radius;
-	const strokeDashoffset = circumference - (progress / 100) * circumference;
+	const _strokeDashoffset = circumference - (progress / 100) * circumference;
 	const svgSize = isCompact ? 32 : 76;
 	const svgCenter = svgSize / 2;
-	const strokeWidth = isCompact ? 3 : 5;
+	const _strokeWidth = isCompact ? 3 : 5;
 
 	return (
 		<div className="h-screen flex flex-col">
 			{/* Sticky header + input */}
-			<div className="shrink-0 sticky top-0 z-10 bg-[#eaefea] transition-all duration-300">
+			<div className="shrink-0 sticky top-0 z-10 bg-background transition-all duration-300">
 				{/* Header */}
 				<div
 					className={cn(
@@ -128,13 +128,14 @@ export default function ChecklistPage({
 								width={svgSize}
 								height={svgSize}
 								className="transform -rotate-90"
+								aria-hidden="true"
 							>
 								<circle
 									cx={svgCenter}
 									cy={svgCenter}
 									r={28}
 									fill="none"
-									stroke="rgba(0,0,0,0.06)"
+									className="stroke-foreground/[0.06]"
 									strokeWidth="5"
 								/>
 								<circle
@@ -142,14 +143,13 @@ export default function ChecklistPage({
 									cy={svgCenter}
 									r={28}
 									fill="none"
-									stroke="#3f8600"
+									className="stroke-earning transition-all duration-700 ease-out"
 									strokeWidth="5"
 									strokeLinecap="round"
 									strokeDasharray={2 * Math.PI * 28}
 									strokeDashoffset={
 										2 * Math.PI * 28 - (progress / 100) * 2 * Math.PI * 28
 									}
-									className="transition-all duration-700 ease-out"
 								/>
 							</svg>
 							<span className="absolute inset-0 flex items-center justify-center text-2xl">
@@ -176,13 +176,18 @@ export default function ChecklistPage({
 					>
 						<Avatar position="topLeft" size="small" />
 						<div className="relative shrink-0 ml-8">
-							<svg width={32} height={32} className="transform -rotate-90">
+							<svg
+								width={32}
+								height={32}
+								className="transform -rotate-90"
+								aria-hidden="true"
+							>
 								<circle
 									cx={16}
 									cy={16}
 									r={12}
 									fill="none"
-									stroke="rgba(0,0,0,0.06)"
+									className="stroke-foreground/[0.06]"
 									strokeWidth="3"
 								/>
 								<circle
@@ -190,14 +195,13 @@ export default function ChecklistPage({
 									cy={16}
 									r={12}
 									fill="none"
-									stroke="#3f8600"
+									className="stroke-earning transition-all duration-700 ease-out"
 									strokeWidth="3"
 									strokeLinecap="round"
 									strokeDasharray={2 * Math.PI * 12}
 									strokeDashoffset={
 										2 * Math.PI * 12 - (progress / 100) * 2 * Math.PI * 12
 									}
-									className="transition-all duration-700 ease-out"
 								/>
 							</svg>
 							<span className="absolute inset-0 flex items-center justify-center text-xs">
@@ -224,7 +228,7 @@ export default function ChecklistPage({
 				>
 					<div
 						className={cn(
-							"flex items-center gap-2 bg-white/70 backdrop-blur-sm rounded-xl px-3 shadow-sm border border-black/[0.04] transition-all duration-300",
+							"flex items-center gap-2 bg-card/70 backdrop-blur-sm rounded-xl px-3 shadow-sm border border-border/30 transition-all duration-300",
 							isCompact ? "py-1" : "py-1.5",
 						)}
 					>
@@ -243,13 +247,14 @@ export default function ChecklistPage({
 							className="border-0 bg-transparent shadow-none focus-visible:ring-0 px-0 h-9 text-sm placeholder:text-foreground/30"
 						/>
 						<button
+							type="button"
 							onClick={handleAdd}
 							disabled={!newItem.trim()}
 							className={cn(
 								"shrink-0 h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200",
 								newItem.trim()
-									? "bg-[#3f8600] text-white shadow-sm hover:bg-[#357200] active:scale-95"
-									: "bg-black/[0.04] text-foreground/20",
+									? "bg-earning text-white shadow-sm hover:bg-earning/90 active:scale-95"
+									: "bg-foreground/[0.04] text-foreground/20",
 							)}
 						>
 							<Plus className="h-3.5 w-3.5" />
@@ -268,7 +273,7 @@ export default function ChecklistPage({
 								<div
 									key={item.id}
 									className={cn(
-										"group flex items-center gap-3 bg-white/60 backdrop-blur-sm rounded-xl px-3.5 py-3 shadow-sm border border-black/[0.03] transition-all duration-250",
+										"group flex items-center gap-3 bg-card/60 backdrop-blur-sm rounded-xl px-3.5 py-3 shadow-sm border border-border/30 transition-all duration-250",
 										deletingIds.has(item.id) &&
 											"opacity-0 translate-x-8 scale-95",
 									)}
@@ -280,14 +285,15 @@ export default function ChecklistPage({
 									<Checkbox
 										checked={false}
 										onCheckedChange={() => onCheck(item)}
-										className="h-5 w-5 rounded-full border-2 border-foreground/15 data-[state=checked]:bg-[#3f8600] data-[state=checked]:border-[#3f8600] transition-colors"
+										className="h-5 w-5 rounded-full border-2 border-foreground/15 data-[state=checked]:bg-earning data-[state=checked]:border-earning transition-colors"
 									/>
 									<span className="flex-1 text-sm text-foreground/80 text-left leading-snug">
 										{item.label}
 									</span>
 									<button
+										type="button"
 										onClick={() => handleDelete(item)}
-										className="opacity-40 sm:opacity-0 sm:group-hover:opacity-100 active:opacity-100 shrink-0 h-6 w-6 rounded-lg flex items-center justify-center text-foreground/20 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
+										className="opacity-40 sm:opacity-0 sm:group-hover:opacity-100 active:opacity-100 shrink-0 h-6 w-6 rounded-lg flex items-center justify-center text-foreground/20 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all duration-150"
 									>
 										<Trash2 className="h-3.5 w-3.5" />
 									</button>
@@ -319,6 +325,7 @@ export default function ChecklistPage({
 				{completed.length > 0 && (
 					<div className="px-5 mt-5">
 						<button
+							type="button"
 							onClick={() => setShowCompleted(!showCompleted)}
 							className="flex items-center gap-2 mb-2 group"
 						>
@@ -354,14 +361,15 @@ export default function ChecklistPage({
 										<Checkbox
 											checked={true}
 											onCheckedChange={() => onCheck(item)}
-											className="h-5 w-5 rounded-full border-2 data-[state=checked]:bg-[#3f8600]/60 data-[state=checked]:border-[#3f8600]/60 transition-colors"
+											className="h-5 w-5 rounded-full border-2 data-[state=checked]:bg-earning/60 data-[state=checked]:border-earning/60 transition-colors"
 										/>
 										<span className="flex-1 text-sm text-foreground/30 text-left line-through decoration-foreground/15 leading-snug">
 											{item.label}
 										</span>
 										<button
+											type="button"
 											onClick={() => handleDelete(item)}
-											className="opacity-30 sm:opacity-0 sm:group-hover:opacity-100 active:opacity-100 shrink-0 h-6 w-6 rounded-lg flex items-center justify-center text-foreground/15 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
+											className="opacity-30 sm:opacity-0 sm:group-hover:opacity-100 active:opacity-100 shrink-0 h-6 w-6 rounded-lg flex items-center justify-center text-foreground/15 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all duration-150"
 										>
 											<Trash2 className="h-3.5 w-3.5" />
 										</button>

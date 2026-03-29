@@ -1,5 +1,4 @@
 import { X } from "lucide-react";
-import { useState } from "react";
 import { DataBaseClient } from "../../api/db";
 import type { Category } from "../../models/category";
 import { openNotificationWithIcon, setIsLoading } from "../../services/utils";

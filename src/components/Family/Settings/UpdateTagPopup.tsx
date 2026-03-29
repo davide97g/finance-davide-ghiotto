@@ -33,7 +33,7 @@ export default function UpdateTagPopup({
 	useEffect(() => {
 		setTag(JSON.parse(JSON.stringify(propTag)));
 	}, [propTag]);
-	const updateField = (field: string, value: any) =>
+	const updateField = (field: string, value: string | number | boolean) =>
 		setTag((prev) => ({ ...prev, [field]: value }));
 
 	const handleOk = () => {
@@ -43,7 +43,7 @@ export default function UpdateTagPopup({
 				openNotificationWithIcon(
 					"success",
 					"Success",
-					"Tag " + tag.name + " updated",
+					`Tag ${tag.name} updated`,
 				);
 				useTagStore.getState().updateTag(tag);
 				onOpenChange(false);

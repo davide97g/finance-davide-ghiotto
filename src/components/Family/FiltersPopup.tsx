@@ -2,13 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { CategoryType } from "../../models/category";
 import { useCategoryStore } from "../../stores/category";
 import { Button } from "../ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import type { Filters } from "./TransactionList";
 
 interface Props {
@@ -59,6 +53,7 @@ export default function FiltersPopup({
 						const isActive = categoryIds.includes(c.id);
 						return (
 							<button
+								type="button"
 								key={c.id}
 								onClick={() => toggleCategory(c.id)}
 								className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 active:scale-95"

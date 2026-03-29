@@ -9,7 +9,7 @@ interface CategoryState {
 	removeCategory: (category: Category) => void;
 }
 
-export const useCategoryStore = create<CategoryState>((set, get) => ({
+export const useCategoryStore = create<CategoryState>((set, _get) => ({
 	categories: [],
 	setCategories: (categories: Category[]) => {
 		set((state) => {

@@ -30,18 +30,14 @@ export default function NewTagPopup({ open, onOpenChange }: Props) {
 		color: "#ababab",
 	});
 	const [tag, setTag] = useState<ITag>(newTag());
-	const updateField = (field: string, value: any) =>
+	const updateField = (field: string, value: string | number | boolean) =>
 		setTag((prev) => ({ ...prev, [field]: value }));
 
 	const handleOk = () => {
 		setIsLoading(true);
 		DataBaseClient.Tag.create(tag)
 			.then((t) => {
-				openNotificationWithIcon(
-					"success",
-					"Success",
-					"Tag " + t.name + " created",
-				);
+				openNotificationWithIcon("success", "Success", `Tag ${t.name} created`);
 				useTagStore.getState().addTag(t);
 				setTag(newTag());
 				onOpenChange(false);

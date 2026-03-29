@@ -17,8 +17,8 @@ interface Props {
 }
 
 export default function TransactionList({
-	title,
-	type,
+	title: _title,
+	type: _type,
 	transactions: rawTransactions,
 	search,
 	filters = {},
@@ -57,12 +57,21 @@ export default function TransactionList({
 					transaction={selectedTransaction}
 				/>
 			)}
-			<div className="w-full h-[calc(100dvh-260px)] overflow-auto p-2 pb-14 bg-[#f0f0ec] shadow-[inset_0_1px_3px_rgba(0,0,0,0.06)] rounded-xl space-y-1.5">
+			<div className="w-full h-[calc(100dvh-260px)] overflow-auto p-2 pb-14 bg-secondary shadow-[inset_0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)] rounded-xl space-y-1.5">
 				{transactions.map((item) => (
+					// biome-ignore lint/a11y/useSemanticElements: wrapper div with role="button" is intentional to preserve styling
 					<div
 						key={item.id}
+						role="button"
+						tabIndex={0}
 						className="cursor-pointer rounded-xl hover:shadow-[0_2px_8px_rgba(0,0,0,0.1)] active:scale-[0.995] transition-all duration-100"
 						onClick={() => openTransactionDetails(item)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								openTransactionDetails(item);
+							}
+						}}
 					>
 						<TransactionItem item={item} />
 					</div>

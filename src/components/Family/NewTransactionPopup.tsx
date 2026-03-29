@@ -66,12 +66,13 @@ export default function NewTransactionPopup({
 		return filtered;
 	}, [allCategories, type, usageCounts]);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: newTransaction is intentionally excluded to avoid infinite re-renders
 	useEffect(() => {
 		setTransaction(newTransaction());
 		setAmountDisplay("");
-	}, [type]);
+	}, [open, type]);
 
-	const updateField = (field: string, value: any) => {
+	const updateField = (field: string, value: string | number) => {
 		setTransaction((prev) => {
 			const updated = { ...prev, [field]: value };
 			if (field === "date" && value) {
@@ -90,7 +91,7 @@ export default function NewTransactionPopup({
 				openNotificationWithIcon(
 					"success",
 					"Success",
-					"Transaction " + t.description + " saved",
+					`Transaction ${t.description} saved`,
 				);
 				setTransaction(newTransaction());
 				setAmountDisplay("");
@@ -141,7 +142,7 @@ export default function NewTransactionPopup({
 								}
 							}}
 							placeholder="0.00"
-							className="bg-transparent border-none outline-none text-center text-4xl font-bold tracking-tight w-full placeholder:text-black/15"
+							className="bg-transparent border-none outline-none text-center text-4xl font-bold tracking-tight w-full placeholder:text-foreground/15"
 							style={{ color: accentColor }}
 						/>
 						<Euro
@@ -161,7 +162,7 @@ export default function NewTransactionPopup({
 							value={transaction.category || ""}
 							onValueChange={(v) => updateField("category", v)}
 						>
-							<SelectTrigger className="h-10 bg-white/80 border-black/8 rounded-xl text-sm">
+							<SelectTrigger className="h-10 bg-card/80 border-border/50 rounded-xl text-sm">
 								<SelectValue placeholder="Select category" />
 							</SelectTrigger>
 							<SelectContent>
@@ -188,7 +189,7 @@ export default function NewTransactionPopup({
 								type="date"
 								value={transaction.date || ""}
 								onChange={(e) => updateField("date", e.target.value)}
-								className="h-10 bg-white/80 border-black/8 rounded-xl text-sm"
+								className="h-10 bg-card/80 border-border/50 rounded-xl text-sm"
 							/>
 						</div>
 						<div className="space-y-1.5">
@@ -199,7 +200,7 @@ export default function NewTransactionPopup({
 								value={transaction.tag || ""}
 								onValueChange={(v) => updateField("tag", v)}
 							>
-								<SelectTrigger className="h-10 bg-white/80 border-black/8 rounded-xl text-sm">
+								<SelectTrigger className="h-10 bg-card/80 border-border/50 rounded-xl text-sm">
 									<SelectValue placeholder="Tag" />
 								</SelectTrigger>
 								<SelectContent>
@@ -222,7 +223,7 @@ export default function NewTransactionPopup({
 							value={transaction.description || ""}
 							onChange={(e) => updateField("description", e.target.value)}
 							placeholder="Optional"
-							className="h-10 bg-white/80 border-black/8 rounded-xl text-sm placeholder:text-muted-foreground/50"
+							className="h-10 bg-card/80 border-border/50 rounded-xl text-sm placeholder:text-muted-foreground/50"
 						/>
 					</div>
 				</div>
@@ -230,6 +231,7 @@ export default function NewTransactionPopup({
 				{/* Actions */}
 				<div className="px-5 pb-5 flex flex-col gap-2">
 					<button
+						type="button"
 						onClick={handleOk}
 						disabled={isDisabled}
 						className="w-full h-11 rounded-xl font-semibold text-sm text-white transition-all duration-200 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
@@ -241,6 +243,7 @@ export default function NewTransactionPopup({
 						Create {type}
 					</button>
 					<button
+						type="button"
 						onClick={() => onOpenChange(false)}
 						className="w-full h-9 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors"
 					>

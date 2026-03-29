@@ -40,7 +40,7 @@ export default function Avatar({
 					alt="profile-img"
 					title={user?.displayName || ""}
 					referrerPolicy="no-referrer"
-					className={`rounded-full border-2 border-white/80 shadow-sm ${sizeClasses[size]}`}
+					className={`rounded-full border-2 border-card/80 shadow-sm ${sizeClasses[size]}`}
 				/>
 			</Link>
 		</div>

@@ -62,6 +62,7 @@ function TagChip({
 	return (
 		<div ref={ref} className="relative">
 			<button
+				type="button"
 				onClick={() => setExpanded(!expanded)}
 				className={cn(
 					"flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full transition-all duration-200",
@@ -81,6 +82,7 @@ function TagChip({
 				>
 					{tags.map((t) => (
 						<button
+							type="button"
 							key={t.id}
 							onClick={() => {
 								onChange(t.id);
@@ -134,7 +136,7 @@ export default function UpdateTransactionPopup({
 		setConfirmingDelete(false);
 	}, [propTransaction]);
 
-	const updateField = (field: string, value: any) => {
+	const updateField = (field: string, value: string | number | boolean) => {
 		setTransaction((prev) => ({ ...prev, [field]: value }));
 	};
 
@@ -145,7 +147,7 @@ export default function UpdateTransactionPopup({
 				openNotificationWithIcon(
 					"success",
 					"Success",
-					"Transaction " + transaction.description + " updated",
+					`Transaction ${transaction.description} updated`,
 				);
 				useTransactionStore.getState().updateTransaction(transaction);
 				onOpenChange(false);
@@ -300,6 +302,7 @@ export default function UpdateTransactionPopup({
 				{/* Actions */}
 				<div className="px-5 pb-5 flex flex-col gap-2">
 					<button
+						type="button"
 						onClick={handleOk}
 						disabled={isDisabled}
 						className="w-full h-11 rounded-xl font-semibold text-sm text-white transition-all duration-200 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
@@ -314,6 +317,7 @@ export default function UpdateTransactionPopup({
 					{/* Delete: two-step confirmation */}
 					{!confirmingDelete ? (
 						<button
+							type="button"
 							onClick={() => setConfirmingDelete(true)}
 							className="w-full h-9 rounded-xl text-sm text-muted-foreground/60 hover:text-destructive flex items-center justify-center gap-1.5 transition-colors"
 						>
@@ -327,12 +331,14 @@ export default function UpdateTransactionPopup({
 							</p>
 							<div className="flex gap-2">
 								<button
+									type="button"
 									onClick={() => setConfirmingDelete(false)}
 									className="flex-1 h-9 rounded-xl text-sm font-medium border border-black/10 text-muted-foreground hover:text-foreground transition-colors"
 								>
 									Keep it
 								</button>
 								<button
+									type="button"
 									onClick={handleDelete}
 									className="flex-1 h-9 rounded-xl text-sm font-semibold bg-destructive text-white hover:bg-destructive/90 active:scale-[0.98] transition-all shadow-sm"
 								>

@@ -54,6 +54,7 @@ export default function TransactionListSkeleton() {
 	return (
 		<div className="w-full h-[calc(100dvh-260px)] overflow-hidden p-2.5 pb-14 bg-[#e2f0e2] shadow-[inset_0_0_12px_#ccc] rounded-lg">
 			{Array.from({ length: 6 }).map((_, i) => (
+				// biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton items with no unique identifier
 				<div key={i} className="border-b border-black/5">
 					<SkeletonRow index={i} />
 				</div>

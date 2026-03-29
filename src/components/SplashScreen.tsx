@@ -46,9 +46,8 @@ export default function SplashScreen() {
 
 	return (
 		<div
-			className="fixed inset-0 z-[9999] flex items-center justify-center"
+			className="fixed inset-0 z-[9999] flex items-center justify-center bg-background"
 			style={{
-				backgroundColor: "#eaefea",
 				opacity: fadingOut ? 0 : 1,
 				transition: `opacity ${FADE_OUT_MS}ms ease`,
 			}}
@@ -81,7 +80,7 @@ export default function SplashScreen() {
 
 				{/* Title */}
 				<h1
-					className="text-[1.5rem] font-bold tracking-tight text-stone-800"
+					className="text-[1.5rem] font-bold tracking-tight text-foreground"
 					style={{
 						animation: "splash-fade-up 0.8s 0.3s ease both",
 						fontFamily: "'Montserrat', sans-serif",
@@ -92,7 +91,7 @@ export default function SplashScreen() {
 
 				{/* Greeting */}
 				<p
-					className="mt-1.5 text-sm text-stone-500"
+					className="mt-1.5 text-sm text-muted-foreground"
 					style={{
 						animation: "splash-fade-up 0.8s 0.5s ease both",
 						fontFamily: "'Montserrat', sans-serif",
@@ -107,10 +106,8 @@ export default function SplashScreen() {
 					style={{ animation: "splash-fade-up 0.8s 0.7s ease both" }}
 				>
 					<div
-						className="h-5 w-5 rounded-full"
+						className="h-5 w-5 rounded-full border-[2.5px] border-muted-foreground/20 border-t-emerald-600"
 						style={{
-							border: "2.5px solid #d6d3d1",
-							borderTopColor: "#059669",
 							animation: "splash-spin 0.8s linear infinite",
 						}}
 					/>

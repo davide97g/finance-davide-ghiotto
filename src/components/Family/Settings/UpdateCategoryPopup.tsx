@@ -38,7 +38,7 @@ export default function UpdateCategoryPopup({
 		setCategory(JSON.parse(JSON.stringify(propCategory)));
 	}, [propCategory]);
 
-	const updateField = (field: string, value: any) =>
+	const updateField = (field: string, value: string | number | boolean) =>
 		setCategory((prev) => ({ ...prev, [field]: value }));
 
 	const handleOk = () => {
@@ -48,7 +48,7 @@ export default function UpdateCategoryPopup({
 				openNotificationWithIcon(
 					"success",
 					"Success",
-					"Category " + category.name + " updated",
+					`Category ${category.name} updated`,
 				);
 				useCategoryStore.getState().updateCategory(category);
 				onOpenChange(false);

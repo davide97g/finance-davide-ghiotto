@@ -49,7 +49,7 @@ export default function Family() {
 				behavior: "smooth",
 			});
 		}
-	}, [activeMonth, activeYear]);
+	}, []);
 
 	useEffect(() => {
 		const load = async () => {
@@ -86,7 +86,7 @@ export default function Family() {
 			<div className="flex items-center gap-2.5 px-3 py-2.5">
 				<Avatar className="shrink-0" />
 				<Select value={activeYear} onValueChange={setActiveYear}>
-					<SelectTrigger className="w-[90px] h-8 font-semibold text-sm border-none bg-white/60 backdrop-blur-sm shadow-sm">
+					<SelectTrigger className="w-[90px] h-8 font-semibold text-sm border-none bg-card/60 backdrop-blur-sm shadow-sm">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -121,7 +121,7 @@ export default function Family() {
 								<TabsTrigger
 									key={month}
 									value={month}
-									className="rounded-full px-3 py-1.5 text-xs font-semibold tracking-wide data-[state=active]:bg-foreground data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-muted-foreground bg-transparent"
+									className="rounded-full px-3 py-1.5 text-xs font-semibold tracking-wide data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-md data-[state=inactive]:text-muted-foreground bg-transparent"
 								>
 									{month.substring(0, 3)}
 								</TabsTrigger>
@@ -137,15 +137,17 @@ export default function Family() {
 			</div>
 
 			{/* Footer buttons */}
-			<div className="fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)] bg-gradient-to-t from-[#dde5dd] to-transparent pt-2 px-4">
+			<div className="fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)] bg-gradient-to-t from-background to-transparent pt-2 px-4">
 				<div className="flex items-center gap-2 pb-2 max-w-md mx-auto">
 					<button
+						type="button"
 						onClick={() => openPopupFor("expense")}
 						className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-xl bg-expense text-white font-semibold text-xs tracking-wide shadow-md shadow-expense/20 active:scale-[0.97] transition-all duration-200"
 					>
 						<Plus className="h-3.5 w-3.5" /> Expense
 					</button>
 					<button
+						type="button"
 						onClick={() => openPopupFor("earning")}
 						className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-xl bg-earning text-white font-semibold text-xs tracking-wide shadow-md shadow-earning/20 active:scale-[0.97] transition-all duration-200"
 					>

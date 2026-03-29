@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, Filter, LineChart, Search } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DataBaseClient } from "../../api/db";
 import type { Transaction } from "../../models/transaction";
@@ -33,8 +33,10 @@ export default function MonthBalance({ month, year }: Props) {
 	const sortTransactions = useTransactionStore((s) => s.sortTransactions);
 	const categories = useCategoryStore((s) => s.categories);
 
-	const getCategory = (categoryId: string) =>
-		categories.find((c) => c.id === categoryId);
+	const getCategory = useCallback(
+		(categoryId: string) => categories.find((c) => c.id === categoryId),
+		[categories],
+	);
 
 	useEffect(() => {
 		setLoading(true);
@@ -55,7 +57,7 @@ export default function MonthBalance({ month, year }: Props) {
 		return () => {
 			unsubscribe?.();
 		};
-	}, [month, year]);
+	}, [month, year, setTransactions]);
 
 	const earnings = useMemo(
 		() => allEarnings.filter((t) => t.month === month && t.year === year),
@@ -72,7 +74,7 @@ export default function MonthBalance({ month, year }: Props) {
 			.filter((t) => !getCategory(t.category)?.excludeFromBudget)
 			.forEach((t) => (tot += t.amount));
 		return -tot;
-	}, [expenses, categories]);
+	}, [expenses, getCategory]);
 
 	const totalSumEarnings = useMemo(() => {
 		let tot = 0;
@@ -80,7 +82,7 @@ export default function MonthBalance({ month, year }: Props) {
 			.filter((t) => !getCategory(t.category)?.excludeFromBudget)
 			.forEach((t) => (tot += t.amount));
 		return tot;
-	}, [earnings, categories]);
+	}, [earnings, getCategory]);
 
 	const balance = totalSumEarnings + totalSumExpenses;
 
@@ -131,22 +133,24 @@ export default function MonthBalance({ month, year }: Props) {
 			<Tabs value={activeKey} onValueChange={setActiveKey} className="relative">
 				<div className="flex items-center justify-between mb-1">
 					<div className="flex items-center gap-1.5">
-						<div className="flex items-center bg-white/60 backdrop-blur-sm rounded-full p-0.5 shadow-sm border border-black/5">
+						<div className="flex items-center bg-card/60 backdrop-blur-sm rounded-full p-0.5 shadow-sm border border-border/50">
 							<button
+								type="button"
 								onClick={() => sortTransactions(true)}
 								className={`flex items-center justify-center p-1.5 rounded-full transition-all duration-200 ${
 									sorting === "ascending"
-										? "bg-foreground text-white shadow-md"
+										? "bg-foreground text-background shadow-md"
 										: "text-muted-foreground hover:text-foreground"
 								}`}
 							>
 								<ArrowUp className="h-3.5 w-3.5" />
 							</button>
 							<button
+								type="button"
 								onClick={() => sortTransactions(false)}
 								className={`flex items-center justify-center p-1.5 rounded-full transition-all duration-200 ${
 									sorting === "descending"
-										? "bg-foreground text-white shadow-md"
+										? "bg-foreground text-background shadow-md"
 										: "text-muted-foreground hover:text-foreground"
 								}`}
 							>
@@ -163,13 +167,22 @@ export default function MonthBalance({ month, year }: Props) {
 							className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
 							onClick={() => setSearchBarVisible(!searchBarVisible)}
 						/>
+						{/* biome-ignore lint/a11y/useSemanticElements: wrapper span with role="button" is intentional to preserve styling */}
 						<span
 							className="relative cursor-pointer"
+							role="button"
+							tabIndex={0}
 							onClick={() => setFiltersPopupVisible(true)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									e.preventDefault();
+									setFiltersPopupVisible(true);
+								}
+							}}
 						>
 							<Filter className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
 							{activeFilterCount > 0 && (
-								<span className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 flex items-center justify-center rounded-full bg-foreground text-white text-[9px] font-bold shadow-sm">
+								<span className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 flex items-center justify-center rounded-full bg-foreground text-background text-[9px] font-bold shadow-sm">
 									{activeFilterCount}
 								</span>
 							)}
