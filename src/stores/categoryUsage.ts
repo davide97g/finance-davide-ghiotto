@@ -1,9 +1,12 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface CategoryUsageState {
 	counts: Record<string, number>;
 	lastRefreshed: string | null;
-	setCategoryUsage: (counts: Record<string, number>, lastRefreshed: string) => void;
+	setCategoryUsage: (
+		counts: Record<string, number>,
+		lastRefreshed: string,
+	) => void;
 }
 
 export const useCategoryUsageStore = create<CategoryUsageState>(() => ({

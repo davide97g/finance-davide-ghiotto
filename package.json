@@ -1,7 +1,7 @@
 {
 	"name": "finance-davide-ghiotto",
 	"private": false,
-	"version": "3.1.2",
+	"version": "3.1.3",
 	"type": "module",
 	"website": "https://finance.davideghiotto.it",
 	"scripts": {
@@ -25,29 +25,30 @@
 		"@radix-ui/react-slot": "^1.2.4",
 		"@radix-ui/react-tabs": "^1.1.13",
 		"@radix-ui/react-tooltip": "^1.2.8",
-		"firebase": "^9.15.0",
+		"firebase": "^9.23.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"react-router-dom": "^6.23.1",
-		"recharts": "^3.8.0",
-		"sonner": "^1.5.0",
-		"zustand": "^4.5.2"
+		"react-router-dom": "^6.30.3",
+		"recharts": "^3.8.1",
+		"sonner": "^1.7.4",
+		"zustand": "^4.5.7"
 	},
 	"devDependencies": {
-		"@types/react": "^18.3.3",
-		"@types/react-dom": "^18.3.0",
-		"@vitejs/plugin-react": "^4.3.1",
-		"autoprefixer": "^10.4.19",
-		"class-variance-authority": "^0.7.0",
+		"@biomejs/biome": "^2.4.9",
+		"@types/react": "^18.3.28",
+		"@types/react-dom": "^18.3.7",
+		"@vitejs/plugin-react": "^4.7.0",
+		"autoprefixer": "^10.4.27",
+		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
-		"husky": "^8.0.0",
+		"husky": "^8.0.3",
 		"lucide-react": "^0.395.0",
-		"postcss": "^8.4.38",
-		"tailwind-merge": "^2.3.0",
-		"tailwindcss": "^3.4.4",
-		"typescript": "^5.5.2",
-		"vite": "^5.3.1",
-		"vite-plugin-pwa": "^0.20.0",
-		"workbox-precaching": "^7.1.0"
+		"postcss": "^8.5.8",
+		"tailwind-merge": "^2.6.1",
+		"tailwindcss": "^3.4.19",
+		"typescript": "^5.9.3",
+		"vite": "^5.4.21",
+		"vite-plugin-pwa": "^0.20.5",
+		"workbox-precaching": "^7.4.0"
 	}
 }

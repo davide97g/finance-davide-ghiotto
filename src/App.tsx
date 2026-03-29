@@ -1,22 +1,22 @@
-import React, { Suspense, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useRegisterSW } from 'virtual:pwa-register/react';
-import { toast } from 'sonner';
-import ProgressBar from './components/ProgressBar';
-import SplashScreen from './components/SplashScreen';
-import { useUserStore } from './stores/user';
+import { useRegisterSW } from "virtual:pwa-register/react";
+import React, { Suspense, useEffect } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { toast } from "sonner";
+import ProgressBar from "./components/ProgressBar";
+import SplashScreen from "./components/SplashScreen";
+import { useUserStore } from "./stores/user";
 
-const Home = React.lazy(() => import('./pages/Home'));
-const Login = React.lazy(() => import('./pages/Login'));
-const Profile = React.lazy(() => import('./pages/Profile'));
-const Family = React.lazy(() => import('./pages/Family'));
-const Groceries = React.lazy(() => import('./pages/Groceries'));
-const Todo = React.lazy(() => import('./pages/Todo'));
-const MonthStats = React.lazy(() => import('./pages/MonthStats'));
-const YearStats = React.lazy(() => import('./pages/YearStats'));
+const Home = React.lazy(() => import("./pages/Home"));
+const Login = React.lazy(() => import("./pages/Login"));
+const Profile = React.lazy(() => import("./pages/Profile"));
+const Family = React.lazy(() => import("./pages/Family"));
+const Groceries = React.lazy(() => import("./pages/Groceries"));
+const Todo = React.lazy(() => import("./pages/Todo"));
+const MonthStats = React.lazy(() => import("./pages/MonthStats"));
+const YearStats = React.lazy(() => import("./pages/YearStats"));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-	const isLoggedIn = useUserStore(s => s.isLoggedIn);
+	const isLoggedIn = useUserStore((s) => s.isLoggedIn);
 	if (isLoggedIn === undefined) return null;
 	if (!isLoggedIn) return <Navigate to="/login" replace />;
 	return <>{children}</>;
@@ -30,11 +30,11 @@ function useUpdatePrompt() {
 
 	useEffect(() => {
 		if (needRefresh) {
-			toast('Update available', {
-				description: 'A new version is ready.',
+			toast("Update available", {
+				description: "A new version is ready.",
 				duration: Infinity,
 				action: {
-					label: 'Update',
+					label: "Update",
 					onClick: () => updateServiceWorker(true),
 				},
 			});
@@ -51,7 +51,14 @@ export default function App() {
 			<div id="router-view" className="h-screen overflow-auto">
 				<Suspense fallback={null}>
 					<Routes>
-						<Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+						<Route
+							path="/"
+							element={
+								<ProtectedRoute>
+									<Home />
+								</ProtectedRoute>
+							}
+						/>
 						<Route path="/login" element={<Login />} />
 						<Route
 							path="/profile"

@@ -1,49 +1,49 @@
-import { Link } from 'react-router-dom';
-import { Euro, List, CheckSquare, ArrowRight, Loader2 } from 'lucide-react';
-import Avatar from '../components/Avatar';
-import Version from '../components/Version';
-import { useUserStore } from '../stores/user';
+import { ArrowRight, CheckSquare, Euro, List, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import Avatar from "../components/Avatar";
+import Version from "../components/Version";
+import { useUserStore } from "../stores/user";
 
 function getGreeting() {
 	const h = new Date().getHours();
-	if (h < 12) return 'Good morning';
-	if (h < 18) return 'Good afternoon';
-	return 'Good evening';
+	if (h < 12) return "Good morning";
+	if (h < 18) return "Good afternoon";
+	return "Good evening";
 }
 
 const navItems = [
 	{
-		to: '/family',
+		to: "/family",
 		icon: Euro,
-		label: 'Family Balance',
-		desc: 'Track shared expenses and settlements',
-		accent: 'from-emerald-500/10 to-teal-500/5',
-		iconBg: 'bg-emerald-600/10 text-emerald-700',
+		label: "Family Balance",
+		desc: "Track shared expenses and settlements",
+		accent: "from-emerald-500/10 to-teal-500/5",
+		iconBg: "bg-emerald-600/10 text-emerald-700",
 	},
 	{
-		to: '/groceries',
+		to: "/groceries",
 		icon: List,
-		label: 'Groceries',
-		desc: 'Manage your shopping lists',
-		accent: 'from-amber-500/10 to-orange-500/5',
-		iconBg: 'bg-amber-600/10 text-amber-700',
+		label: "Groceries",
+		desc: "Manage your shopping lists",
+		accent: "from-amber-500/10 to-orange-500/5",
+		iconBg: "bg-amber-600/10 text-amber-700",
 	},
 	{
-		to: '/todo',
+		to: "/todo",
 		icon: CheckSquare,
-		label: 'Todo',
-		desc: 'Keep track of tasks and reminders',
-		accent: 'from-sky-500/10 to-blue-500/5',
-		iconBg: 'bg-sky-600/10 text-sky-700',
+		label: "Todo",
+		desc: "Keep track of tasks and reminders",
+		accent: "from-sky-500/10 to-blue-500/5",
+		iconBg: "bg-sky-600/10 text-sky-700",
 	},
 ];
 
 export default function Home() {
-	const isLoggedIn = useUserStore(s => s.isLoggedIn);
-	const isAdmin = useUserStore(s => s.isAdmin);
-	const user = useUserStore(s => s.user);
+	const isLoggedIn = useUserStore((s) => s.isLoggedIn);
+	const isAdmin = useUserStore((s) => s.isAdmin);
+	const user = useUserStore((s) => s.user);
 
-	const firstName = user?.displayName?.split(' ')[0] || '';
+	const firstName = user?.displayName?.split(" ")[0] || "";
 
 	return (
 		<div className="relative min-h-screen flex flex-col overflow-hidden">
@@ -64,7 +64,7 @@ export default function Home() {
 						<div className="relative">
 							<div className="absolute -inset-1.5 rounded-full bg-gradient-to-br from-emerald-600/20 to-teal-500/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 							<img
-								src={user?.photoURL || ''}
+								src={user?.photoURL || ""}
 								alt="profile"
 								referrerPolicy="no-referrer"
 								className="relative h-20 w-20 rounded-full border-[3px] border-white/90 shadow-lg shadow-stone-900/10 transition-transform duration-300 group-hover:scale-105"
@@ -115,10 +115,17 @@ export default function Home() {
 									className="group animate-[fadeSlideIn_0.5s_ease_both]"
 									style={{ animationDelay: `${0.15 + i * 0.08}s` }}
 								>
-									<div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${item.accent} bg-white/70 backdrop-blur-sm border border-white/80 px-5 py-4 shadow-sm transition-all duration-200 hover:shadow-md hover:shadow-stone-900/[0.06] hover:-translate-y-0.5 active:scale-[0.99]`}>
+									<div
+										className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${item.accent} bg-white/70 backdrop-blur-sm border border-white/80 px-5 py-4 shadow-sm transition-all duration-200 hover:shadow-md hover:shadow-stone-900/[0.06] hover:-translate-y-0.5 active:scale-[0.99]`}
+									>
 										<div className="flex items-center gap-4">
-											<div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${item.iconBg} transition-transform duration-200 group-hover:scale-110`}>
-												<item.icon className="h-[18px] w-[18px]" strokeWidth={2} />
+											<div
+												className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${item.iconBg} transition-transform duration-200 group-hover:scale-110`}
+											>
+												<item.icon
+													className="h-[18px] w-[18px]"
+													strokeWidth={2}
+												/>
 											</div>
 											<div className="flex-1 text-left">
 												<p className="text-[0.9rem] font-semibold text-stone-800 leading-tight">

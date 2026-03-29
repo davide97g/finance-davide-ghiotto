@@ -1,9 +1,15 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Button } from '../ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
-import { useCategoryStore } from '../../stores/category';
-import { CategoryType } from '../../models/category';
-import { Filters } from './TransactionList';
+import { useEffect, useMemo, useState } from "react";
+import type { CategoryType } from "../../models/category";
+import { useCategoryStore } from "../../stores/category";
+import { Button } from "../ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "../ui/dialog";
+import type { Filters } from "./TransactionList";
 
 interface Props {
 	type: CategoryType;
@@ -13,17 +19,30 @@ interface Props {
 	onApply: (filters: Filters) => void;
 }
 
-export default function FiltersPopup({ type, open, onOpenChange, filters: propFilters, onApply }: Props) {
-	const [categoryIds, setCategoryIds] = useState<string[]>(propFilters.categoryIds || []);
-	const allCategories = useCategoryStore(s => s.categories);
-	const categories = useMemo(() => allCategories.filter(c => c.type === type), [allCategories, type]);
+export default function FiltersPopup({
+	type,
+	open,
+	onOpenChange,
+	filters: propFilters,
+	onApply,
+}: Props) {
+	const [categoryIds, setCategoryIds] = useState<string[]>(
+		propFilters.categoryIds || [],
+	);
+	const allCategories = useCategoryStore((s) => s.categories);
+	const categories = useMemo(
+		() => allCategories.filter((c) => c.type === type),
+		[allCategories, type],
+	);
 
 	useEffect(() => {
 		setCategoryIds(propFilters.categoryIds || []);
 	}, [propFilters]);
 
 	const toggleCategory = (id: string) => {
-		setCategoryIds(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
+		setCategoryIds((prev) =>
+			prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
+		);
 	};
 
 	const handleOk = () => onApply({ categoryIds });
@@ -36,7 +55,7 @@ export default function FiltersPopup({ type, open, onOpenChange, filters: propFi
 					<DialogTitle className="text-base">Filter by category</DialogTitle>
 				</DialogHeader>
 				<div className="px-5 pb-4 flex flex-wrap gap-2">
-					{categories.map(c => {
+					{categories.map((c) => {
 						const isActive = categoryIds.includes(c.id);
 						return (
 							<button
@@ -44,9 +63,13 @@ export default function FiltersPopup({ type, open, onOpenChange, filters: propFi
 								onClick={() => toggleCategory(c.id)}
 								className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 active:scale-95"
 								style={{
-									backgroundColor: isActive ? (c.color || '#ababab') : `${c.color || '#ababab'}18`,
-									color: isActive ? 'white' : (c.color || '#ababab'),
-									boxShadow: isActive ? `0 2px 8px ${c.color || '#ababab'}40` : 'none',
+									backgroundColor: isActive
+										? c.color || "#ababab"
+										: `${c.color || "#ababab"}18`,
+									color: isActive ? "white" : c.color || "#ababab",
+									boxShadow: isActive
+										? `0 2px 8px ${c.color || "#ababab"}40`
+										: "none",
 								}}
 							>
 								{c.name}
@@ -69,7 +92,7 @@ export default function FiltersPopup({ type, open, onOpenChange, filters: propFi
 						onClick={handleOk}
 						className="flex-1 rounded-xl h-9 text-xs"
 					>
-						Apply{categoryIds.length > 0 ? ` (${categoryIds.length})` : ''}
+						Apply{categoryIds.length > 0 ? ` (${categoryIds.length})` : ""}
 					</Button>
 				</div>
 			</DialogContent>

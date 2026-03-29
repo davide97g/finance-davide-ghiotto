@@ -1,7 +1,7 @@
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../ui/sheet';
-import CategoriesSettings from './CategoriesSettings';
-import TagsSettings from './TagsSettings';
-import CategoryUsageRefresh from './CategoryUsageRefresh';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../../ui/sheet";
+import CategoriesSettings from "./CategoriesSettings";
+import CategoryUsageRefresh from "./CategoryUsageRefresh";
+import TagsSettings from "./TagsSettings";
 
 interface Props {
 	open: boolean;

@@ -1,15 +1,14 @@
+import { getAnalytics } from "firebase/analytics";
+import { initializeApp } from "firebase/app";
 import {
-	getAuth,
 	GoogleAuthProvider,
+	getAuth,
 	onAuthStateChanged,
 	signInWithPopup,
 	signOut,
-} from 'firebase/auth';
-import { setIsLoading } from '../services/utils';
-import { useUserStore } from '../stores/user';
-
-import { getAnalytics } from 'firebase/analytics';
-import { initializeApp } from 'firebase/app';
+} from "firebase/auth";
+import { setIsLoading } from "../services/utils";
+import { useUserStore } from "../stores/user";
 
 const firebaseConfig = {
 	apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -32,21 +31,21 @@ export const checkUserIsLoggedIn = () => {
 		setIsLoading(true);
 		onAuthStateChanged(
 			auth,
-			async user => {
+			async (user) => {
 				setIsLoading(false);
 				if (user) {
 					useUserStore.getState().setUser(user);
 					resolve(user);
 				} else {
 					useUserStore.getState().setUser(null);
-					reject(new Error('User not logged in'));
+					reject(new Error("User not logged in"));
 				}
 			},
-			err => {
+			(err) => {
 				useUserStore.getState().setUser(null);
 				setIsLoading(false);
 				reject(err);
-			}
+			},
 		);
 	});
 };
@@ -54,7 +53,7 @@ export const checkUserIsLoggedIn = () => {
 export const FirebaseAuth = {
 	signInWithGoogle: () =>
 		signInWithPopup(auth, provider)
-			.then(result => GoogleAuthProvider.credentialFromResult(result))
+			.then((result) => GoogleAuthProvider.credentialFromResult(result))
 			.catch(() => {
 				useUserStore.getState().setUser(null);
 				return null;
@@ -62,7 +61,7 @@ export const FirebaseAuth = {
 
 	signOut: () => {
 		signOut(auth).then(() => {
-			window.location.href = '/';
+			window.location.href = "/";
 			useUserStore.getState().setUser(null);
 		});
 	},

@@ -1,8 +1,8 @@
-import { Loader2 } from 'lucide-react';
-import { useLoadingStore } from '../stores/loading';
+import { Loader2 } from "lucide-react";
+import { useLoadingStore } from "../stores/loading";
 
 export default function ProgressBar() {
-	const isLoading = useLoadingStore(s => s.isLoading);
+	const isLoading = useLoadingStore((s) => s.isLoading);
 
 	if (!isLoading) return null;
 

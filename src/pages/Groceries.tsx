@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { DataBaseClient } from '../api/db';
-import { Grocery } from '../models/grocery';
-import ChecklistPage from '../components/ChecklistPage';
+import { useEffect, useState } from "react";
+import { DataBaseClient } from "../api/db";
+import ChecklistPage from "../components/ChecklistPage";
+import type { Grocery } from "../models/grocery";
 
 export default function Groceries() {
 	const [items, setItems] = useState<Grocery[]>([]);
@@ -10,7 +10,7 @@ export default function Groceries() {
 		let unsubscribe: (() => void) | undefined;
 		DataBaseClient.Grocery.getRT((groceries: Grocery[]) => {
 			setItems(groceries);
-		}).then(unsub => {
+		}).then((unsub) => {
 			unsubscribe = unsub;
 		});
 		return () => {
@@ -24,13 +24,13 @@ export default function Groceries() {
 			icon="🛒"
 			items={items}
 			filterWhileTyping
-			onAdd={label =>
+			onAdd={(label) =>
 				DataBaseClient.Grocery.create({ label, checked: false })
 			}
-			onCheck={item =>
+			onCheck={(item) =>
 				DataBaseClient.Grocery.update({ ...item, checked: !item.checked })
 			}
-			onDelete={item => DataBaseClient.Grocery.delete(item.id)}
+			onDelete={(item) => DataBaseClient.Grocery.delete(item.id)}
 		/>
 	);
 }

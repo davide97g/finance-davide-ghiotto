@@ -1,32 +1,32 @@
-import { Transaction } from '../models/transaction';
-import { formatDate } from '../services/utils';
-import { useCategoryStore } from '../stores/category';
-import { useTagStore } from '../stores/tag';
+import type { Transaction } from "../models/transaction";
+import { formatDate } from "../services/utils";
+import { useCategoryStore } from "../stores/category";
+import { useTagStore } from "../stores/tag";
 
 interface Props {
 	item: Transaction;
 }
 
-function getAmountTier(amount: number): 'sm' | 'md' | 'lg' {
-	if (amount >= 100) return 'lg';
-	if (amount >= 20) return 'md';
-	return 'sm';
+function getAmountTier(amount: number): "sm" | "md" | "lg" {
+	if (amount >= 100) return "lg";
+	if (amount >= 20) return "md";
+	return "sm";
 }
 
 const amountStyles = {
-	sm: 'text-[14px] font-semibold',
-	md: 'text-[19px] font-bold',
-	lg: 'text-[25px] font-extrabold',
+	sm: "text-[14px] font-semibold",
+	md: "text-[19px] font-bold",
+	lg: "text-[25px] font-extrabold",
 } as const;
 
 export default function TransactionItem({ item }: Props) {
-	const categories = useCategoryStore(s => s.categories);
-	const tags = useTagStore(s => s.tags);
+	const categories = useCategoryStore((s) => s.categories);
+	const tags = useTagStore((s) => s.tags);
 
-	const category = categories.find(c => c.id === item.category);
-	const tag = tags.find(t => t.id === item.tag);
-	const showTag = tag && item.tag !== 'XB0kK9DnZIIEsPKsaWEB';
-	const categoryColor = category?.color || '#ababab';
+	const category = categories.find((c) => c.id === item.category);
+	const tag = tags.find((t) => t.id === item.tag);
+	const showTag = tag && item.tag !== "XB0kK9DnZIIEsPKsaWEB";
+	const categoryColor = category?.color || "#ababab";
 	const tier = getAmountTier(item.amount);
 
 	return (
@@ -37,7 +37,7 @@ export default function TransactionItem({ item }: Props) {
 				borderTop: `1px solid ${categoryColor}30`,
 				borderRight: `1px solid ${categoryColor}30`,
 				borderBottom: `1px solid ${categoryColor}30`,
-				borderLeft: `${tier === 'lg' ? 5 : tier === 'md' ? 4 : 3}px solid ${categoryColor}`,
+				borderLeft: `${tier === "lg" ? 5 : tier === "md" ? 4 : 3}px solid ${categoryColor}`,
 			}}
 		>
 			<div className="flex-1 min-w-0 px-3 py-2 flex items-center gap-3">
@@ -49,12 +49,15 @@ export default function TransactionItem({ item }: Props) {
 							style={{ backgroundColor: categoryColor }}
 						/>
 						<span className="text-[13px] font-semibold text-foreground/85 truncate capitalize leading-tight">
-							{category?.name || 'Uncategorized'}
+							{category?.name || "Uncategorized"}
 						</span>
 						{category?.excludeFromBudget && (
 							<span
 								className="text-[8px] font-bold px-1 py-px rounded uppercase tracking-widest shrink-0"
-								style={{ backgroundColor: `${categoryColor}20`, color: categoryColor }}
+								style={{
+									backgroundColor: `${categoryColor}20`,
+									color: categoryColor,
+								}}
 							>
 								excl
 							</span>
@@ -62,7 +65,7 @@ export default function TransactionItem({ item }: Props) {
 						{showTag && (
 							<span
 								className="text-[8px] font-bold px-1.5 py-px rounded-full shrink-0 text-white/90 uppercase tracking-wide"
-								style={{ backgroundColor: tag.color || '#888' }}
+								style={{ backgroundColor: tag.color || "#888" }}
 							>
 								{tag.name}
 							</span>

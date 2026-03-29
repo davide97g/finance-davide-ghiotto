@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
-import { Badge } from '../ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { X } from "lucide-react";
+import { useState } from "react";
+import { DataBaseClient } from "../../api/db";
+import type { Category } from "../../models/category";
+import { openNotificationWithIcon, setIsLoading } from "../../services/utils";
+import { useCategoryStore } from "../../stores/category";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -11,11 +13,14 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 	AlertDialogTrigger,
-} from '../ui/alert-dialog';
-import { Category } from '../../models/category';
-import { DataBaseClient } from '../../api/db';
-import { setIsLoading, openNotificationWithIcon } from '../../services/utils';
-import { useCategoryStore } from '../../stores/category';
+} from "../ui/alert-dialog";
+import { Badge } from "../ui/badge";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "../ui/tooltip";
 
 interface Props {
 	category: Category;
@@ -28,18 +33,30 @@ export default function CategoryBadge({ category, removable }: Props) {
 		DataBaseClient.Category.delete(category.id)
 			.then(() => {
 				useCategoryStore.getState().removeCategory(category);
-				openNotificationWithIcon('success', 'Deleted', `Successfully deleted ${category.name}`);
+				openNotificationWithIcon(
+					"success",
+					"Deleted",
+					`Successfully deleted ${category.name}`,
+				);
 			})
-			.catch(err => {
+			.catch((err) => {
 				console.error(err);
-				openNotificationWithIcon('error', 'Error', `There was an error deleting ${category.name}`);
+				openNotificationWithIcon(
+					"error",
+					"Error",
+					`There was an error deleting ${category.name}`,
+				);
 			})
 			.finally(() => setIsLoading(false));
 	};
 
 	const badge = (
 		<Badge
-			style={{ backgroundColor: category.color, color: 'white', cursor: 'pointer' }}
+			style={{
+				backgroundColor: category.color,
+				color: "white",
+				cursor: "pointer",
+			}}
 			className="gap-1"
 		>
 			{category.name.toLowerCase()}
@@ -51,7 +68,9 @@ export default function CategoryBadge({ category, removable }: Props) {
 		return (
 			<TooltipProvider>
 				<Tooltip>
-					{category.description && <TooltipContent>{category.description}</TooltipContent>}
+					{category.description && (
+						<TooltipContent>{category.description}</TooltipContent>
+					)}
 					<AlertDialog>
 						<TooltipTrigger asChild>
 							<AlertDialogTrigger asChild>{badge}</AlertDialogTrigger>
@@ -62,7 +81,9 @@ export default function CategoryBadge({ category, removable }: Props) {
 							</AlertDialogHeader>
 							<AlertDialogFooter>
 								<AlertDialogCancel>No</AlertDialogCancel>
-								<AlertDialogAction onClick={deleteCategory}>Yes</AlertDialogAction>
+								<AlertDialogAction onClick={deleteCategory}>
+									Yes
+								</AlertDialogAction>
 							</AlertDialogFooter>
 						</AlertDialogContent>
 					</AlertDialog>
@@ -75,7 +96,9 @@ export default function CategoryBadge({ category, removable }: Props) {
 		<TooltipProvider>
 			<Tooltip>
 				<TooltipTrigger asChild>{badge}</TooltipTrigger>
-				{category.description && <TooltipContent>{category.description}</TooltipContent>}
+				{category.description && (
+					<TooltipContent>{category.description}</TooltipContent>
+				)}
 			</Tooltip>
 		</TooltipProvider>
 	);

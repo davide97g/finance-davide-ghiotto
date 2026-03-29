@@ -3,16 +3,16 @@
 @tailwind utilities;
 
 @font-face {
-	font-family: 'Montserrat';
-	src: url('/fonts/Montserrat-VariableFont_wght.ttf');
+	font-family: "Montserrat";
+	src: url("/fonts/Montserrat-VariableFont_wght.ttf");
 }
 @font-face {
-	font-family: 'Montserrat-Italic';
-	src: url('/fonts/Montserrat-Italic-VariableFont_wght.ttf');
+	font-family: "Montserrat-Italic";
+	src: url("/fonts/Montserrat-Italic-VariableFont_wght.ttf");
 }
 
 :root {
-	font-family: 'Montserrat', Inter, Avenir, Helvetica, Arial, sans-serif;
+	font-family: "Montserrat", Inter, Avenir, Helvetica, Arial, sans-serif;
 	font-size: 16px;
 	line-height: 24px;
 	font-weight: 400;
@@ -29,7 +29,8 @@
 }
 body {
 	background-color: var(--background-color) !important;
-	font-family: 'Montserrat', Inter, Avenir, Helvetica, Arial, sans-serif !important;
+	font-family:
+		"Montserrat", Inter, Avenir, Helvetica, Arial, sans-serif !important;
 }
 html,
 body {
@@ -38,7 +39,7 @@ body {
 	margin: 0;
 }
 
-input[type='date'] {
+input[type="date"] {
 	color-scheme: dark;
 }
 ::-webkit-calendar-picker-indicator {
@@ -67,7 +68,7 @@ input[type='date'] {
 [data-sonner-toaster] {
 	--normal-bg: #fff;
 	--normal-border: transparent;
-	font-family: 'Montserrat', sans-serif !important;
+	font-family: "Montserrat", sans-serif !important;
 }
 
 [data-sonner-toast] {
@@ -110,35 +111,35 @@ input[type='date'] {
 	text-align: left !important;
 }
 
-[data-sonner-toast][data-type='success'] {
+[data-sonner-toast][data-type="success"] {
 	border-left: 3px solid #3f8600 !important;
 }
 
-[data-sonner-toast][data-type='success'] [data-icon] {
+[data-sonner-toast][data-type="success"] [data-icon] {
 	color: #3f8600 !important;
 }
 
-[data-sonner-toast][data-type='error'] {
+[data-sonner-toast][data-type="error"] {
 	border-left: 3px solid #cf1322 !important;
 }
 
-[data-sonner-toast][data-type='error'] [data-icon] {
+[data-sonner-toast][data-type="error"] [data-icon] {
 	color: #cf1322 !important;
 }
 
-[data-sonner-toast][data-type='warning'] {
+[data-sonner-toast][data-type="warning"] {
 	border-left: 3px solid #d97706 !important;
 }
 
-[data-sonner-toast][data-type='warning'] [data-icon] {
+[data-sonner-toast][data-type="warning"] [data-icon] {
 	color: #d97706 !important;
 }
 
-[data-sonner-toast][data-type='info'] {
+[data-sonner-toast][data-type="info"] {
 	border-left: 3px solid #2563eb !important;
 }
 
-[data-sonner-toast][data-type='info'] [data-icon] {
+[data-sonner-toast][data-type="info"] [data-icon] {
 	color: #2563eb !important;
 }
 

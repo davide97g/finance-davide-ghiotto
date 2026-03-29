@@ -1,6 +1,8 @@
-import { X } from 'lucide-react';
-import { Badge } from '../ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { X } from "lucide-react";
+import { DataBaseClient } from "../../api/db";
+import type { Tag } from "../../models/tag";
+import { openNotificationWithIcon, setIsLoading } from "../../services/utils";
+import { useTagStore } from "../../stores/tag";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -10,11 +12,14 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 	AlertDialogTrigger,
-} from '../ui/alert-dialog';
-import { Tag } from '../../models/tag';
-import { DataBaseClient } from '../../api/db';
-import { setIsLoading, openNotificationWithIcon } from '../../services/utils';
-import { useTagStore } from '../../stores/tag';
+} from "../ui/alert-dialog";
+import { Badge } from "../ui/badge";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "../ui/tooltip";
 
 interface Props {
 	tag: Tag;
@@ -27,18 +32,26 @@ export default function TagBadge({ tag, removable }: Props) {
 		DataBaseClient.Tag.delete(tag.id)
 			.then(() => {
 				useTagStore.getState().removeTag(tag);
-				openNotificationWithIcon('success', 'Deleted', `Successfully deleted ${tag.name}`);
+				openNotificationWithIcon(
+					"success",
+					"Deleted",
+					`Successfully deleted ${tag.name}`,
+				);
 			})
-			.catch(err => {
+			.catch((err) => {
 				console.error(err);
-				openNotificationWithIcon('error', 'Error', `There was an error deleting ${tag.name}`);
+				openNotificationWithIcon(
+					"error",
+					"Error",
+					`There was an error deleting ${tag.name}`,
+				);
 			})
 			.finally(() => setIsLoading(false));
 	};
 
 	const badge = (
 		<Badge
-			style={{ backgroundColor: tag.color, color: 'white', cursor: 'pointer' }}
+			style={{ backgroundColor: tag.color, color: "white", cursor: "pointer" }}
 			className="gap-1"
 		>
 			{tag.name.toUpperCase()}
@@ -50,7 +63,9 @@ export default function TagBadge({ tag, removable }: Props) {
 		return (
 			<TooltipProvider>
 				<Tooltip>
-					{tag.description && <TooltipContent>{tag.description}</TooltipContent>}
+					{tag.description && (
+						<TooltipContent>{tag.description}</TooltipContent>
+					)}
 					<AlertDialog>
 						<TooltipTrigger asChild>
 							<AlertDialogTrigger asChild>{badge}</AlertDialogTrigger>

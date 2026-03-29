@@ -1,11 +1,11 @@
-import { Link } from 'react-router-dom';
-import { LogOut, ArrowLeft, Mail, User } from 'lucide-react';
-import { FirebaseAuth } from '../api/auth';
-import { useUserStore } from '../stores/user';
-import { getPhotoURL } from '../services/utils';
+import { ArrowLeft, LogOut, Mail, User } from "lucide-react";
+import { Link } from "react-router-dom";
+import { FirebaseAuth } from "../api/auth";
+import { getPhotoURL } from "../services/utils";
+import { useUserStore } from "../stores/user";
 
 export default function Profile() {
-	const user = useUserStore(s => s.user);
+	const user = useUserStore((s) => s.user);
 
 	return (
 		<div className="relative min-h-screen flex flex-col overflow-hidden">
@@ -58,8 +58,12 @@ export default function Profile() {
 								<User className="h-4 w-4" strokeWidth={2} />
 							</div>
 							<div className="text-left">
-								<p className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">Name</p>
-								<p className="text-sm font-medium text-stone-700">{user?.displayName}</p>
+								<p className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">
+									Name
+								</p>
+								<p className="text-sm font-medium text-stone-700">
+									{user?.displayName}
+								</p>
 							</div>
 						</div>
 						<div className="flex items-center gap-4 px-5 py-4">
@@ -67,8 +71,12 @@ export default function Profile() {
 								<Mail className="h-4 w-4" strokeWidth={2} />
 							</div>
 							<div className="text-left">
-								<p className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">Email</p>
-								<p className="text-sm font-medium text-stone-700">{user?.email}</p>
+								<p className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">
+									Email
+								</p>
+								<p className="text-sm font-medium text-stone-700">
+									{user?.email}
+								</p>
 							</div>
 						</div>
 					</div>

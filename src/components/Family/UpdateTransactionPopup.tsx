@@ -1,17 +1,35 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { CalendarDays, FileText, Tag as TagIcon, FolderOpen, Euro, Trash2 } from 'lucide-react';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Dialog, DialogContent } from '../ui/dialog';
-import { clone, equals, openNotificationWithIcon, setIsLoading } from '../../services/utils';
-import { cn } from '../../lib/utils';
-import { DataBaseClient } from '../../api/db';
-import { useCategoryStore } from '../../stores/category';
-import { useCategoryUsageStore } from '../../stores/categoryUsage';
-import { useTagStore } from '../../stores/tag';
-import { useTransactionStore } from '../../stores/transaction';
-import { Transaction } from '../../models/transaction';
+import {
+	CalendarDays,
+	Euro,
+	FileText,
+	FolderOpen,
+	Tag as TagIcon,
+	Trash2,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { DataBaseClient } from "../../api/db";
+import { cn } from "../../lib/utils";
+import type { Transaction } from "../../models/transaction";
+import {
+	clone,
+	equals,
+	openNotificationWithIcon,
+	setIsLoading,
+} from "../../services/utils";
+import { useCategoryStore } from "../../stores/category";
+import { useCategoryUsageStore } from "../../stores/categoryUsage";
+import { useTagStore } from "../../stores/tag";
+import { useTransactionStore } from "../../stores/transaction";
+import { Dialog, DialogContent } from "../ui/dialog";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../ui/select";
 
 interface Props {
 	open: boolean;
@@ -19,17 +37,26 @@ interface Props {
 	transaction: Transaction;
 }
 
-function TagChip({ value, tags, onChange }: { value: string; tags: { id: string; name: string }[]; onChange: (v: string) => void }) {
+function TagChip({
+	value,
+	tags,
+	onChange,
+}: {
+	value: string;
+	tags: { id: string; name: string }[];
+	onChange: (v: string) => void;
+}) {
 	const [expanded, setExpanded] = useState(false);
 	const ref = useRef<HTMLDivElement>(null);
-	const current = tags.find(t => t.id === value);
+	const current = tags.find((t) => t.id === value);
 
 	useEffect(() => {
 		const handleClick = (e: MouseEvent) => {
-			if (ref.current && !ref.current.contains(e.target as Node)) setExpanded(false);
+			if (ref.current && !ref.current.contains(e.target as Node))
+				setExpanded(false);
 		};
-		if (expanded) document.addEventListener('mousedown', handleClick);
-		return () => document.removeEventListener('mousedown', handleClick);
+		if (expanded) document.addEventListener("mousedown", handleClick);
+		return () => document.removeEventListener("mousedown", handleClick);
 	}, [expanded]);
 
 	return (
@@ -37,29 +64,33 @@ function TagChip({ value, tags, onChange }: { value: string; tags: { id: string;
 			<button
 				onClick={() => setExpanded(!expanded)}
 				className={cn(
-					'flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full transition-all duration-200',
+					"flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full transition-all duration-200",
 					expanded
-						? 'bg-foreground/10 text-foreground'
-						: 'bg-foreground/[0.05] text-muted-foreground hover:bg-foreground/[0.08]'
+						? "bg-foreground/10 text-foreground"
+						: "bg-foreground/[0.05] text-muted-foreground hover:bg-foreground/[0.08]",
 				)}
 			>
 				<TagIcon className="h-2.5 w-2.5" />
-				{current?.name || 'Tag'}
+				{current?.name || "Tag"}
 			</button>
 
 			{expanded && (
-				<div className="absolute right-0 top-full mt-1.5 z-50 bg-white rounded-xl shadow-lg border border-black/[0.06] p-1.5 flex flex-wrap gap-1 min-w-[140px] max-w-[200px]"
-					style={{ animation: 'fadeSlideIn 0.15s ease-out both' }}
+				<div
+					className="absolute right-0 top-full mt-1.5 z-50 bg-white rounded-xl shadow-lg border border-black/[0.06] p-1.5 flex flex-wrap gap-1 min-w-[140px] max-w-[200px]"
+					style={{ animation: "fadeSlideIn 0.15s ease-out both" }}
 				>
-					{tags.map(t => (
+					{tags.map((t) => (
 						<button
 							key={t.id}
-							onClick={() => { onChange(t.id); setExpanded(false); }}
+							onClick={() => {
+								onChange(t.id);
+								setExpanded(false);
+							}}
 							className={cn(
-								'text-[10px] font-medium px-2.5 py-1 rounded-lg transition-all duration-150 whitespace-nowrap',
+								"text-[10px] font-medium px-2.5 py-1 rounded-lg transition-all duration-150 whitespace-nowrap",
 								t.id === value
-									? 'bg-foreground/10 text-foreground shadow-sm'
-									: 'text-muted-foreground hover:bg-foreground/[0.05] hover:text-foreground'
+									? "bg-foreground/10 text-foreground shadow-sm"
+									: "text-muted-foreground hover:bg-foreground/[0.05] hover:text-foreground",
 							)}
 						>
 							{t.name}
@@ -71,41 +102,55 @@ function TagChip({ value, tags, onChange }: { value: string; tags: { id: string;
 	);
 }
 
-export default function UpdateTransactionPopup({ open, onOpenChange, transaction: propTransaction }: Props) {
-	const [transaction, setTransaction] = useState<Transaction>(clone(propTransaction));
-	const [amountDisplay, setAmountDisplay] = useState(String(propTransaction.amount || ''));
+export default function UpdateTransactionPopup({
+	open,
+	onOpenChange,
+	transaction: propTransaction,
+}: Props) {
+	const [transaction, setTransaction] = useState<Transaction>(
+		clone(propTransaction),
+	);
+	const [amountDisplay, setAmountDisplay] = useState(
+		String(propTransaction.amount || ""),
+	);
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
-	const removeTransaction = useTransactionStore(s => s.removeTransaction);
-	const allCategories = useCategoryStore(s => s.categories);
-	const usageCounts = useCategoryUsageStore(s => s.counts);
-	const tags = useTagStore(s => s.tags);
+	const removeTransaction = useTransactionStore((s) => s.removeTransaction);
+	const allCategories = useCategoryStore((s) => s.categories);
+	const usageCounts = useCategoryUsageStore((s) => s.counts);
+	const tags = useTagStore((s) => s.tags);
 	const categories = useMemo(() => {
-		const filtered = allCategories.filter(c => c.type === transaction.type);
-		if (transaction.type === 'expense') {
-			return [...filtered].sort((a, b) => (usageCounts[b.id] || 0) - (usageCounts[a.id] || 0));
+		const filtered = allCategories.filter((c) => c.type === transaction.type);
+		if (transaction.type === "expense") {
+			return [...filtered].sort(
+				(a, b) => (usageCounts[b.id] || 0) - (usageCounts[a.id] || 0),
+			);
 		}
 		return filtered;
 	}, [allCategories, transaction.type, usageCounts]);
 
 	useEffect(() => {
 		setTransaction(clone(propTransaction));
-		setAmountDisplay(String(propTransaction.amount || ''));
+		setAmountDisplay(String(propTransaction.amount || ""));
 		setConfirmingDelete(false);
 	}, [propTransaction]);
 
 	const updateField = (field: string, value: any) => {
-		setTransaction(prev => ({ ...prev, [field]: value }));
+		setTransaction((prev) => ({ ...prev, [field]: value }));
 	};
 
 	const handleOk = () => {
 		setIsLoading(true);
 		DataBaseClient.Transaction.update(transaction)
 			.then(() => {
-				openNotificationWithIcon('success', 'Success', 'Transaction ' + transaction.description + ' updated');
+				openNotificationWithIcon(
+					"success",
+					"Success",
+					"Transaction " + transaction.description + " updated",
+				);
 				useTransactionStore.getState().updateTransaction(transaction);
 				onOpenChange(false);
 			})
-			.catch(err => console.error(err))
+			.catch((err) => console.error(err))
 			.finally(() => setIsLoading(false));
 	};
 
@@ -113,13 +158,17 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 		setIsLoading(true);
 		DataBaseClient.Transaction.delete(propTransaction.id)
 			.then(() => {
-				openNotificationWithIcon('success', 'Success', 'Transaction deleted');
+				openNotificationWithIcon("success", "Success", "Transaction deleted");
 				removeTransaction(propTransaction);
 				onOpenChange(false);
 			})
-			.catch(err => {
+			.catch((err) => {
 				console.error(err);
-				openNotificationWithIcon('error', 'Error', 'Failed to delete transaction');
+				openNotificationWithIcon(
+					"error",
+					"Error",
+					"Failed to delete transaction",
+				);
 			})
 			.finally(() => {
 				setIsLoading(false);
@@ -127,19 +176,34 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 			});
 	};
 
-	const isDisabled = !transaction.amount || !transaction.date || !transaction.category || equals(transaction, propTransaction);
-	const isExpense = transaction.type === 'expense';
-	const accentColor = isExpense ? '#cf1322' : '#3f8600';
+	const isDisabled =
+		!transaction.amount ||
+		!transaction.date ||
+		!transaction.category ||
+		equals(transaction, propTransaction);
+	const isExpense = transaction.type === "expense";
+	const accentColor = isExpense ? "#cf1322" : "#3f8600";
 	const hasChanges = !equals(transaction, propTransaction);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="p-0 gap-0 max-w-[360px] rounded-2xl border-0 shadow-2xl overflow-visible">
 				{/* Colored header strip */}
-				<div className="px-5 pt-5 pb-4 rounded-t-2xl" style={{ background: `linear-gradient(135deg, ${accentColor}12, ${accentColor}06)` }}>
+				<div
+					className="px-5 pt-5 pb-4 rounded-t-2xl"
+					style={{
+						background: `linear-gradient(135deg, ${accentColor}12, ${accentColor}06)`,
+					}}
+				>
 					<div className="flex items-center gap-2 mb-3">
-						<div className="h-2 w-2 rounded-full" style={{ backgroundColor: accentColor }} />
-						<span className="text-xs font-semibold uppercase tracking-widest" style={{ color: accentColor }}>
+						<div
+							className="h-2 w-2 rounded-full"
+							style={{ backgroundColor: accentColor }}
+						/>
+						<span
+							className="text-xs font-semibold uppercase tracking-widest"
+							style={{ color: accentColor }}
+						>
 							Edit {transaction.type}
 						</span>
 						{hasChanges && (
@@ -154,18 +218,21 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 							type="text"
 							inputMode="decimal"
 							value={amountDisplay}
-							onChange={e => {
-								const raw = e.target.value.replace(',', '.');
-								if (raw === '' || /^\d*\.?\d*$/.test(raw)) {
+							onChange={(e) => {
+								const raw = e.target.value.replace(",", ".");
+								if (raw === "" || /^\d*\.?\d*$/.test(raw)) {
 									setAmountDisplay(e.target.value);
-									updateField('amount', raw === '' ? 0 : parseFloat(raw));
+									updateField("amount", raw === "" ? 0 : parseFloat(raw));
 								}
 							}}
 							placeholder="0.00"
 							className="bg-transparent border-none outline-none text-center text-4xl font-bold tracking-tight w-full placeholder:text-black/15"
 							style={{ color: accentColor }}
 						/>
-						<Euro className="h-6 w-6 shrink-0 -ml-2 opacity-40" style={{ color: accentColor }} />
+						<Euro
+							className="h-6 w-6 shrink-0 -ml-2 opacity-40"
+							style={{ color: accentColor }}
+						/>
 					</div>
 				</div>
 
@@ -175,16 +242,19 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 						<Label className="text-xs text-muted-foreground flex items-center gap-1.5">
 							<FolderOpen className="h-3 w-3" /> Category
 						</Label>
-						<Select value={transaction.category} onValueChange={v => updateField('category', v)}>
+						<Select
+							value={transaction.category}
+							onValueChange={(v) => updateField("category", v)}
+						>
 							<SelectTrigger className="h-10 bg-white/80 border-black/8 rounded-xl text-sm">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								{categories.map(c => (
+								{categories.map((c) => (
 									<SelectItem key={c.id} value={c.id}>
 										<span
 											className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold text-white"
-											style={{ backgroundColor: c.color || '#ababab' }}
+											style={{ backgroundColor: c.color || "#ababab" }}
 										>
 											{c.name}
 										</span>
@@ -200,15 +270,15 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 								<CalendarDays className="h-3 w-3 shrink-0" /> Date
 							</Label>
 							<TagChip
-								value={transaction.tag || ''}
+								value={transaction.tag || ""}
 								tags={tags}
-								onChange={v => updateField('tag', v)}
+								onChange={(v) => updateField("tag", v)}
 							/>
 						</div>
 						<Input
 							type="date"
 							value={transaction.date}
-							onChange={e => updateField('date', e.target.value)}
+							onChange={(e) => updateField("date", e.target.value)}
 							className="h-10 bg-white/80 border-black/8 rounded-xl text-sm pr-3 [&::-webkit-calendar-picker-indicator]:hidden"
 						/>
 					</div>
@@ -220,7 +290,7 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 						<Input
 							type="text"
 							value={transaction.description}
-							onChange={e => updateField('description', e.target.value)}
+							onChange={(e) => updateField("description", e.target.value)}
 							placeholder="Optional"
 							className="h-10 bg-white/80 border-black/8 rounded-xl text-sm placeholder:text-muted-foreground/50"
 						/>
@@ -234,8 +304,8 @@ export default function UpdateTransactionPopup({ open, onOpenChange, transaction
 						disabled={isDisabled}
 						className="w-full h-11 rounded-xl font-semibold text-sm text-white transition-all duration-200 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
 						style={{
-							backgroundColor: isDisabled ? '#9ca3af' : accentColor,
-							boxShadow: isDisabled ? 'none' : `0 4px 14px ${accentColor}40`,
+							backgroundColor: isDisabled ? "#9ca3af" : accentColor,
+							boxShadow: isDisabled ? "none" : `0 4px 14px ${accentColor}40`,
 						}}
 					>
 						Save changes

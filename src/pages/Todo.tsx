@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { DataBaseClient } from '../api/db';
-import { Todo as TodoModel } from '../models/todo';
-import ChecklistPage from '../components/ChecklistPage';
+import { useEffect, useState } from "react";
+import { DataBaseClient } from "../api/db";
+import ChecklistPage from "../components/ChecklistPage";
+import type { Todo as TodoModel } from "../models/todo";
 
 export default function Todo() {
 	const [items, setItems] = useState<TodoModel[]>([]);
@@ -10,7 +10,7 @@ export default function Todo() {
 		let unsubscribe: (() => void) | undefined;
 		DataBaseClient.Todo.getRT((todos: TodoModel[]) => {
 			setItems(todos);
-		}).then(unsub => {
+		}).then((unsub) => {
 			unsubscribe = unsub;
 		});
 		return () => {
@@ -23,13 +23,11 @@ export default function Todo() {
 			title="Home Todo List"
 			icon="🏠"
 			items={items}
-			onAdd={label =>
-				DataBaseClient.Todo.create({ label, checked: false })
-			}
-			onCheck={item =>
+			onAdd={(label) => DataBaseClient.Todo.create({ label, checked: false })}
+			onCheck={(item) =>
 				DataBaseClient.Todo.update({ ...item, checked: !item.checked })
 			}
-			onDelete={item => DataBaseClient.Todo.delete(item.id)}
+			onDelete={(item) => DataBaseClient.Todo.delete(item.id)}
 		/>
 	);
 }

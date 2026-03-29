@@ -2,7 +2,7 @@ export interface IStats {
 	month: string;
 	year: string;
 	total: number;
-	type: 'expense' | 'earning';
+	type: "expense" | "earning";
 	lastUpdate: string;
 	categorySummary: {
 		categoryId: string;

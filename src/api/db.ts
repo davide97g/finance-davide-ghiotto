@@ -1,77 +1,82 @@
-import { User } from 'firebase/auth';
+import type { User } from "firebase/auth";
 import {
 	addDoc,
 	collection,
 	deleteDoc,
+	doc,
+	enableIndexedDbPersistence,
+	getDoc,
 	getDocs,
 	getFirestore,
 	onSnapshot,
 	query,
 	setDoc,
-	Unsubscribe,
+	type Unsubscribe,
 	where,
-} from 'firebase/firestore';
-import { doc, getDoc, enableIndexedDbPersistence } from 'firebase/firestore';
-import { ITransaction, Transaction } from '../models/transaction';
-import { Category, CategoryType, ICategory } from '../models/category';
-import { IStats, Stats } from '../models/stats';
-import { ITag, Tag } from '../models/tag';
-import { CategoryUsageData } from '../models/categoryUsage';
-import { setIsLoading } from '../stores/loading';
-import { Grocery, IGrocery } from '../models/grocery';
-import { ITodo, Todo } from '../models/todo';
+} from "firebase/firestore";
+import type { Category, CategoryType, ICategory } from "../models/category";
+import type { CategoryUsageData } from "../models/categoryUsage";
+import type { Grocery, IGrocery } from "../models/grocery";
+import type { IStats, Stats } from "../models/stats";
+import type { ITag, Tag } from "../models/tag";
+import type { ITodo, Todo } from "../models/todo";
+import type { ITransaction, Transaction } from "../models/transaction";
+import { setIsLoading } from "../stores/loading";
 
 const db = getFirestore();
 
-enableIndexedDbPersistence(db).catch(err => {
-	if (err.code == 'failed-precondition') {
-		console.info('offline init failed');
-	} else if (err.code == 'unimplemented') {
-		console.info('offline not supported');
+enableIndexedDbPersistence(db).catch((err) => {
+	if (err.code == "failed-precondition") {
+		console.info("offline init failed");
+	} else if (err.code == "unimplemented") {
+		console.info("offline not supported");
 	}
 });
 
 export const DataBaseClient = {
 	User: {
 		async getUser(uid: string): Promise<User | null> {
-			const docRef = doc(db, 'users', uid);
+			const docRef = doc(db, "users", uid);
 			const docSnap = await getDoc(docRef);
 
 			if (docSnap.exists()) return docSnap.data() as User;
 			else return null;
 		},
 		async getUserOrCreateOne(firebaseUser: User): Promise<User> {
-			const docRef = doc(db, 'users', firebaseUser.uid);
+			const docRef = doc(db, "users", firebaseUser.uid);
 			const docSnap = await getDoc(docRef);
 
 			if (docSnap.exists()) return docSnap.data() as User;
 			else return this.createNewUser(firebaseUser);
 		},
 		async createNewUser(firebaseUser: User): Promise<User> {
-			await setDoc(doc(collection(db, 'users'), firebaseUser.uid), firebaseUser);
+			await setDoc(
+				doc(collection(db, "users"), firebaseUser.uid),
+				firebaseUser,
+			);
 			return firebaseUser;
 		},
 		async getAllUsers(): Promise<User[]> {
-			const querySnapshot = await getDocs(collection(db, 'users'));
-			return querySnapshot.docs.map(doc => doc.data()) as User[];
+			const querySnapshot = await getDocs(collection(db, "users"));
+			return querySnapshot.docs.map((doc) => doc.data()) as User[];
 		},
 	},
 	Transaction: {
-		collection: 'transactions',
+		collection: "transactions",
 		async get(filters?: {
-			type?: 'expense' | 'earning';
+			type?: "expense" | "earning";
 			month?: string;
 			year?: string;
 		}): Promise<Transaction[]> {
 			setIsLoading(true);
 			const constraints = [];
-			if (filters?.type) constraints.push(where('type', '==', filters.type));
-			if (filters?.month) constraints.push(where('month', '==', filters.month));
-			if (filters?.year) constraints.push(where('year', '==', filters.year));
+			if (filters?.type) constraints.push(where("type", "==", filters.type));
+			if (filters?.month) constraints.push(where("month", "==", filters.month));
+			if (filters?.year) constraints.push(where("year", "==", filters.year));
 			const q = query(collection(db, this.collection), ...constraints);
 			const querySnapshot = await getDocs(q);
 			setIsLoading(false);
-			return querySnapshot.docs.map(doc => ({
+			return querySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				...doc.data(),
 			})) as Transaction[];
@@ -79,18 +84,18 @@ export const DataBaseClient = {
 		async getRT(
 			callback: (transactions: Transaction[]) => void,
 			filters?: {
-				type?: 'expense' | 'earning';
+				type?: "expense" | "earning";
 				month?: string;
 				year?: string;
-			}
+			},
 		): Promise<Unsubscribe> {
 			const constraints = [];
-			if (filters?.type) constraints.push(where('type', '==', filters.type));
-			if (filters?.month) constraints.push(where('month', '==', filters.month));
-			if (filters?.year) constraints.push(where('year', '==', filters.year));
+			if (filters?.type) constraints.push(where("type", "==", filters.type));
+			if (filters?.month) constraints.push(where("month", "==", filters.month));
+			if (filters?.year) constraints.push(where("year", "==", filters.year));
 			const q = query(collection(db, this.collection), ...constraints);
-			return onSnapshot(q, querySnapshot => {
-				const transactions = querySnapshot.docs.map(doc => ({
+			return onSnapshot(q, (querySnapshot) => {
+				const transactions = querySnapshot.docs.map((doc) => ({
 					id: doc.id,
 					...doc.data(),
 				})) as Transaction[];
@@ -99,13 +104,16 @@ export const DataBaseClient = {
 		},
 		async create(transaction: ITransaction): Promise<Transaction> {
 			try {
-				const res = await addDoc(
-					collection(db, this.collection),
-					JSON.parse(JSON.stringify(transaction))
-				);
+				const createdAt = Date.now();
+				const payload = {
+					...JSON.parse(JSON.stringify(transaction)),
+					createdAt,
+				};
+				const res = await addDoc(collection(db, this.collection), payload);
 				return {
 					id: res.id,
 					...transaction,
+					createdAt,
 				};
 			} catch (err) {
 				console.error(err);
@@ -119,7 +127,7 @@ export const DataBaseClient = {
 					JSON.parse(JSON.stringify(transaction)),
 					{
 						merge: true,
-					}
+					},
 				);
 				return true;
 			} catch (err) {
@@ -139,8 +147,8 @@ export const DataBaseClient = {
 		async bulkAdd(transactions: ITransaction[]): Promise<Transaction[]> {
 			try {
 				const transactionsCreation: Promise<Transaction>[] = [];
-				transactions.forEach(transaction =>
-					transactionsCreation.push(this.create(transaction))
+				transactions.forEach((transaction) =>
+					transactionsCreation.push(this.create(transaction)),
 				);
 				return await Promise.all(transactionsCreation);
 			} catch (err) {
@@ -150,13 +158,13 @@ export const DataBaseClient = {
 		},
 	},
 	Category: {
-		collection: 'categories',
+		collection: "categories",
 		async get(type?: CategoryType): Promise<Category[]> {
 			const constraints = [];
-			if (type) constraints.push(where('type', '==', type));
+			if (type) constraints.push(where("type", "==", type));
 			const q = query(collection(db, this.collection), ...constraints);
 			const querySnapshot = await getDocs(q);
-			return querySnapshot.docs.map(doc => ({
+			return querySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				...doc.data(),
 			})) as Category[];
@@ -165,7 +173,7 @@ export const DataBaseClient = {
 			try {
 				const res = await addDoc(
 					collection(db, this.collection),
-					JSON.parse(JSON.stringify(iCategory))
+					JSON.parse(JSON.stringify(iCategory)),
 				);
 				return {
 					id: res.id,
@@ -183,7 +191,7 @@ export const DataBaseClient = {
 					JSON.parse(JSON.stringify(category)),
 					{
 						merge: true,
-					}
+					},
 				);
 				return true;
 			} catch (err) {
@@ -202,10 +210,10 @@ export const DataBaseClient = {
 		},
 	},
 	Tag: {
-		collection: 'tags',
+		collection: "tags",
 		async get(): Promise<Tag[]> {
 			const querySnapshot = await getDocs(collection(db, this.collection));
-			return querySnapshot.docs.map(doc => ({
+			return querySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				...doc.data(),
 			})) as Tag[];
@@ -214,7 +222,7 @@ export const DataBaseClient = {
 			try {
 				const res = await addDoc(
 					collection(db, this.collection),
-					JSON.parse(JSON.stringify(iTag))
+					JSON.parse(JSON.stringify(iTag)),
 				);
 				return {
 					id: res.id,
@@ -232,7 +240,7 @@ export const DataBaseClient = {
 					JSON.parse(JSON.stringify(tag)),
 					{
 						merge: true,
-					}
+					},
 				);
 				return true;
 			} catch (err) {
@@ -251,23 +259,26 @@ export const DataBaseClient = {
 		},
 	},
 	Stats: {
-		collection: 'stats',
+		collection: "stats",
 		async get(month: string, year: string): Promise<Stats> {
 			const q = query(
 				collection(db, this.collection),
-				where('month', '==', month),
-				where('year', '==', year)
+				where("month", "==", month),
+				where("year", "==", year),
 			);
 			const querySnapshot = await getDocs(q);
-			return querySnapshot.docs.map(doc => ({
+			return querySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				...doc.data(),
 			}))[0] as Stats;
 		},
 		async getByYear(year: string): Promise<Stats[]> {
-			const q = query(collection(db, this.collection), where('year', '==', year));
+			const q = query(
+				collection(db, this.collection),
+				where("year", "==", year),
+			);
 			const querySnapshot = await getDocs(q);
-			return querySnapshot.docs.map(doc => ({
+			return querySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				...doc.data(),
 			})) as Stats[];
@@ -276,7 +287,7 @@ export const DataBaseClient = {
 			try {
 				const res = await addDoc(
 					collection(db, this.collection),
-					JSON.parse(JSON.stringify(iStats))
+					JSON.parse(JSON.stringify(iStats)),
 				);
 				return {
 					id: res.id,
@@ -294,7 +305,7 @@ export const DataBaseClient = {
 					JSON.parse(JSON.stringify(stats)),
 					{
 						merge: true,
-					}
+					},
 				);
 				return true;
 			} catch (err) {
@@ -321,7 +332,7 @@ export const DataBaseClient = {
 		async bulkDelete(statsIds: string[]): Promise<boolean> {
 			try {
 				const statsDeletion: Promise<boolean>[] = [];
-				statsIds.forEach(statsId => statsDeletion.push(this.delete(statsId)));
+				statsIds.forEach((statsId) => statsDeletion.push(this.delete(statsId)));
 				await Promise.all(statsDeletion);
 				return true;
 			} catch (err) {
@@ -332,7 +343,7 @@ export const DataBaseClient = {
 		async bulkAdd(stats: IStats[]): Promise<Stats[]> {
 			try {
 				const statsCreation: Promise<Stats>[] = [];
-				stats.forEach(stat => statsCreation.push(this.create(stat)));
+				stats.forEach((stat) => statsCreation.push(this.create(stat)));
 				const result = await Promise.all(statsCreation);
 				return result;
 			} catch (err) {
@@ -341,19 +352,21 @@ export const DataBaseClient = {
 		},
 	},
 	Grocery: {
-		collection: 'groceries',
+		collection: "groceries",
 		async get(): Promise<Grocery[]> {
 			setIsLoading(true);
 			const querySnapshot = await getDocs(collection(db, this.collection));
 			setIsLoading(false);
-			return querySnapshot.docs.map(doc => ({
+			return querySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				...doc.data(),
 			})) as Grocery[];
 		},
-		async getRT(callback: (groceries: Grocery[]) => void): Promise<Unsubscribe> {
-			return onSnapshot(collection(db, this.collection), querySnapshot => {
-				const groceries = querySnapshot.docs.map(doc => ({
+		async getRT(
+			callback: (groceries: Grocery[]) => void,
+		): Promise<Unsubscribe> {
+			return onSnapshot(collection(db, this.collection), (querySnapshot) => {
+				const groceries = querySnapshot.docs.map((doc) => ({
 					id: doc.id,
 					...doc.data(),
 				})) as Grocery[];
@@ -364,7 +377,7 @@ export const DataBaseClient = {
 			try {
 				const res = await addDoc(
 					collection(db, this.collection),
-					JSON.parse(JSON.stringify(grocery))
+					JSON.parse(JSON.stringify(grocery)),
 				);
 				return {
 					id: res.id,
@@ -383,7 +396,7 @@ export const DataBaseClient = {
 					JSON.parse(JSON.stringify(grocery)),
 					{
 						merge: true,
-					}
+					},
 				);
 				return true;
 			} catch (err) {
@@ -404,19 +417,19 @@ export const DataBaseClient = {
 		},
 	},
 	Todo: {
-		collection: 'todo',
+		collection: "todo",
 		async get(): Promise<Todo[]> {
 			setIsLoading(true);
 			const querySnapshot = await getDocs(collection(db, this.collection));
 			setIsLoading(false);
-			return querySnapshot.docs.map(doc => ({
+			return querySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				...doc.data(),
 			})) as Todo[];
 		},
 		async getRT(callback: (todos: Todo[]) => void): Promise<Unsubscribe> {
-			return onSnapshot(collection(db, this.collection), querySnapshot => {
-				const todos = querySnapshot.docs.map(doc => ({
+			return onSnapshot(collection(db, this.collection), (querySnapshot) => {
+				const todos = querySnapshot.docs.map((doc) => ({
 					id: doc.id,
 					...doc.data(),
 				})) as Todo[];
@@ -427,7 +440,7 @@ export const DataBaseClient = {
 			try {
 				const res = await addDoc(
 					collection(db, this.collection),
-					JSON.parse(JSON.stringify(todo))
+					JSON.parse(JSON.stringify(todo)),
 				);
 				return {
 					id: res.id,
@@ -446,7 +459,7 @@ export const DataBaseClient = {
 					JSON.parse(JSON.stringify(todo)),
 					{
 						merge: true,
-					}
+					},
 				);
 				return true;
 			} catch (err) {
@@ -468,12 +481,12 @@ export const DataBaseClient = {
 	},
 	CategoryUsage: {
 		async get(): Promise<CategoryUsageData | null> {
-			const docSnap = await getDoc(doc(db, 'settings', 'categoryUsage'));
+			const docSnap = await getDoc(doc(db, "settings", "categoryUsage"));
 			if (docSnap.exists()) return docSnap.data() as CategoryUsageData;
 			return null;
 		},
 		async set(data: CategoryUsageData): Promise<void> {
-			await setDoc(doc(db, 'settings', 'categoryUsage'), data);
+			await setDoc(doc(db, "settings", "categoryUsage"), data);
 		},
 	},
 };

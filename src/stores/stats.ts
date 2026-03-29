@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { Stats } from '../models/stats';
+import { create } from "zustand";
+import type { Stats } from "../models/stats";
 
 interface StatsState {
 	stats: Stats[];
@@ -10,29 +10,35 @@ interface StatsState {
 	updateStats: (stats: Stats) => void;
 }
 
-export const useStatsStore = create<StatsState>(set => ({
+export const useStatsStore = create<StatsState>((set) => ({
 	stats: [],
 	reset: () => set({ stats: [] }),
 	setStats: (stats: Stats[]) => {
-		set(state => {
-			const newStats = stats.filter(e => !state.stats.find(t => t.id === e.id));
-			const presentStats = stats.filter(e => state.stats.find(t => t.id === e.id));
+		set((state) => {
+			const newStats = stats.filter(
+				(e) => !state.stats.find((t) => t.id === e.id),
+			);
+			const presentStats = stats.filter((e) =>
+				state.stats.find((t) => t.id === e.id),
+			);
 			let updated = [...state.stats];
-			presentStats.forEach(s => {
-				updated = updated.map(existing => (existing.id === s.id ? s : existing));
+			presentStats.forEach((s) => {
+				updated = updated.map((existing) =>
+					existing.id === s.id ? s : existing,
+				);
 			});
 			return { stats: [...updated, ...newStats] };
 		});
 	},
 	addStats: (stats: Stats) => {
-		set(state => ({ stats: [...state.stats, stats] }));
+		set((state) => ({ stats: [...state.stats, stats] }));
 	},
 	removeStats: (stats: Stats) => {
-		set(state => ({ stats: state.stats.filter(t => t.id !== stats.id) }));
+		set((state) => ({ stats: state.stats.filter((t) => t.id !== stats.id) }));
 	},
 	updateStats: (stats: Stats) => {
-		set(state => ({
-			stats: state.stats.map(t => (t.id === stats.id ? stats : t)),
+		set((state) => ({
+			stats: state.stats.map((t) => (t.id === stats.id ? stats : t)),
 		}));
 	},
 }));
