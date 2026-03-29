@@ -44,7 +44,10 @@ export default function FiltersPopup({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-[340px] rounded-2xl border-0 shadow-2xl p-0 gap-0 overflow-hidden">
+			<DialogContent
+				className="max-w-[340px] rounded-2xl border-0 shadow-2xl p-0 gap-0 overflow-hidden"
+				aria-describedby={undefined}
+			>
 				<DialogHeader className="px-5 pt-5 pb-3">
 					<DialogTitle className="text-base">Filter by category</DialogTitle>
 				</DialogHeader>

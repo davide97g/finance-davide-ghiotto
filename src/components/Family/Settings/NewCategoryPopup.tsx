@@ -57,7 +57,7 @@ export default function NewCategoryPopup({ open, onOpenChange }: Props) {
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
+			<DialogContent aria-describedby={undefined}>
 				<DialogHeader>
 					<DialogTitle>New Category</DialogTitle>
 				</DialogHeader>

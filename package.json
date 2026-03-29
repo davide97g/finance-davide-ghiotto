@@ -8,6 +8,8 @@
 		"dev": "vite --port 8080",
 		"compile": "tsc -b",
 		"build": "tsc -b && vite build",
+		"lint": "biome check .",
+		"lint:fix": "biome check . --write src/**/*.{ts,tsx,js,jsx}",
 		"preview": "vite preview",
 		"prepare": "husky install",
 		"pwa": "bun run build && bun run pwa:preview",

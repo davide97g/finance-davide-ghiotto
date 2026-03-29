@@ -48,7 +48,7 @@ export default function NewTagPopup({ open, onOpenChange }: Props) {
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
+			<DialogContent aria-describedby={undefined}>
 				<DialogHeader>
 					<DialogTitle>New Tag</DialogTitle>
 				</DialogHeader>

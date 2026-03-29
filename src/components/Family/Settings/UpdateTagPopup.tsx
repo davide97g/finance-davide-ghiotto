@@ -54,7 +54,7 @@ export default function UpdateTagPopup({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
+			<DialogContent aria-describedby={undefined}>
 				<DialogHeader>
 					<DialogTitle>Modify Tag</DialogTitle>
 				</DialogHeader>

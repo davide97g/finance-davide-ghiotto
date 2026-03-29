@@ -17,7 +17,7 @@ import {
 import { useCategoryStore } from "../../stores/category";
 import { useCategoryUsageStore } from "../../stores/categoryUsage";
 import { useTagStore } from "../../stores/tag";
-import { Dialog, DialogContent } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import {
@@ -108,7 +108,11 @@ export default function NewTransactionPopup({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="p-0 gap-0 overflow-hidden max-w-[360px] rounded-2xl border-0 shadow-2xl">
+			<DialogContent
+				className="p-0 gap-0 overflow-hidden max-w-[360px] rounded-2xl border-0 shadow-2xl"
+				aria-describedby={undefined}
+			>
+				<DialogTitle className="sr-only">New {type}</DialogTitle>
 				{/* Colored header strip */}
 				<div
 					className="px-5 pt-5 pb-4"

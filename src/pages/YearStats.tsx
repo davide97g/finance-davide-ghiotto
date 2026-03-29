@@ -282,8 +282,12 @@ export default function YearStats() {
 						<p className="text-xs text-muted-foreground mb-3">
 							Monthly balance (earnings - expenses) for {year}
 						</p>
-						<ChartContainer config={barConfig} className="h-[220px] w-full">
-							<BarChart accessibilityLayer data={monthlyData}>
+						<ChartContainer config={barConfig} className="h-[300px] w-full">
+							<BarChart
+								accessibilityLayer
+								data={monthlyData}
+								margin={{ top: 25, bottom: 10 }}
+							>
 								<CartesianGrid vertical={false} />
 								<ChartTooltip
 									cursor={false}

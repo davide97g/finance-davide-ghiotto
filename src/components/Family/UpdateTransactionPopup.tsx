@@ -20,7 +20,7 @@ import { useCategoryStore } from "../../stores/category";
 import { useCategoryUsageStore } from "../../stores/categoryUsage";
 import { useTagStore } from "../../stores/tag";
 import { useTransactionStore } from "../../stores/transaction";
-import { Dialog, DialogContent } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import {
@@ -189,7 +189,11 @@ export default function UpdateTransactionPopup({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="p-0 gap-0 max-w-[360px] rounded-2xl border-0 shadow-2xl overflow-visible">
+			<DialogContent
+				className="p-0 gap-0 max-w-[360px] rounded-2xl border-0 shadow-2xl overflow-visible"
+				aria-describedby={undefined}
+			>
+				<DialogTitle className="sr-only">Edit {transaction.type}</DialogTitle>
 				{/* Colored header strip */}
 				<div
 					className="px-5 pt-5 pb-4 rounded-t-2xl"
