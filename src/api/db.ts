@@ -1,18 +1,18 @@
 import type { User } from "firebase/auth";
 import {
-	addDoc,
-	collection,
-	deleteDoc,
-	doc,
-	enableIndexedDbPersistence,
-	getDoc,
-	getDocs,
-	getFirestore,
-	onSnapshot,
-	query,
-	setDoc,
-	type Unsubscribe,
-	where,
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  enableIndexedDbPersistence,
+  getDoc,
+  getDocs,
+  getFirestore,
+  onSnapshot,
+  query,
+  setDoc,
+  type Unsubscribe,
+  where,
 } from "firebase/firestore";
 import type { Category, CategoryType, ICategory } from "../models/category";
 import type { CategoryUsageData } from "../models/categoryUsage";
@@ -26,457 +26,441 @@ import { setIsLoading } from "../stores/loading";
 const db = getFirestore();
 
 enableIndexedDbPersistence(db).catch((err) => {
-	if (err.code === "failed-precondition") {
-		console.info("offline init failed");
-	} else if (err.code === "unimplemented") {
-		console.info("offline not supported");
-	}
+  if (err.code === "failed-precondition") {
+    console.info("offline init failed");
+  } else if (err.code === "unimplemented") {
+    console.info("offline not supported");
+  }
 });
 
 export const DataBaseClient = {
-	User: {
-		async getUser(uid: string): Promise<User | null> {
-			const docRef = doc(db, "users", uid);
-			const docSnap = await getDoc(docRef);
+  User: {
+    async getUser(uid: string): Promise<User | null> {
+      const docRef = doc(db, "users", uid);
+      const docSnap = await getDoc(docRef);
 
-			if (docSnap.exists()) return docSnap.data() as User;
-			else return null;
-		},
-		async getUserOrCreateOne(firebaseUser: User): Promise<User> {
-			const docRef = doc(db, "users", firebaseUser.uid);
-			const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) return docSnap.data() as User;
+      else return null;
+    },
+    async getUserOrCreateOne(firebaseUser: User): Promise<User> {
+      const docRef = doc(db, "users", firebaseUser.uid);
+      const docSnap = await getDoc(docRef);
 
-			if (docSnap.exists()) return docSnap.data() as User;
-			else return this.createNewUser(firebaseUser);
-		},
-		async createNewUser(firebaseUser: User): Promise<User> {
-			await setDoc(
-				doc(collection(db, "users"), firebaseUser.uid),
-				firebaseUser,
-			);
-			return firebaseUser;
-		},
-		async getAllUsers(): Promise<User[]> {
-			const querySnapshot = await getDocs(collection(db, "users"));
-			return querySnapshot.docs.map((doc) => doc.data()) as User[];
-		},
-	},
-	Transaction: {
-		collection: "transactions",
-		async get(filters?: {
-			type?: "expense" | "earning";
-			month?: string;
-			year?: string;
-		}): Promise<Transaction[]> {
-			setIsLoading(true);
-			const constraints = [];
-			if (filters?.type) constraints.push(where("type", "==", filters.type));
-			if (filters?.month) constraints.push(where("month", "==", filters.month));
-			if (filters?.year) constraints.push(where("year", "==", filters.year));
-			const q = query(collection(db, this.collection), ...constraints);
-			const querySnapshot = await getDocs(q);
-			setIsLoading(false);
-			return querySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Transaction[];
-		},
-		async getRT(
-			callback: (transactions: Transaction[]) => void,
-			filters?: {
-				type?: "expense" | "earning";
-				month?: string;
-				year?: string;
-			},
-		): Promise<Unsubscribe> {
-			const constraints = [];
-			if (filters?.type) constraints.push(where("type", "==", filters.type));
-			if (filters?.month) constraints.push(where("month", "==", filters.month));
-			if (filters?.year) constraints.push(where("year", "==", filters.year));
-			const q = query(collection(db, this.collection), ...constraints);
-			return onSnapshot(q, (querySnapshot) => {
-				const transactions = querySnapshot.docs.map((doc) => ({
-					id: doc.id,
-					...doc.data(),
-				})) as Transaction[];
-				callback(transactions);
-			});
-		},
-		async create(transaction: ITransaction): Promise<Transaction> {
-			try {
-				const createdAt = Date.now();
-				const payload = {
-					...JSON.parse(JSON.stringify(transaction)),
-					createdAt,
-				};
-				const res = await addDoc(collection(db, this.collection), payload);
-				return {
-					id: res.id,
-					...transaction,
-					createdAt,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async update(transaction: Transaction): Promise<boolean> {
-			try {
-				await setDoc(
-					doc(collection(db, this.collection), transaction.id),
-					JSON.parse(JSON.stringify(transaction)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async delete(transactionId: string): Promise<boolean> {
-			try {
-				await deleteDoc(doc(collection(db, this.collection), transactionId));
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async bulkAdd(transactions: ITransaction[]): Promise<Transaction[]> {
-			try {
-				const transactionsCreation: Promise<Transaction>[] = [];
-				transactions.forEach((transaction) =>
-					transactionsCreation.push(this.create(transaction)),
-				);
-				return await Promise.all(transactionsCreation);
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-	},
-	Category: {
-		collection: "categories",
-		async get(type?: CategoryType): Promise<Category[]> {
-			const constraints = [];
-			if (type) constraints.push(where("type", "==", type));
-			const q = query(collection(db, this.collection), ...constraints);
-			const querySnapshot = await getDocs(q);
-			return querySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Category[];
-		},
-		async create(iCategory: ICategory): Promise<Category> {
-			try {
-				const res = await addDoc(
-					collection(db, this.collection),
-					JSON.parse(JSON.stringify(iCategory)),
-				);
-				return {
-					id: res.id,
-					...iCategory,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async update(category: Category): Promise<boolean> {
-			try {
-				await setDoc(
-					doc(collection(db, this.collection), category.id),
-					JSON.parse(JSON.stringify(category)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async delete(categoryId: string): Promise<boolean> {
-			try {
-				await deleteDoc(doc(collection(db, this.collection), categoryId));
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-	},
-	Tag: {
-		collection: "tags",
-		async get(): Promise<Tag[]> {
-			const querySnapshot = await getDocs(collection(db, this.collection));
-			return querySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Tag[];
-		},
-		async create(iTag: ITag): Promise<Tag> {
-			try {
-				const res = await addDoc(
-					collection(db, this.collection),
-					JSON.parse(JSON.stringify(iTag)),
-				);
-				return {
-					id: res.id,
-					...iTag,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async update(tag: Tag): Promise<boolean> {
-			try {
-				await setDoc(
-					doc(collection(db, this.collection), tag.id),
-					JSON.parse(JSON.stringify(tag)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async delete(tagId: string): Promise<boolean> {
-			try {
-				await deleteDoc(doc(collection(db, this.collection), tagId));
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-	},
-	Stats: {
-		collection: "stats",
-		async get(month: string, year: string): Promise<Stats> {
-			const q = query(
-				collection(db, this.collection),
-				where("month", "==", month),
-				where("year", "==", year),
-			);
-			const querySnapshot = await getDocs(q);
-			return querySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			}))[0] as Stats;
-		},
-		async getByYear(year: string): Promise<Stats[]> {
-			const q = query(
-				collection(db, this.collection),
-				where("year", "==", year),
-			);
-			const querySnapshot = await getDocs(q);
-			return querySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Stats[];
-		},
-		async create(iStats: IStats): Promise<Stats> {
-			try {
-				const res = await addDoc(
-					collection(db, this.collection),
-					JSON.parse(JSON.stringify(iStats)),
-				);
-				return {
-					id: res.id,
-					...iStats,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async update(stats: Stats): Promise<boolean> {
-			try {
-				await setDoc(
-					doc(collection(db, this.collection), stats.id),
-					JSON.parse(JSON.stringify(stats)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async delete(statsId: string): Promise<boolean> {
-			const document = doc(collection(db, this.collection), statsId);
-			try {
-				await deleteDoc(document);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async bulkDelete(statsIds: string[]): Promise<boolean> {
-			try {
-				const statsDeletion: Promise<boolean>[] = [];
-				statsIds.forEach((statsId) => statsDeletion.push(this.delete(statsId)));
-				await Promise.all(statsDeletion);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async bulkAdd(stats: IStats[]): Promise<Stats[]> {
-			const statsCreation: Promise<Stats>[] = [];
-			stats.forEach((stat) => statsCreation.push(this.create(stat)));
-			const result = await Promise.all(statsCreation);
-			return result;
-		},
-	},
-	Grocery: {
-		collection: "groceries",
-		async get(): Promise<Grocery[]> {
-			setIsLoading(true);
-			const querySnapshot = await getDocs(collection(db, this.collection));
-			setIsLoading(false);
-			return querySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Grocery[];
-		},
-		async getRT(
-			callback: (groceries: Grocery[]) => void,
-		): Promise<Unsubscribe> {
-			return onSnapshot(collection(db, this.collection), (querySnapshot) => {
-				const groceries = querySnapshot.docs.map((doc) => ({
-					id: doc.id,
-					...doc.data(),
-				})) as Grocery[];
-				callback(groceries);
-			});
-		},
-		async create(grocery: IGrocery): Promise<Grocery> {
-			try {
-				const res = await addDoc(
-					collection(db, this.collection),
-					JSON.parse(JSON.stringify(grocery)),
-				);
-				return {
-					id: res.id,
-					...grocery,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async update(grocery: Grocery): Promise<boolean> {
-			try {
-				setIsLoading(true);
-				await setDoc(
-					doc(collection(db, this.collection), grocery.id),
-					JSON.parse(JSON.stringify(grocery)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			} finally {
-				setIsLoading(false);
-			}
-		},
-		async delete(groceryId: string): Promise<boolean> {
-			try {
-				await deleteDoc(doc(collection(db, this.collection), groceryId));
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-	},
-	Todo: {
-		collection: "todo",
-		async get(): Promise<Todo[]> {
-			setIsLoading(true);
-			const querySnapshot = await getDocs(collection(db, this.collection));
-			setIsLoading(false);
-			return querySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Todo[];
-		},
-		async getRT(callback: (todos: Todo[]) => void): Promise<Unsubscribe> {
-			return onSnapshot(collection(db, this.collection), (querySnapshot) => {
-				const todos = querySnapshot.docs.map((doc) => ({
-					id: doc.id,
-					...doc.data(),
-				})) as Todo[];
-				callback(todos);
-			});
-		},
-		async create(todo: ITodo): Promise<Todo> {
-			try {
-				const res = await addDoc(
-					collection(db, this.collection),
-					JSON.parse(JSON.stringify(todo)),
-				);
-				return {
-					id: res.id,
-					...todo,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-		async update(todo: Todo): Promise<boolean> {
-			try {
-				setIsLoading(true);
-				await setDoc(
-					doc(collection(db, this.collection), todo.id),
-					JSON.parse(JSON.stringify(todo)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			} finally {
-				setIsLoading(false);
-			}
-		},
-		async delete(todoId: string): Promise<boolean> {
-			try {
-				await deleteDoc(doc(collection(db, this.collection), todoId));
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
-		},
-	},
-	CategoryUsage: {
-		async get(): Promise<CategoryUsageData | null> {
-			const docSnap = await getDoc(doc(db, "settings", "categoryUsage"));
-			if (docSnap.exists()) return docSnap.data() as CategoryUsageData;
-			return null;
-		},
-		async set(data: CategoryUsageData): Promise<void> {
-			await setDoc(doc(db, "settings", "categoryUsage"), data);
-		},
-	},
+      if (docSnap.exists()) return docSnap.data() as User;
+      else return this.createNewUser(firebaseUser);
+    },
+    async createNewUser(firebaseUser: User): Promise<User> {
+      await setDoc(doc(collection(db, "users"), firebaseUser.uid), firebaseUser);
+      return firebaseUser;
+    },
+    async getAllUsers(): Promise<User[]> {
+      const querySnapshot = await getDocs(collection(db, "users"));
+      return querySnapshot.docs.map((doc) => doc.data()) as User[];
+    },
+  },
+  Transaction: {
+    collection: "transactions",
+    async get(filters?: {
+      type?: "expense" | "earning";
+      month?: string;
+      year?: string;
+    }): Promise<Transaction[]> {
+      setIsLoading(true);
+      const constraints = [];
+      if (filters?.type) constraints.push(where("type", "==", filters.type));
+      if (filters?.month) constraints.push(where("month", "==", filters.month));
+      if (filters?.year) constraints.push(where("year", "==", filters.year));
+      const q = query(collection(db, this.collection), ...constraints);
+      const querySnapshot = await getDocs(q);
+      setIsLoading(false);
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Transaction[];
+    },
+    async getRT(
+      callback: (transactions: Transaction[]) => void,
+      filters?: {
+        type?: "expense" | "earning";
+        month?: string;
+        year?: string;
+      },
+    ): Promise<Unsubscribe> {
+      const constraints = [];
+      if (filters?.type) constraints.push(where("type", "==", filters.type));
+      if (filters?.month) constraints.push(where("month", "==", filters.month));
+      if (filters?.year) constraints.push(where("year", "==", filters.year));
+      const q = query(collection(db, this.collection), ...constraints);
+      return onSnapshot(q, (querySnapshot) => {
+        const transactions = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Transaction[];
+        callback(transactions);
+      });
+    },
+    async create(transaction: ITransaction): Promise<Transaction> {
+      try {
+        const createdAt = Date.now();
+        const payload = {
+          ...JSON.parse(JSON.stringify(transaction)),
+          createdAt,
+        };
+        const res = await addDoc(collection(db, this.collection), payload);
+        return {
+          id: res.id,
+          ...transaction,
+          createdAt,
+        };
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async update(transaction: Transaction): Promise<boolean> {
+      try {
+        await setDoc(
+          doc(collection(db, this.collection), transaction.id),
+          JSON.parse(JSON.stringify(transaction)),
+          {
+            merge: true,
+          },
+        );
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async delete(transactionId: string): Promise<boolean> {
+      try {
+        await deleteDoc(doc(collection(db, this.collection), transactionId));
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async bulkAdd(transactions: ITransaction[]): Promise<Transaction[]> {
+      try {
+        const transactionsCreation: Promise<Transaction>[] = [];
+        transactions.forEach((transaction) => transactionsCreation.push(this.create(transaction)));
+        return await Promise.all(transactionsCreation);
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+  },
+  Category: {
+    collection: "categories",
+    async get(type?: CategoryType): Promise<Category[]> {
+      const constraints = [];
+      if (type) constraints.push(where("type", "==", type));
+      const q = query(collection(db, this.collection), ...constraints);
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Category[];
+    },
+    async create(iCategory: ICategory): Promise<Category> {
+      try {
+        const res = await addDoc(
+          collection(db, this.collection),
+          JSON.parse(JSON.stringify(iCategory)),
+        );
+        return {
+          id: res.id,
+          ...iCategory,
+        };
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async update(category: Category): Promise<boolean> {
+      try {
+        await setDoc(
+          doc(collection(db, this.collection), category.id),
+          JSON.parse(JSON.stringify(category)),
+          {
+            merge: true,
+          },
+        );
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async delete(categoryId: string): Promise<boolean> {
+      try {
+        await deleteDoc(doc(collection(db, this.collection), categoryId));
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+  },
+  Tag: {
+    collection: "tags",
+    async get(): Promise<Tag[]> {
+      const querySnapshot = await getDocs(collection(db, this.collection));
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Tag[];
+    },
+    async create(iTag: ITag): Promise<Tag> {
+      try {
+        const res = await addDoc(collection(db, this.collection), JSON.parse(JSON.stringify(iTag)));
+        return {
+          id: res.id,
+          ...iTag,
+        };
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async update(tag: Tag): Promise<boolean> {
+      try {
+        await setDoc(
+          doc(collection(db, this.collection), tag.id),
+          JSON.parse(JSON.stringify(tag)),
+          {
+            merge: true,
+          },
+        );
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async delete(tagId: string): Promise<boolean> {
+      try {
+        await deleteDoc(doc(collection(db, this.collection), tagId));
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+  },
+  Stats: {
+    collection: "stats",
+    async get(month: string, year: string): Promise<Stats> {
+      const q = query(
+        collection(db, this.collection),
+        where("month", "==", month),
+        where("year", "==", year),
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))[0] as Stats;
+    },
+    async getByYear(year: string): Promise<Stats[]> {
+      const q = query(collection(db, this.collection), where("year", "==", year));
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Stats[];
+    },
+    async create(iStats: IStats): Promise<Stats> {
+      try {
+        const res = await addDoc(
+          collection(db, this.collection),
+          JSON.parse(JSON.stringify(iStats)),
+        );
+        return {
+          id: res.id,
+          ...iStats,
+        };
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async update(stats: Stats): Promise<boolean> {
+      try {
+        await setDoc(
+          doc(collection(db, this.collection), stats.id),
+          JSON.parse(JSON.stringify(stats)),
+          {
+            merge: true,
+          },
+        );
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async delete(statsId: string): Promise<boolean> {
+      const document = doc(collection(db, this.collection), statsId);
+      try {
+        await deleteDoc(document);
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async bulkDelete(statsIds: string[]): Promise<boolean> {
+      try {
+        const statsDeletion: Promise<boolean>[] = [];
+        statsIds.forEach((statsId) => statsDeletion.push(this.delete(statsId)));
+        await Promise.all(statsDeletion);
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async bulkAdd(stats: IStats[]): Promise<Stats[]> {
+      const statsCreation: Promise<Stats>[] = [];
+      stats.forEach((stat) => statsCreation.push(this.create(stat)));
+      const result = await Promise.all(statsCreation);
+      return result;
+    },
+  },
+  Grocery: {
+    collection: "groceries",
+    async get(): Promise<Grocery[]> {
+      setIsLoading(true);
+      const querySnapshot = await getDocs(collection(db, this.collection));
+      setIsLoading(false);
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Grocery[];
+    },
+    async getRT(callback: (groceries: Grocery[]) => void): Promise<Unsubscribe> {
+      return onSnapshot(collection(db, this.collection), (querySnapshot) => {
+        const groceries = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Grocery[];
+        callback(groceries);
+      });
+    },
+    async create(grocery: IGrocery): Promise<Grocery> {
+      try {
+        const res = await addDoc(
+          collection(db, this.collection),
+          JSON.parse(JSON.stringify(grocery)),
+        );
+        return {
+          id: res.id,
+          ...grocery,
+        };
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async update(grocery: Grocery): Promise<boolean> {
+      try {
+        setIsLoading(true);
+        await setDoc(
+          doc(collection(db, this.collection), grocery.id),
+          JSON.parse(JSON.stringify(grocery)),
+          {
+            merge: true,
+          },
+        );
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    async delete(groceryId: string): Promise<boolean> {
+      try {
+        await deleteDoc(doc(collection(db, this.collection), groceryId));
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+  },
+  Todo: {
+    collection: "todo",
+    async get(): Promise<Todo[]> {
+      setIsLoading(true);
+      const querySnapshot = await getDocs(collection(db, this.collection));
+      setIsLoading(false);
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Todo[];
+    },
+    async getRT(callback: (todos: Todo[]) => void): Promise<Unsubscribe> {
+      return onSnapshot(collection(db, this.collection), (querySnapshot) => {
+        const todos = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Todo[];
+        callback(todos);
+      });
+    },
+    async create(todo: ITodo): Promise<Todo> {
+      try {
+        const res = await addDoc(collection(db, this.collection), JSON.parse(JSON.stringify(todo)));
+        return {
+          id: res.id,
+          ...todo,
+        };
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+    async update(todo: Todo): Promise<boolean> {
+      try {
+        setIsLoading(true);
+        await setDoc(
+          doc(collection(db, this.collection), todo.id),
+          JSON.parse(JSON.stringify(todo)),
+          {
+            merge: true,
+          },
+        );
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    async delete(todoId: string): Promise<boolean> {
+      try {
+        await deleteDoc(doc(collection(db, this.collection), todoId));
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    },
+  },
+  CategoryUsage: {
+    async get(): Promise<CategoryUsageData | null> {
+      const docSnap = await getDoc(doc(db, "settings", "categoryUsage"));
+      if (docSnap.exists()) return docSnap.data() as CategoryUsageData;
+      return null;
+    },
+    async set(data: CategoryUsageData): Promise<void> {
+      await setDoc(doc(db, "settings", "categoryUsage"), data);
+    },
+  },
 };

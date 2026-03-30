@@ -24,15 +24,18 @@ bun run pwa       # Build + preview PWA
 ## Architecture
 
 ### Data Flow
+
 Firestore `onSnapshot()` → Zustand stores → React components. The `DataBaseClient` in `src/api/db.ts` is the single API layer for all Firestore CRUD operations. Real-time subscriptions use the `getRT()` pattern which returns an unsubscribe function for cleanup.
 
 ### Key Patterns
+
 - **Transaction store** (`src/stores/transaction.ts`): auto-splits into `expenses[]` and `earnings[]`, handles sorting and deduplication
 - **Categories** have a `type` field (expense/earning) and `excludeFromBudget` flag — budget calculations must respect this
 - **Protected routes** redirect to `/login` via `onAuthStateChanged` listener in `src/api/auth.ts`
 - **Admin system**: hardcoded UID list in `useUserStore`
 
 ### Styling
+
 - Theme colors: background `#eaefea` (mint), expense `#cf1322` (red), earning `#3f8600` (green)
 - Font: Montserrat (loaded from `/public/fonts/`)
 - UI components in `src/components/ui/` use `cn()` utility (clsx + tailwind-merge)

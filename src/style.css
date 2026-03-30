@@ -3,232 +3,231 @@
 @tailwind utilities;
 
 @font-face {
-	font-family: "Montserrat";
-	src: url("/fonts/Montserrat-VariableFont_wght.ttf");
+  font-family: "Montserrat";
+  src: url("/fonts/Montserrat-VariableFont_wght.ttf");
 }
 @font-face {
-	font-family: "Montserrat-Italic";
-	src: url("/fonts/Montserrat-Italic-VariableFont_wght.ttf");
+  font-family: "Montserrat-Italic";
+  src: url("/fonts/Montserrat-Italic-VariableFont_wght.ttf");
 }
 
 @layer base {
-	:root {
-		--background: 140 12% 92%;
-		--foreground: 0 0% 10%;
-		--card: 0 0% 100%;
-		--card-foreground: 0 0% 10%;
-		--popover: 0 0% 100%;
-		--popover-foreground: 0 0% 10%;
-		--primary: 0 0% 10%;
-		--primary-foreground: 0 0% 100%;
-		--secondary: 210 40% 96%;
-		--secondary-foreground: 0 0% 10%;
-		--muted: 210 40% 96%;
-		--muted-foreground: 215 16% 47%;
-		--accent: 210 40% 96%;
-		--accent-foreground: 0 0% 10%;
-		--border: 214 32% 91%;
-		--input: 214 32% 91%;
-		--ring: 215 20% 65%;
-	}
+  :root {
+    --background: 140 12% 92%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 0 0% 10%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 0 0% 10%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 215 20% 65%;
+  }
 
-	.dark {
-		--background: 0 0% 7%;
-		--foreground: 0 0% 90%;
-		--card: 0 0% 12%;
-		--card-foreground: 0 0% 90%;
-		--popover: 0 0% 12%;
-		--popover-foreground: 0 0% 90%;
-		--primary: 0 0% 90%;
-		--primary-foreground: 0 0% 7%;
-		--secondary: 0 0% 16%;
-		--secondary-foreground: 0 0% 90%;
-		--muted: 0 0% 16%;
-		--muted-foreground: 0 0% 64%;
-		--accent: 0 0% 16%;
-		--accent-foreground: 0 0% 90%;
-		--border: 0 0% 20%;
-		--input: 0 0% 20%;
-		--ring: 0 0% 40%;
-	}
+  .dark {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 90%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 90%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 90%;
+    --primary: 0 0% 90%;
+    --primary-foreground: 0 0% 7%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 90%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 40%;
+  }
 }
 
 :root {
-	font-family: "Montserrat", Inter, Avenir, Helvetica, Arial, sans-serif;
-	font-size: 16px;
-	line-height: 24px;
-	font-weight: 400;
+  font-family: "Montserrat", Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
 
-	font-synthesis: none;
-	text-rendering: optimizeLegibility;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	-webkit-text-size-adjust: 100%;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
 
-	background-color: hsl(var(--background));
+  background-color: hsl(var(--background));
 }
 body {
-	background-color: hsl(var(--background)) !important;
-	color: hsl(var(--foreground));
-	font-family:
-		"Montserrat", Inter, Avenir, Helvetica, Arial, sans-serif !important;
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground));
+  font-family: "Montserrat", Inter, Avenir, Helvetica, Arial, sans-serif !important;
 }
 html,
 body {
-	width: 100%;
-	height: 100%;
-	margin: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
 }
 
 input[type="date"] {
-	color-scheme: dark;
+  color-scheme: dark;
 }
 .dark input[type="date"] {
-	color-scheme: dark;
+  color-scheme: dark;
 }
 :root:not(.dark) input[type="date"] {
-	color-scheme: dark;
+  color-scheme: dark;
 }
 ::-webkit-calendar-picker-indicator {
-	filter: invert(1);
+  filter: invert(1);
 }
 
 #app {
-	margin: 0;
-	text-align: center;
-	height: 100vh;
-	width: 100vw;
+  margin: 0;
+  text-align: center;
+  height: 100vh;
+  width: 100vw;
 }
 
 @keyframes fadeSlideIn {
-	from {
-		opacity: 0;
-		transform: translateY(12px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Toast overrides */
 [data-sonner-toaster] {
-	--normal-bg: hsl(var(--card));
-	--normal-border: transparent;
-	font-family: "Montserrat", sans-serif !important;
+  --normal-bg: hsl(var(--card));
+  --normal-border: transparent;
+  font-family: "Montserrat", sans-serif !important;
 }
 
 [data-sonner-toast] {
-	--border-radius: 14px;
-	border-radius: 14px !important;
-	padding: 14px 16px !important;
-	box-shadow:
-		0 4px 24px rgba(0, 0, 0, 0.08),
-		0 1px 3px rgba(0, 0, 0, 0.04) !important;
-	border: 1px solid hsl(var(--border)) !important;
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
-	background: hsl(var(--card) / 0.92) !important;
-	gap: 10px !important;
+  --border-radius: 14px;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: hsl(var(--card) / 0.92) !important;
+  gap: 10px !important;
 }
 
 .dark [data-sonner-toast] {
-	box-shadow:
-		0 4px 24px rgba(0, 0, 0, 0.3),
-		0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.2) !important;
 }
 
 [data-sonner-toast] [data-icon] {
-	width: 20px !important;
-	height: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
 }
 
 [data-sonner-toast] [data-icon] svg {
-	width: 20px !important;
-	height: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
 }
 
 [data-sonner-toast] [data-title] {
-	font-weight: 600 !important;
-	font-size: 13px !important;
-	letter-spacing: -0.01em;
-	color: hsl(var(--foreground)) !important;
-	text-align: left !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  letter-spacing: -0.01em;
+  color: hsl(var(--foreground)) !important;
+  text-align: left !important;
 }
 
 [data-sonner-toast] [data-description] {
-	font-weight: 400 !important;
-	font-size: 12px !important;
-	color: hsl(var(--muted-foreground)) !important;
-	margin-top: 1px !important;
-	text-align: left !important;
+  font-weight: 400 !important;
+  font-size: 12px !important;
+  color: hsl(var(--muted-foreground)) !important;
+  margin-top: 1px !important;
+  text-align: left !important;
 }
 
 [data-sonner-toast][data-type="success"] {
-	border-left: 3px solid #3f8600 !important;
+  border-left: 3px solid #3f8600 !important;
 }
 
 [data-sonner-toast][data-type="success"] [data-icon] {
-	color: #3f8600 !important;
+  color: #3f8600 !important;
 }
 
 [data-sonner-toast][data-type="error"] {
-	border-left: 3px solid #cf1322 !important;
+  border-left: 3px solid #cf1322 !important;
 }
 
 [data-sonner-toast][data-type="error"] [data-icon] {
-	color: #cf1322 !important;
+  color: #cf1322 !important;
 }
 
 [data-sonner-toast][data-type="warning"] {
-	border-left: 3px solid #d97706 !important;
+  border-left: 3px solid #d97706 !important;
 }
 
 [data-sonner-toast][data-type="warning"] [data-icon] {
-	color: #d97706 !important;
+  color: #d97706 !important;
 }
 
 [data-sonner-toast][data-type="info"] {
-	border-left: 3px solid #2563eb !important;
+  border-left: 3px solid #2563eb !important;
 }
 
 [data-sonner-toast][data-type="info"] [data-icon] {
-	color: #2563eb !important;
+  color: #2563eb !important;
 }
 
 /* Splash screen animations */
 @keyframes splash-scale-in {
-	from {
-		opacity: 0;
-		transform: scale(0.5);
-	}
-	to {
-		opacity: 1;
-		transform: scale(1);
-	}
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes splash-fade-up {
-	from {
-		opacity: 0;
-		transform: translateY(16px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes splash-spin {
-	to {
-		transform: rotate(360deg);
-	}
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .scrollbar-hide {
-	-ms-overflow-style: none;
-	scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar {
-	display: none;
+  display: none;
 }
