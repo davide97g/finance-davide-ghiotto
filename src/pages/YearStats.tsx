@@ -1,9 +1,22 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, Pie, PieChart } from "recharts";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  LabelList,
+  Pie,
+  PieChart,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { DataBaseClient } from "../api/db";
 import { Button } from "../components/ui/button";
+import YearBalanceCard from "../components/YearBalanceCard";
 import {
   type ChartConfig,
   ChartContainer,
@@ -80,6 +93,26 @@ export default function YearStats() {
       };
     });
   }, [yearlyExpenses, yearlyEarnings]);
+
+  // Cumulative balance data (running total over months)
+  const cumulativeData = useMemo(() => {
+    let running = 0;
+    return monthlyData.map((m) => {
+      running += m.balance;
+      return { month: m.month, cumulative: running };
+    });
+  }, [monthlyData]);
+
+  // Best/Worst/Average month
+  const monthHighlights = useMemo(() => {
+    if (monthlyData.length === 0) return null;
+    const best = monthlyData.reduce((a, b) => (b.balance > a.balance ? b : a));
+    const worst = monthlyData.reduce((a, b) => (b.balance < a.balance ? b : a));
+    const avg = Math.round(
+      monthlyData.reduce((acc, m) => acc + m.balance, 0) / monthlyData.length,
+    );
+    return { best, worst, avg };
+  }, [monthlyData]);
 
   // Category breakdown
   const getCategory = useCallback(
@@ -202,7 +235,12 @@ export default function YearStats() {
           </Button>
         </Link>
         <h1 className="text-xl font-bold">Year {year}</h1>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <Link to="/stats/trends">
+            <Button variant="ghost" size="icon" aria-label="Trends">
+              <TrendingUp className="h-5 w-5" />
+            </Button>
+          </Link>
           <Button size="sm" onClick={freezeYear}>
             {hasData ? "Update" : "Freeze"}
           </Button>
@@ -242,6 +280,11 @@ export default function YearStats() {
 
       {hasData ? (
         <>
+          <YearBalanceCard
+            earnings={totalSumEarnings}
+            expenses={-totalSumExpenses}
+            balance={balance}
+          />
           <div className="mb-6 bg-white rounded-lg shadow-sm p-4">
             <h3 className="text-sm font-semibold mb-1">Monthly Overview</h3>
             <p className="text-xs text-muted-foreground mb-3">
@@ -274,6 +317,71 @@ export default function YearStats() {
               Showing monthly balance for each month of the year
             </p>
           </div>
+
+          {monthHighlights && (
+            <div className="grid grid-cols-3 gap-2 mb-6">
+              <div className="flex flex-col items-center p-2 rounded-lg bg-white shadow-sm">
+                <span className="text-xs text-muted-foreground">Best month</span>
+                <span className="text-sm font-bold text-earning">
+                  {monthHighlights.best.month}
+                </span>
+                <span className="text-[11px] font-mono text-muted-foreground">
+                  {monthHighlights.best.balance} €
+                </span>
+              </div>
+              <div className="flex flex-col items-center p-2 rounded-lg bg-white shadow-sm">
+                <span className="text-xs text-muted-foreground">Worst month</span>
+                <span className="text-sm font-bold text-expense">
+                  {monthHighlights.worst.month}
+                </span>
+                <span className="text-[11px] font-mono text-muted-foreground">
+                  {monthHighlights.worst.balance} €
+                </span>
+              </div>
+              <div className="flex flex-col items-center p-2 rounded-lg bg-white shadow-sm">
+                <span className="text-xs text-muted-foreground">Avg / month</span>
+                <span
+                  className="text-sm font-bold"
+                  style={{ color: monthHighlights.avg >= 0 ? "#3f8600" : "#cf1322" }}
+                >
+                  {monthHighlights.avg} €
+                </span>
+              </div>
+            </div>
+          )}
+
+          {cumulativeData.length > 0 && (
+            <div className="mb-6 bg-white rounded-lg shadow-sm p-4">
+              <h3 className="text-sm font-semibold mb-1">Cumulative Balance</h3>
+              <p className="text-xs text-muted-foreground mb-3">
+                Running total of monthly balance across {year}
+              </p>
+              <ChartContainer
+                config={{ cumulative: { label: "Cumulative", color: "#3f8600" } }}
+                className="h-[220px] w-full"
+              >
+                <AreaChart data={cumulativeData} margin={{ top: 10, right: 12, bottom: 5, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v) => `${v}€`}
+                    width={55}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent formatter={(v) => `${v} €`} />} />
+                  <Area
+                    type="monotone"
+                    dataKey="cumulative"
+                    stroke="#3f8600"
+                    fill="#3f8600"
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ChartContainer>
+            </div>
+          )}
 
           <Tabs defaultValue="expenses">
             <TabsList className="w-full">

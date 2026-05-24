@@ -272,6 +272,13 @@ export const DataBaseClient = {
         ...doc.data(),
       })) as Stats[];
     },
+    async getAllYears(): Promise<Stats[]> {
+      const querySnapshot = await getDocs(collection(db, this.collection));
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Stats[];
+    },
     async create(iStats: IStats): Promise<Stats> {
       try {
         const res = await addDoc(

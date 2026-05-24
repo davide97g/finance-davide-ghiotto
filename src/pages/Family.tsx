@@ -1,4 +1,4 @@
-import { LineChart, Plus, Settings as SettingsIcon } from "lucide-react";
+import { LineChart, Plus, Settings as SettingsIcon, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DataBaseClient } from "../api/db";
@@ -70,6 +70,10 @@ export default function Family() {
     navigate(`/stats/year?year=${activeYear}`);
   };
 
+  const openTrends = () => {
+    navigate("/stats/trends");
+  };
+
   return (
     <div className="relative">
       {/* Top bar */}
@@ -91,6 +95,10 @@ export default function Family() {
           <LineChart
             className="h-[18px] w-[18px] cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
             onClick={openYearStats}
+          />
+          <TrendingUp
+            className="h-[18px] w-[18px] cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+            onClick={openTrends}
           />
           <SettingsIcon
             className="h-[18px] w-[18px] cursor-pointer text-muted-foreground hover:text-foreground transition-colors"

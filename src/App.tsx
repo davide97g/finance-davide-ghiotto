@@ -14,6 +14,7 @@ const Groceries = React.lazy(() => import("./pages/Groceries"));
 const Todo = React.lazy(() => import("./pages/Todo"));
 const MonthStats = React.lazy(() => import("./pages/MonthStats"));
 const YearStats = React.lazy(() => import("./pages/YearStats"));
+const Trends = React.lazy(() => import("./pages/Trends"));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isLoggedIn = useUserStore((s) => s.isLoggedIn);
@@ -89,6 +90,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <YearStats />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/stats/trends"
+              element={
+                <ProtectedRoute>
+                  <Trends />
                 </ProtectedRoute>
               }
             />
