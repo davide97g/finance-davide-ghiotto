@@ -1,5 +1,5 @@
-import { ArrowLeft, TrendingUp } from "lucide-react";
-import { useCallback, useEffect, useMemo } from "react";
+import { ArrowLeft, ChevronDown, TrendingUp } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
 	Area,
@@ -29,11 +29,26 @@ import {
 	TabsTrigger,
 } from "../components/ui/tabs";
 import YearBalanceCard from "../components/YearBalanceCard";
+import type { Category } from "../models/category";
 import type { IStats } from "../models/stats";
 import type { Transaction } from "../models/transaction";
-import { setIsLoading } from "../services/utils";
+import { formatDate, setIsLoading } from "../services/utils";
 import { useCategoryStore } from "../stores/category";
 import { useStatsStore } from "../stores/stats";
+import { useTagStore } from "../stores/tag";
+
+/** Tag assigned by default on new transactions: treated as "no tag". */
+const DEFAULT_TAG_ID = "XB0kK9DnZIIEsPKsaWEB";
+const UNTAGGED_KEY = "__untagged__";
+
+interface TagGroup {
+	key: string;
+	name: string;
+	color: string;
+	total: number;
+	percentage: number;
+	transactions: Transaction[];
+}
 
 export default function YearStats() {
 	const [searchParams] = useSearchParams();
@@ -41,6 +56,8 @@ export default function YearStats() {
 
 	const stats = useStatsStore((s) => s.stats);
 	const categories = useCategoryStore((s) => s.categories);
+	const tags = useTagStore((s) => s.tags);
+	const [yearExpenses, setYearExpenses] = useState<Transaction[]>([]);
 
 	const yearlyEarnings = useMemo(
 		() => stats.filter((s) => s.type === "earning" && s.year === year),
@@ -60,8 +77,16 @@ export default function YearStats() {
 					const cats = await DataBaseClient.Category.get();
 					useCategoryStore.getState().setCategories(cats);
 				}
-				const results = await DataBaseClient.Stats.getByYear(year);
+				if (useTagStore.getState().tags.length === 0) {
+					const loadedTags = await DataBaseClient.Tag.get();
+					useTagStore.getState().setTags(loadedTags);
+				}
+				const [results, expenses] = await Promise.all([
+					DataBaseClient.Stats.getByYear(year),
+					DataBaseClient.Transaction.get({ type: "expense", year }),
+				]);
 				useStatsStore.getState().setStats(results);
+				setYearExpenses(expenses);
 			} finally {
 				setIsLoading(false);
 			}
@@ -163,6 +188,36 @@ export default function YearStats() {
 		() => buildCategoryData(yearlyEarnings),
 		[yearlyEarnings, buildCategoryData],
 	);
+
+	// Expenses grouped by tag (budget-excluded categories left out, like every other total here)
+	const tagBreakdown = useMemo<TagGroup[]>(() => {
+		const groups: Record<string, TagGroup> = {};
+		yearExpenses
+			.filter((t) => !getCategory(t.category)?.excludeFromBudget)
+			.forEach((t) => {
+				const key = !t.tag || t.tag === DEFAULT_TAG_ID ? UNTAGGED_KEY : t.tag;
+				if (!groups[key]) {
+					const tag = tags.find((tg) => tg.id === key);
+					groups[key] = {
+						key,
+						name: key === UNTAGGED_KEY ? "No tag" : tag?.name || "Unknown",
+						color: (key === UNTAGGED_KEY ? "#ababab" : tag?.color) || "#ababab",
+						total: 0,
+						percentage: 0,
+						transactions: [],
+					};
+				}
+				groups[key].total += t.amount;
+				groups[key].transactions.push(t);
+			});
+		const list = Object.values(groups);
+		const total = list.reduce((acc, g) => acc + g.total, 0);
+		list.forEach((g) => {
+			g.percentage = total > 0 ? Math.round((g.total / total) * 100) : 0;
+			g.transactions.sort((a, b) => b.amount - a.amount);
+		});
+		return list.sort((a, b) => b.total - a.total);
+	}, [yearExpenses, tags, getCategory]);
 
 	const includedCategoriesIds = useMemo(
 		() =>
@@ -454,6 +509,8 @@ export default function YearStats() {
 							<CategoryBreakdown data={pieEarnings} />
 						</TabsContent>
 					</Tabs>
+
+					<TagBreakdown groups={tagBreakdown} categories={categories} />
 				</>
 			) : (
 				<div className="text-center py-12">
@@ -464,6 +521,129 @@ export default function YearStats() {
 						Freeze the year to generate stats
 					</p>
 					<Button onClick={freezeYear}>Freeze</Button>
+				</div>
+			)}
+		</div>
+	);
+}
+
+function TagBreakdown({
+	groups,
+	categories,
+}: {
+	groups: TagGroup[];
+	categories: Category[];
+}) {
+	const [expanded, setExpanded] = useState<string | null>(null);
+
+	const maxTotal = groups.length ? groups[0].total : 0;
+
+	return (
+		<div className="mt-6 bg-white rounded-lg shadow-sm p-4">
+			<h3 className="text-sm font-semibold mb-1">Expenses by Tag</h3>
+			<p className="text-xs text-muted-foreground mb-3">
+				Tap a tag to see its expenses, biggest first
+			</p>
+			{groups.length === 0 ? (
+				<p className="text-center text-muted-foreground py-6 text-sm">
+					No data
+				</p>
+			) : (
+				<div className="space-y-2">
+					{groups.map((g) => {
+						const isOpen = expanded === g.key;
+						return (
+							<div key={g.key} className="rounded-lg overflow-hidden">
+								<button
+									type="button"
+									onClick={() => setExpanded(isOpen ? null : g.key)}
+									className="w-full text-left px-2 py-2 rounded-lg hover:bg-black/[0.03] transition-colors"
+									aria-expanded={isOpen}
+								>
+									<div className="flex items-center gap-2 text-sm">
+										<ChevronDown
+											className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+												isOpen ? "" : "-rotate-90"
+											}`}
+										/>
+										<span
+											className="h-3 w-3 rounded-sm shrink-0"
+											style={{ backgroundColor: g.color }}
+										/>
+										<span className="truncate capitalize">{g.name}</span>
+										<span className="text-[11px] text-muted-foreground shrink-0">
+											({g.transactions.length})
+										</span>
+										<div className="ml-auto flex gap-3 shrink-0">
+											<span className="font-mono">{Math.round(g.total)} €</span>
+											<span className="text-muted-foreground w-10 text-right">
+												{g.percentage}%
+											</span>
+										</div>
+									</div>
+									<div className="mt-1.5 ml-6 h-1 rounded-full bg-black/[0.06] overflow-hidden">
+										<div
+											className="h-full rounded-full"
+											style={{
+												width: `${maxTotal > 0 ? (g.total / maxTotal) * 100 : 0}%`,
+												backgroundColor: g.color,
+											}}
+										/>
+									</div>
+								</button>
+								{isOpen && (
+									<div className="ml-6 mt-2 mb-1 space-y-1">
+										{g.transactions.map((t) => {
+											const category = categories.find(
+												(c) => c.id === t.category,
+											);
+											const categoryColor = category?.color || "#ababab";
+											return (
+												<div
+													key={t.id}
+													className="flex items-center gap-2 rounded-md px-2 py-1.5"
+													style={{
+														backgroundColor: `${categoryColor}10`,
+														borderLeft: `3px solid ${categoryColor}`,
+													}}
+												>
+													<div className="flex-1 min-w-0">
+														<div className="flex items-center gap-1.5">
+															<span className="text-[12px] font-semibold truncate capitalize">
+																{category?.name || "Uncategorized"}
+															</span>
+														</div>
+														<div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+															<span className="tabular-nums shrink-0">
+																{formatDate(t.date, true)}
+															</span>
+															{t.description && (
+																<>
+																	<span className="opacity-40">·</span>
+																	<span className="truncate capitalize">
+																		{t.description}
+																	</span>
+																</>
+															)}
+														</div>
+													</div>
+													<span
+														className="text-[13px] font-bold tabular-nums shrink-0"
+														style={{ color: `${categoryColor}cc` }}
+													>
+														{t.amount}
+														<span className="text-[10px] font-medium ml-0.5 opacity-50">
+															€
+														</span>
+													</span>
+												</div>
+											);
+										})}
+									</div>
+								)}
+							</div>
+						);
+					})}
 				</div>
 			)}
 		</div>
