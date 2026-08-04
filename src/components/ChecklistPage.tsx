@@ -1,5 +1,5 @@
 import { ChevronDown, Plus, Search, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "../lib/utils";
 import Avatar from "./Avatar";
 import { Checkbox } from "./ui/checkbox";
@@ -33,23 +33,6 @@ export default function ChecklistPage({
 	const [newItem, setNewItem] = useState("");
 	const [showCompleted, setShowCompleted] = useState(true);
 	const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
-	const [isCompact, setIsCompact] = useState(false);
-	const scrollRef = useRef<HTMLDivElement>(null);
-
-	const handleScroll = useCallback(() => {
-		const el = scrollRef.current;
-		if (el) {
-			setIsCompact(el.scrollTop > 30);
-		}
-	}, []);
-
-	useEffect(() => {
-		const el = scrollRef.current;
-		if (el) {
-			el.addEventListener("scroll", handleScroll, { passive: true });
-			return () => el.removeEventListener("scroll", handleScroll);
-		}
-	}, [handleScroll]);
 
 	const pending = useMemo(() => {
 		let filtered = items.filter((i) => !i.checked);
@@ -96,34 +79,22 @@ export default function ChecklistPage({
 	};
 
 	// SVG circle progress
-	const radius = isCompact ? 12 : 28;
+	const radius = 20;
 	const circumference = 2 * Math.PI * radius;
-	const _strokeDashoffset = circumference - (progress / 100) * circumference;
-	const svgSize = isCompact ? 32 : 76;
+	const strokeDashoffset = circumference - (progress / 100) * circumference;
+	const svgSize = 52;
 	const svgCenter = svgSize / 2;
-	const _strokeWidth = isCompact ? 3 : 5;
 
 	return (
 		<div className="h-screen flex flex-col">
 			{/* Sticky header + input */}
-			<div className="shrink-0 sticky top-0 z-10 bg-background transition-all duration-300">
+			<div className="shrink-0 sticky top-0 z-10 bg-background">
 				{/* Header */}
-				<div
-					className={cn(
-						"relative px-5 transition-all duration-300",
-						isCompact ? "pt-3 pb-2" : "pt-4 pb-4",
-					)}
-				>
-					{!isCompact && <Avatar position="topLeft" />}
+				<div className="relative px-5 pt-3 pb-2">
+					<Avatar position="topLeft" size="small" />
 
-					{/* Expanded header */}
-					<div
-						className={cn(
-							"flex flex-col items-center pt-2 gap-3 transition-all duration-300",
-							isCompact && "hidden",
-						)}
-					>
-						<div className="relative">
+					<div className="flex items-center gap-3 pl-14">
+						<div className="relative shrink-0">
 							<svg
 								width={svgSize}
 								height={svgSize}
@@ -133,105 +104,42 @@ export default function ChecklistPage({
 								<circle
 									cx={svgCenter}
 									cy={svgCenter}
-									r={28}
+									r={radius}
 									fill="none"
 									className="stroke-foreground/[0.06]"
-									strokeWidth="5"
+									strokeWidth="4"
 								/>
 								<circle
 									cx={svgCenter}
 									cy={svgCenter}
-									r={28}
+									r={radius}
 									fill="none"
-									className="stroke-earning transition-all duration-700 ease-out"
-									strokeWidth="5"
+									className="stroke-earning"
+									strokeWidth="4"
 									strokeLinecap="round"
-									strokeDasharray={2 * Math.PI * 28}
-									strokeDashoffset={
-										2 * Math.PI * 28 - (progress / 100) * 2 * Math.PI * 28
-									}
+									strokeDasharray={circumference}
+									strokeDashoffset={strokeDashoffset}
 								/>
 							</svg>
-							<span className="absolute inset-0 flex items-center justify-center text-2xl">
+							<span className="absolute inset-0 flex items-center justify-center text-lg">
 								{icon}
 							</span>
 						</div>
 
-						<div className="text-center">
-							<h1 className="text-xl font-bold tracking-tight text-foreground">
+						<div className="min-w-0">
+							<h1 className="text-lg font-bold tracking-tight text-foreground truncate">
 								{title}
 							</h1>
-							<p className="text-xs text-foreground/50 font-medium mt-0.5">
+							<p className="text-xs text-foreground/50 font-medium">
 								{completedCount}/{totalCount} completed
-							</p>
-						</div>
-					</div>
-
-					{/* Compact header */}
-					<div
-						className={cn(
-							"flex items-center gap-3 transition-all duration-300",
-							!isCompact && "hidden",
-						)}
-					>
-						<Avatar position="topLeft" size="small" />
-						<div className="relative shrink-0 ml-8">
-							<svg
-								width={32}
-								height={32}
-								className="transform -rotate-90"
-								aria-hidden="true"
-							>
-								<circle
-									cx={16}
-									cy={16}
-									r={12}
-									fill="none"
-									className="stroke-foreground/[0.06]"
-									strokeWidth="3"
-								/>
-								<circle
-									cx={16}
-									cy={16}
-									r={12}
-									fill="none"
-									className="stroke-earning transition-all duration-700 ease-out"
-									strokeWidth="3"
-									strokeLinecap="round"
-									strokeDasharray={2 * Math.PI * 12}
-									strokeDashoffset={
-										2 * Math.PI * 12 - (progress / 100) * 2 * Math.PI * 12
-									}
-								/>
-							</svg>
-							<span className="absolute inset-0 flex items-center justify-center text-xs">
-								{icon}
-							</span>
-						</div>
-						<div className="flex items-baseline gap-2 min-w-0">
-							<h1 className="text-base font-bold tracking-tight text-foreground truncate">
-								{title}
-							</h1>
-							<p className="text-[11px] text-foreground/40 font-medium whitespace-nowrap">
-								{completedCount}/{totalCount}
 							</p>
 						</div>
 					</div>
 				</div>
 
 				{/* Search/Add input */}
-				<div
-					className={cn(
-						"px-5 transition-all duration-300",
-						isCompact ? "pb-2.5" : "pb-4",
-					)}
-				>
-					<div
-						className={cn(
-							"flex items-center gap-2 bg-card/70 backdrop-blur-sm rounded-xl px-3 shadow-sm border border-border/30 transition-all duration-300",
-							isCompact ? "py-1" : "py-1.5",
-						)}
-					>
+				<div className="px-5 pb-3">
+					<div className="flex items-center gap-2 bg-card/70 backdrop-blur-sm rounded-xl px-3 py-1.5 shadow-sm border border-border/30">
 						{filterWhileTyping ? (
 							<Search className="h-4 w-4 text-foreground/30 shrink-0" />
 						) : (
@@ -264,23 +172,18 @@ export default function ChecklistPage({
 			</div>
 
 			{/* Scrollable list */}
-			<div ref={scrollRef} className="flex-1 overflow-y-auto pb-8">
+			<div className="flex-1 overflow-y-auto pb-8">
 				{/* Pending items */}
 				<div className="px-5">
 					{pending.length > 0 && (
 						<div className="flex flex-col gap-1.5">
-							{pending.map((item, index) => (
+							{pending.map((item) => (
 								<div
 									key={item.id}
 									className={cn(
-										"group flex items-center gap-3 bg-card/60 backdrop-blur-sm rounded-xl px-3.5 py-3 shadow-sm border border-border/30 transition-all duration-250",
-										deletingIds.has(item.id) &&
-											"opacity-0 translate-x-8 scale-95",
+										"group flex items-center gap-3 bg-card/60 backdrop-blur-sm rounded-xl px-3.5 py-3 shadow-sm border border-border/30 transition-opacity duration-250",
+										deletingIds.has(item.id) && "opacity-0",
 									)}
-									style={{
-										animation: "fadeSlideIn 0.3s ease-out both",
-										animationDelay: `${index * 30}ms`,
-									}}
 								>
 									<Checkbox
 										checked={false}
@@ -303,19 +206,13 @@ export default function ChecklistPage({
 					)}
 
 					{pending.length === 0 && completedCount > 0 && (
-						<div
-							className="text-center py-8 text-foreground/30 text-sm"
-							style={{ animation: "fadeSlideIn 0.4s ease-out both" }}
-						>
+						<div className="text-center py-8 text-foreground/30 text-sm">
 							All done! Nothing left to do.
 						</div>
 					)}
 
 					{totalCount === 0 && (
-						<div
-							className="text-center py-8 text-foreground/30 text-sm"
-							style={{ animation: "fadeSlideIn 0.4s ease-out both" }}
-						>
+						<div className="text-center py-8 text-foreground/30 text-sm">
 							No items yet. Add one above.
 						</div>
 					)}
@@ -345,18 +242,13 @@ export default function ChecklistPage({
 
 						{showCompleted && (
 							<div className="flex flex-col gap-1">
-								{completed.map((item, index) => (
+								{completed.map((item) => (
 									<div
 										key={item.id}
 										className={cn(
-											"group flex items-center gap-3 rounded-xl px-3.5 py-2.5 transition-all duration-250",
-											deletingIds.has(item.id) &&
-												"opacity-0 translate-x-8 scale-95",
+											"group flex items-center gap-3 rounded-xl px-3.5 py-2.5 transition-opacity duration-250",
+											deletingIds.has(item.id) && "opacity-0",
 										)}
-										style={{
-											animation: "fadeSlideIn 0.25s ease-out both",
-											animationDelay: `${index * 20}ms`,
-										}}
 									>
 										<Checkbox
 											checked={true}
