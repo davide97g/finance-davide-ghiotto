@@ -1,7 +1,6 @@
 import { useRegisterSW } from "virtual:pwa-register/react";
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense, useEffect, useRef } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { toast } from "sonner";
 import ProgressBar from "./components/ProgressBar";
 import SplashScreen from "./components/SplashScreen";
 import { useUserStore } from "./stores/user";
@@ -23,28 +22,51 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 	return <>{children}</>;
 }
 
-function useUpdatePrompt() {
-	const {
-		needRefresh: [needRefresh],
-		updateServiceWorker,
-	} = useRegisterSW();
+const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
+
+/**
+ * Keeps the app on the latest deploy. The service worker is registered with
+ * registerType "autoUpdate": once a new worker installs it skips waiting and
+ * the page reloads on its own. Browsers only look for a new worker on
+ * navigation, so an installed PWA left open also polls for updates here.
+ */
+function useAutoUpdate() {
+	const registrationRef = useRef<ServiceWorkerRegistration | undefined>(
+		undefined,
+	);
+
+	useRegisterSW({
+		immediate: true,
+		onRegisteredSW(_swUrl, registration) {
+			registrationRef.current = registration;
+		},
+	});
 
 	useEffect(() => {
-		if (needRefresh) {
-			toast("Update available", {
-				description: "A new version is ready.",
-				duration: Infinity,
-				action: {
-					label: "Update",
-					onClick: () => updateServiceWorker(true),
-				},
-			});
-		}
-	}, [needRefresh, updateServiceWorker]);
+		const checkForUpdate = () => {
+			const registration = registrationRef.current;
+			if (!registration || registration.installing || !navigator.onLine) return;
+			registration.update().catch(() => {});
+		};
+
+		const onVisibilityChange = () => {
+			if (document.visibilityState === "visible") checkForUpdate();
+		};
+
+		const interval = setInterval(checkForUpdate, UPDATE_CHECK_INTERVAL_MS);
+		document.addEventListener("visibilitychange", onVisibilityChange);
+		window.addEventListener("online", checkForUpdate);
+
+		return () => {
+			clearInterval(interval);
+			document.removeEventListener("visibilitychange", onVisibilityChange);
+			window.removeEventListener("online", checkForUpdate);
+		};
+	}, []);
 }
 
 export default function App() {
-	useUpdatePrompt();
+	useAutoUpdate();
 	return (
 		<>
 			<SplashScreen />

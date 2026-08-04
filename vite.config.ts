@@ -6,7 +6,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "prompt",
+      registerType: "autoUpdate",
+      // Registration is handled by useRegisterSW() in src/App.tsx
+      injectRegister: null,
       mode: "production",
       base: "/",
       srcDir: "src",
