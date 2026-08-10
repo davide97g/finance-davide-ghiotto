@@ -1,6 +1,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../../ui/sheet";
 import CategoriesSettings from "./CategoriesSettings";
 import CategoryUsageRefresh from "./CategoryUsageRefresh";
+import RecurringSettings from "./RecurringSettings";
 import TagsSettings from "./TagsSettings";
 
 interface Props {
@@ -15,6 +16,7 @@ export default function Settings({ open, onOpenChange }: Props) {
 				<SheetHeader>
 					<SheetTitle>Settings</SheetTitle>
 				</SheetHeader>
+				<RecurringSettings />
 				<CategoriesSettings />
 				<TagsSettings />
 				<CategoryUsageRefresh />

@@ -3,11 +3,13 @@ import {
 	Euro,
 	FileText,
 	FolderOpen,
+	Repeat,
 	Tag as TagIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { DataBaseClient } from "../../api/db";
 import type { ITransaction } from "../../models/transaction";
+import { toPeriod } from "../../services/recurring";
 import {
 	formatDate,
 	MONTHS,
@@ -17,6 +19,7 @@ import {
 import { useCategoryStore } from "../../stores/category";
 import { useCategoryUsageStore } from "../../stores/categoryUsage";
 import { useTagStore } from "../../stores/tag";
+import { Checkbox } from "../ui/checkbox";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -53,6 +56,7 @@ export default function NewTransactionPopup({
 		newTransaction(),
 	);
 	const [amountDisplay, setAmountDisplay] = useState("");
+	const [repeatMonthly, setRepeatMonthly] = useState(false);
 	const allCategories = useCategoryStore((s) => s.categories);
 	const usageCounts = useCategoryUsageStore((s) => s.counts);
 	const tags = useTagStore((s) => s.tags);
@@ -70,6 +74,7 @@ export default function NewTransactionPopup({
 	useEffect(() => {
 		setTransaction(newTransaction());
 		setAmountDisplay("");
+		setRepeatMonthly(false);
 	}, [open, type]);
 
 	const updateField = (field: string, value: string | number) => {
@@ -84,17 +89,36 @@ export default function NewTransactionPopup({
 		});
 	};
 
+	const createRecurring = async () => {
+		const date = new Date(transaction.date as string);
+		await DataBaseClient.Recurring.create({
+			description: transaction.description || "",
+			amount: transaction.amount as number,
+			category: transaction.category as string,
+			type,
+			tag: transaction.tag,
+			dayOfMonth: date.getDate(),
+			active: true,
+			// this month's occurrence is the transaction we just created
+			lastPeriod: toPeriod(date),
+		});
+	};
+
 	const handleOk = () => {
 		setIsLoading(true);
 		DataBaseClient.Transaction.create(transaction as ITransaction)
-			.then((t) => {
+			.then(async (t) => {
+				if (repeatMonthly) await createRecurring();
 				openNotificationWithIcon(
 					"success",
 					"Success",
-					`Transaction ${t.description} saved`,
+					repeatMonthly
+						? `Transaction ${t.description} saved and repeating monthly`
+						: `Transaction ${t.description} saved`,
 				);
 				setTransaction(newTransaction());
 				setAmountDisplay("");
+				setRepeatMonthly(false);
 				onOpenChange(false);
 			})
 			.catch((err) => console.error(err))
@@ -230,6 +254,20 @@ export default function NewTransactionPopup({
 							className="h-10 bg-card/80 border-border/50 rounded-xl text-sm placeholder:text-muted-foreground/50"
 						/>
 					</div>
+
+					<Label className="flex items-center gap-2.5 h-10 px-3 bg-card/80 border border-border/50 rounded-xl cursor-pointer">
+						<Checkbox
+							checked={repeatMonthly}
+							onCheckedChange={(checked) => setRepeatMonthly(checked === true)}
+						/>
+						<Repeat className="h-3.5 w-3.5 text-muted-foreground" />
+						<span className="text-sm font-normal">Repeat every month</span>
+						{repeatMonthly && transaction.date && (
+							<span className="ml-auto text-xs text-muted-foreground">
+								day {new Date(transaction.date).getDate()}
+							</span>
+						)}
+					</Label>
 				</div>
 
 				{/* Actions */}

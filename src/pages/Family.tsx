@@ -24,7 +24,13 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "../components/ui/tabs";
-import { MONTHS, setIsLoading, YEARS } from "../services/utils";
+import { syncRecurring } from "../services/recurring";
+import {
+	MONTHS,
+	openNotificationWithIcon,
+	setIsLoading,
+	YEARS,
+} from "../services/utils";
 import { useCategoryStore } from "../stores/category";
 import { useCategoryUsageStore } from "../stores/categoryUsage";
 import { useTagStore } from "../stores/tag";
@@ -72,6 +78,20 @@ export default function Family() {
 					.setCategoryUsage(categoryUsage.counts, categoryUsage.lastRefreshed);
 			}
 			setIsLoading(false);
+
+			// generate the recurring transactions due since the last app open
+			try {
+				const created = await syncRecurring();
+				if (created > 0) {
+					openNotificationWithIcon(
+						"info",
+						"Recurring",
+						`${created} recurring transaction${created > 1 ? "s" : ""} added`,
+					);
+				}
+			} catch (err) {
+				console.error(err);
+			}
 		};
 		load();
 	}, []);

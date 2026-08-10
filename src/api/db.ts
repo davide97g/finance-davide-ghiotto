@@ -17,6 +17,7 @@ import {
 import type { Category, CategoryType, ICategory } from "../models/category";
 import type { CategoryUsageData } from "../models/categoryUsage";
 import type { Grocery, IGrocery } from "../models/grocery";
+import type { IRecurring, Recurring } from "../models/recurring";
 import type { IStats, Stats } from "../models/stats";
 import type { ITag, Tag } from "../models/tag";
 import type { ITodo, Todo } from "../models/todo";
@@ -251,6 +252,56 @@ export const DataBaseClient = {
 		async delete(tagId: string): Promise<boolean> {
 			try {
 				await deleteDoc(doc(collection(db, this.collection), tagId));
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+	},
+	Recurring: {
+		collection: "recurring",
+		async get(): Promise<Recurring[]> {
+			const querySnapshot = await getDocs(collection(db, this.collection));
+			return querySnapshot.docs.map((doc) => ({
+				id: doc.id,
+				...doc.data(),
+			})) as Recurring[];
+		},
+		async create(iRecurring: IRecurring): Promise<Recurring> {
+			try {
+				const payload = {
+					...JSON.parse(JSON.stringify(iRecurring)),
+					createdAt: Date.now(),
+				};
+				const res = await addDoc(collection(db, this.collection), payload);
+				return {
+					id: res.id,
+					...payload,
+				};
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async update(recurring: Recurring): Promise<boolean> {
+			try {
+				await setDoc(
+					doc(collection(db, this.collection), recurring.id),
+					JSON.parse(JSON.stringify(recurring)),
+					{
+						merge: true,
+					},
+				);
+				return true;
+			} catch (err) {
+				console.error(err);
+				throw err;
+			}
+		},
+		async delete(recurringId: string): Promise<boolean> {
+			try {
+				await deleteDoc(doc(collection(db, this.collection), recurringId));
 				return true;
 			} catch (err) {
 				console.error(err);

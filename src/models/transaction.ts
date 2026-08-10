@@ -9,6 +9,8 @@ export interface ITransaction {
 	category: string;
 	type: "expense" | "earning";
 	tag?: string;
+	/** Set when the row was generated from a recurring template. */
+	recurringId?: string;
 }
 
 export interface Transaction extends ITransaction {
