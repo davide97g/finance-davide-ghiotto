@@ -1,14 +1,14 @@
 import type { User } from "firebase/auth";
 import {
-	addDoc,
 	collection,
 	deleteDoc,
 	doc,
-	enableIndexedDbPersistence,
 	getDoc,
 	getDocs,
-	getFirestore,
+	initializeFirestore,
 	onSnapshot,
+	persistentLocalCache,
+	persistentMultipleTabManager,
 	query,
 	setDoc,
 	type Unsubscribe,
@@ -23,17 +23,27 @@ import type { ITag, Tag } from "../models/tag";
 import type { ITodo, Todo } from "../models/todo";
 import type { ITransaction, Transaction } from "../models/transaction";
 import { setIsLoading } from "../stores/loading";
+import { nextListenerId, trackWrite, useSyncStore } from "../stores/sync";
+import { firebaseApp } from "./auth";
 
-const db = getFirestore();
-
-enableIndexedDbPersistence(db).catch((err) => {
-	if (err.code === "failed-precondition") {
-		console.info("offline init failed");
-	} else if (err.code === "unimplemented") {
-		console.info("offline not supported");
-	}
+/**
+ * Offline-first Firestore: reads fall back to the IndexedDB cache when the
+ * network is down and writes are queued there until it is back. The multi-tab
+ * manager keeps that cache consistent when the app is open more than once.
+ */
+const db = initializeFirestore(firebaseApp, {
+	localCache: persistentLocalCache({
+		tabManager: persistentMultipleTabManager(),
+	}),
 });
 
+/**
+ * Writes below are fired without awaiting the server ack: offline that ack
+ * never arrives, so awaiting it would hang the UI. Firestore applies every
+ * write to the local cache immediately (and real-time listeners echo it right
+ * away), while `trackWrite` keeps the sync indicator honest until the server
+ * confirms.
+ */
 export const DataBaseClient = {
 	User: {
 		async getUser(uid: string): Promise<User | null> {
@@ -51,9 +61,9 @@ export const DataBaseClient = {
 			else return this.createNewUser(firebaseUser);
 		},
 		async createNewUser(firebaseUser: User): Promise<User> {
-			await setDoc(
-				doc(collection(db, "users"), firebaseUser.uid),
-				firebaseUser,
+			trackWrite(
+				setDoc(doc(collection(db, "users"), firebaseUser.uid), firebaseUser),
+				"user create",
 			);
 			return firebaseUser;
 		},
@@ -75,12 +85,15 @@ export const DataBaseClient = {
 			if (filters?.month) constraints.push(where("month", "==", filters.month));
 			if (filters?.year) constraints.push(where("year", "==", filters.year));
 			const q = query(collection(db, this.collection), ...constraints);
-			const querySnapshot = await getDocs(q);
-			setIsLoading(false);
-			return querySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Transaction[];
+			try {
+				const querySnapshot = await getDocs(q);
+				return querySnapshot.docs.map((doc) => ({
+					id: doc.id,
+					...doc.data(),
+				})) as Transaction[];
+			} finally {
+				setIsLoading(false);
+			}
 		},
 		async getRT(
 			callback: (transactions: Transaction[]) => void,
@@ -95,67 +108,74 @@ export const DataBaseClient = {
 			if (filters?.month) constraints.push(where("month", "==", filters.month));
 			if (filters?.year) constraints.push(where("year", "==", filters.year));
 			const q = query(collection(db, this.collection), ...constraints);
-			return onSnapshot(q, (querySnapshot) => {
-				const transactions = querySnapshot.docs.map((doc) => ({
-					id: doc.id,
-					...doc.data(),
-				})) as Transaction[];
-				callback(transactions);
-			});
+			const listenerId = nextListenerId();
+			// Metadata changes carry `hasPendingWrites`, which flips back to false
+			// once the server acks. Without them the "waiting to sync" badge on a
+			// row would never clear on its own.
+			const unsubscribe = onSnapshot(
+				q,
+				{ includeMetadataChanges: true },
+				(querySnapshot) => {
+					const transactions = querySnapshot.docs.map((doc) => ({
+						id: doc.id,
+						...doc.data(),
+						pending: doc.metadata.hasPendingWrites,
+					})) as Transaction[];
+					useSyncStore
+						.getState()
+						.setPendingDocs(
+							listenerId,
+							transactions.filter((t) => t.pending).length,
+						);
+					callback(transactions);
+				},
+			);
+			return () => {
+				useSyncStore.getState().clearListener(listenerId);
+				unsubscribe();
+			};
 		},
 		async create(transaction: ITransaction): Promise<Transaction> {
-			try {
-				const createdAt = Date.now();
-				const payload = {
-					...JSON.parse(JSON.stringify(transaction)),
-					createdAt,
-				};
-				const res = await addDoc(collection(db, this.collection), payload);
-				return {
-					id: res.id,
-					...transaction,
-					createdAt,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			const createdAt = Date.now();
+			const payload = {
+				...JSON.parse(JSON.stringify(transaction)),
+				createdAt,
+			};
+			// The id is generated client-side, so the new row is usable offline.
+			const ref = doc(collection(db, this.collection));
+			trackWrite(setDoc(ref, payload), "transaction create");
+			return {
+				id: ref.id,
+				...transaction,
+				createdAt,
+			};
 		},
 		async update(transaction: Transaction): Promise<boolean> {
-			try {
-				await setDoc(
+			// `pending` is a client-side sync flag, never part of the stored doc.
+			const { pending: _pending, ...payload } = transaction;
+			trackWrite(
+				setDoc(
 					doc(collection(db, this.collection), transaction.id),
-					JSON.parse(JSON.stringify(transaction)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+					JSON.parse(JSON.stringify(payload)),
+					{ merge: true },
+				),
+				"transaction update",
+			);
+			return true;
 		},
 		async delete(transactionId: string): Promise<boolean> {
-			try {
-				await deleteDoc(doc(collection(db, this.collection), transactionId));
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			trackWrite(
+				deleteDoc(doc(collection(db, this.collection), transactionId)),
+				"transaction delete",
+			);
+			return true;
 		},
 		async bulkAdd(transactions: ITransaction[]): Promise<Transaction[]> {
-			try {
-				const transactionsCreation: Promise<Transaction>[] = [];
-				transactions.forEach((transaction) =>
-					transactionsCreation.push(this.create(transaction)),
-				);
-				return await Promise.all(transactionsCreation);
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			const transactionsCreation: Promise<Transaction>[] = [];
+			transactions.forEach((transaction) =>
+				transactionsCreation.push(this.create(transaction)),
+			);
+			return await Promise.all(transactionsCreation);
 		},
 	},
 	Category: {
@@ -171,43 +191,33 @@ export const DataBaseClient = {
 			})) as Category[];
 		},
 		async create(iCategory: ICategory): Promise<Category> {
-			try {
-				const res = await addDoc(
-					collection(db, this.collection),
-					JSON.parse(JSON.stringify(iCategory)),
-				);
-				return {
-					id: res.id,
-					...iCategory,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			const ref = doc(collection(db, this.collection));
+			trackWrite(
+				setDoc(ref, JSON.parse(JSON.stringify(iCategory))),
+				"category create",
+			);
+			return {
+				id: ref.id,
+				...iCategory,
+			};
 		},
 		async update(category: Category): Promise<boolean> {
-			try {
-				await setDoc(
+			trackWrite(
+				setDoc(
 					doc(collection(db, this.collection), category.id),
 					JSON.parse(JSON.stringify(category)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+					{ merge: true },
+				),
+				"category update",
+			);
+			return true;
 		},
 		async delete(categoryId: string): Promise<boolean> {
-			try {
-				await deleteDoc(doc(collection(db, this.collection), categoryId));
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			trackWrite(
+				deleteDoc(doc(collection(db, this.collection), categoryId)),
+				"category delete",
+			);
+			return true;
 		},
 	},
 	Tag: {
@@ -220,43 +230,30 @@ export const DataBaseClient = {
 			})) as Tag[];
 		},
 		async create(iTag: ITag): Promise<Tag> {
-			try {
-				const res = await addDoc(
-					collection(db, this.collection),
-					JSON.parse(JSON.stringify(iTag)),
-				);
-				return {
-					id: res.id,
-					...iTag,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			const ref = doc(collection(db, this.collection));
+			trackWrite(setDoc(ref, JSON.parse(JSON.stringify(iTag))), "tag create");
+			return {
+				id: ref.id,
+				...iTag,
+			};
 		},
 		async update(tag: Tag): Promise<boolean> {
-			try {
-				await setDoc(
+			trackWrite(
+				setDoc(
 					doc(collection(db, this.collection), tag.id),
 					JSON.parse(JSON.stringify(tag)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+					{ merge: true },
+				),
+				"tag update",
+			);
+			return true;
 		},
 		async delete(tagId: string): Promise<boolean> {
-			try {
-				await deleteDoc(doc(collection(db, this.collection), tagId));
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			trackWrite(
+				deleteDoc(doc(collection(db, this.collection), tagId)),
+				"tag delete",
+			);
+			return true;
 		},
 	},
 	Recurring: {
@@ -269,44 +266,34 @@ export const DataBaseClient = {
 			})) as Recurring[];
 		},
 		async create(iRecurring: IRecurring): Promise<Recurring> {
-			try {
-				const payload = {
-					...JSON.parse(JSON.stringify(iRecurring)),
-					createdAt: Date.now(),
-				};
-				const res = await addDoc(collection(db, this.collection), payload);
-				return {
-					id: res.id,
-					...payload,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			const payload = {
+				...JSON.parse(JSON.stringify(iRecurring)),
+				createdAt: Date.now(),
+			};
+			const ref = doc(collection(db, this.collection));
+			trackWrite(setDoc(ref, payload), "recurring create");
+			return {
+				id: ref.id,
+				...payload,
+			};
 		},
 		async update(recurring: Recurring): Promise<boolean> {
-			try {
-				await setDoc(
+			trackWrite(
+				setDoc(
 					doc(collection(db, this.collection), recurring.id),
 					JSON.parse(JSON.stringify(recurring)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+					{ merge: true },
+				),
+				"recurring update",
+			);
+			return true;
 		},
 		async delete(recurringId: string): Promise<boolean> {
-			try {
-				await deleteDoc(doc(collection(db, this.collection), recurringId));
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			trackWrite(
+				deleteDoc(doc(collection(db, this.collection), recurringId)),
+				"recurring delete",
+			);
+			return true;
 		},
 	},
 	Stats: {
@@ -342,55 +329,39 @@ export const DataBaseClient = {
 			})) as Stats[];
 		},
 		async create(iStats: IStats): Promise<Stats> {
-			try {
-				const res = await addDoc(
-					collection(db, this.collection),
-					JSON.parse(JSON.stringify(iStats)),
-				);
-				return {
-					id: res.id,
-					...iStats,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			const ref = doc(collection(db, this.collection));
+			trackWrite(
+				setDoc(ref, JSON.parse(JSON.stringify(iStats))),
+				"stats create",
+			);
+			return {
+				id: ref.id,
+				...iStats,
+			};
 		},
 		async update(stats: Stats): Promise<boolean> {
-			try {
-				await setDoc(
+			trackWrite(
+				setDoc(
 					doc(collection(db, this.collection), stats.id),
 					JSON.parse(JSON.stringify(stats)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+					{ merge: true },
+				),
+				"stats update",
+			);
+			return true;
 		},
 		async delete(statsId: string): Promise<boolean> {
-			const document = doc(collection(db, this.collection), statsId);
-			try {
-				await deleteDoc(document);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			trackWrite(
+				deleteDoc(doc(collection(db, this.collection), statsId)),
+				"stats delete",
+			);
+			return true;
 		},
 		async bulkDelete(statsIds: string[]): Promise<boolean> {
-			try {
-				const statsDeletion: Promise<boolean>[] = [];
-				statsIds.forEach((statsId) => statsDeletion.push(this.delete(statsId)));
-				await Promise.all(statsDeletion);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			const statsDeletion: Promise<boolean>[] = [];
+			statsIds.forEach((statsId) => statsDeletion.push(this.delete(statsId)));
+			await Promise.all(statsDeletion);
+			return true;
 		},
 		async bulkAdd(stats: IStats[]): Promise<Stats[]> {
 			const statsCreation: Promise<Stats>[] = [];
@@ -403,12 +374,15 @@ export const DataBaseClient = {
 		collection: "groceries",
 		async get(): Promise<Grocery[]> {
 			setIsLoading(true);
-			const querySnapshot = await getDocs(collection(db, this.collection));
-			setIsLoading(false);
-			return querySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Grocery[];
+			try {
+				const querySnapshot = await getDocs(collection(db, this.collection));
+				return querySnapshot.docs.map((doc) => ({
+					id: doc.id,
+					...doc.data(),
+				})) as Grocery[];
+			} finally {
+				setIsLoading(false);
+			}
 		},
 		async getRT(
 			callback: (groceries: Grocery[]) => void,
@@ -422,58 +396,48 @@ export const DataBaseClient = {
 			});
 		},
 		async create(grocery: IGrocery): Promise<Grocery> {
-			try {
-				const res = await addDoc(
-					collection(db, this.collection),
-					JSON.parse(JSON.stringify(grocery)),
-				);
-				return {
-					id: res.id,
-					...grocery,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			const ref = doc(collection(db, this.collection));
+			trackWrite(
+				setDoc(ref, JSON.parse(JSON.stringify(grocery))),
+				"grocery create",
+			);
+			return {
+				id: ref.id,
+				...grocery,
+			};
 		},
 		async update(grocery: Grocery): Promise<boolean> {
-			try {
-				setIsLoading(true);
-				await setDoc(
+			trackWrite(
+				setDoc(
 					doc(collection(db, this.collection), grocery.id),
 					JSON.parse(JSON.stringify(grocery)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			} finally {
-				setIsLoading(false);
-			}
+					{ merge: true },
+				),
+				"grocery update",
+			);
+			return true;
 		},
 		async delete(groceryId: string): Promise<boolean> {
-			try {
-				await deleteDoc(doc(collection(db, this.collection), groceryId));
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			trackWrite(
+				deleteDoc(doc(collection(db, this.collection), groceryId)),
+				"grocery delete",
+			);
+			return true;
 		},
 	},
 	Todo: {
 		collection: "todo",
 		async get(): Promise<Todo[]> {
 			setIsLoading(true);
-			const querySnapshot = await getDocs(collection(db, this.collection));
-			setIsLoading(false);
-			return querySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Todo[];
+			try {
+				const querySnapshot = await getDocs(collection(db, this.collection));
+				return querySnapshot.docs.map((doc) => ({
+					id: doc.id,
+					...doc.data(),
+				})) as Todo[];
+			} finally {
+				setIsLoading(false);
+			}
 		},
 		async getRT(callback: (todos: Todo[]) => void): Promise<Unsubscribe> {
 			return onSnapshot(collection(db, this.collection), (querySnapshot) => {
@@ -485,46 +449,30 @@ export const DataBaseClient = {
 			});
 		},
 		async create(todo: ITodo): Promise<Todo> {
-			try {
-				const res = await addDoc(
-					collection(db, this.collection),
-					JSON.parse(JSON.stringify(todo)),
-				);
-				return {
-					id: res.id,
-					...todo,
-				};
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			const ref = doc(collection(db, this.collection));
+			trackWrite(setDoc(ref, JSON.parse(JSON.stringify(todo))), "todo create");
+			return {
+				id: ref.id,
+				...todo,
+			};
 		},
 		async update(todo: Todo): Promise<boolean> {
-			try {
-				setIsLoading(true);
-				await setDoc(
+			trackWrite(
+				setDoc(
 					doc(collection(db, this.collection), todo.id),
 					JSON.parse(JSON.stringify(todo)),
-					{
-						merge: true,
-					},
-				);
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			} finally {
-				setIsLoading(false);
-			}
+					{ merge: true },
+				),
+				"todo update",
+			);
+			return true;
 		},
 		async delete(todoId: string): Promise<boolean> {
-			try {
-				await deleteDoc(doc(collection(db, this.collection), todoId));
-				return true;
-			} catch (err) {
-				console.error(err);
-				throw err;
-			}
+			trackWrite(
+				deleteDoc(doc(collection(db, this.collection), todoId)),
+				"todo delete",
+			);
+			return true;
 		},
 	},
 	CategoryUsage: {
@@ -534,7 +482,10 @@ export const DataBaseClient = {
 			return null;
 		},
 		async set(data: CategoryUsageData): Promise<void> {
-			await setDoc(doc(db, "settings", "categoryUsage"), data);
+			trackWrite(
+				setDoc(doc(db, "settings", "categoryUsage"), data),
+				"category usage set",
+			);
 		},
 	},
 };

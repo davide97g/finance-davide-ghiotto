@@ -33,6 +33,7 @@ Firestore `onSnapshot()` → Zustand stores → React components. The `DataBaseC
 - **Categories** have a `type` field (expense/earning) and `excludeFromBudget` flag — budget calculations must respect this
 - **Protected routes** redirect to `/login` via `onAuthStateChanged` listener in `src/api/auth.ts`
 - **Admin system**: hardcoded UID list in `useUserStore`
+- **Offline-first**: Firestore is initialized with `persistentLocalCache` + multi-tab manager. Writes in `DataBaseClient` are never awaited to the server ack (it never arrives offline) — they are applied to the local cache, ids are generated client-side, and `trackWrite` (`src/stores/sync.ts`) counts them until the server confirms. `useSyncStore` drives `SyncStatus` and the per-row `pending` flag (from `snapshot.metadata.hasPendingWrites`); the service worker serves the SPA shell for any navigation
 
 ### Styling
 

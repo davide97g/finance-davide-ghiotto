@@ -15,4 +15,6 @@ export interface ITransaction {
 
 export interface Transaction extends ITransaction {
 	id: string;
+	/** Client-side only: the row is still queued for the server (offline write). */
+	pending?: boolean;
 }

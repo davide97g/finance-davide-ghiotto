@@ -1,7 +1,9 @@
+import { CloudOff, RefreshCw } from "lucide-react";
 import { useCompactMode } from "../hooks/useCompactMode";
 import type { Transaction } from "../models/transaction";
 import { formatDate } from "../services/utils";
 import { useCategoryStore } from "../stores/category";
+import { useSyncStore } from "../stores/sync";
 import { useTagStore } from "../stores/tag";
 
 interface Props {
@@ -29,6 +31,7 @@ function extractEmojis(text: string): string {
 export default function TransactionItem({ item }: Props) {
 	const categories = useCategoryStore((s) => s.categories);
 	const tags = useTagStore((s) => s.tags);
+	const isOnline = useSyncStore((s) => s.isOnline);
 	const { compactMode } = useCompactMode();
 
 	const category = categories.find((c) => c.id === item.category);
@@ -95,6 +98,18 @@ export default function TransactionItem({ item }: Props) {
 					<div
 						className={`flex items-center gap-1 ${compactMode ? "pl-10" : "pl-4"}`}
 					>
+						{item.pending &&
+							(isOnline ? (
+								<RefreshCw
+									className="h-2.5 w-2.5 shrink-0 animate-spin text-muted-foreground/60"
+									aria-label="syncing"
+								/>
+							) : (
+								<CloudOff
+									className="h-2.5 w-2.5 shrink-0 text-muted-foreground/60"
+									aria-label="saved on this device only"
+								/>
+							))}
 						<span
 							className={`text-[10px] font-medium tabular-nums shrink-0 ${compactMode ? "text-foreground/80" : "text-muted-foreground/50"}`}
 						>

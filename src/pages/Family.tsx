@@ -11,6 +11,7 @@ import Avatar from "../components/Avatar";
 import MonthBalance from "../components/Family/MonthBalance";
 import NewTransactionPopup from "../components/Family/NewTransactionPopup";
 import SettingsPanel from "../components/Family/Settings/Settings";
+import SyncStatus from "../components/SyncStatus";
 import {
 	Select,
 	SelectContent,
@@ -65,19 +66,28 @@ export default function Family() {
 	useEffect(() => {
 		const load = async () => {
 			setIsLoading(true);
-			const [cats, tags, categoryUsage] = await Promise.all([
-				DataBaseClient.Category.get(),
-				DataBaseClient.Tag.get(),
-				DataBaseClient.CategoryUsage.get(),
-			]);
-			useCategoryStore.getState().setCategories(cats);
-			useTagStore.getState().setTags(tags);
-			if (categoryUsage) {
-				useCategoryUsageStore
-					.getState()
-					.setCategoryUsage(categoryUsage.counts, categoryUsage.lastRefreshed);
+			try {
+				const [cats, tags, categoryUsage] = await Promise.all([
+					DataBaseClient.Category.get(),
+					DataBaseClient.Tag.get(),
+					DataBaseClient.CategoryUsage.get(),
+				]);
+				useCategoryStore.getState().setCategories(cats);
+				useTagStore.getState().setTags(tags);
+				if (categoryUsage) {
+					useCategoryUsageStore
+						.getState()
+						.setCategoryUsage(
+							categoryUsage.counts,
+							categoryUsage.lastRefreshed,
+						);
+				}
+			} catch (err) {
+				// Offline with a cold cache: keep the app usable instead of hanging.
+				console.error(err);
+			} finally {
+				setIsLoading(false);
 			}
-			setIsLoading(false);
 
 			// generate the recurring transactions due since the last app open
 			try {
@@ -127,6 +137,7 @@ export default function Family() {
 					</SelectContent>
 				</Select>
 				<div className="ml-auto flex items-center gap-2.5">
+					<SyncStatus />
 					<LineChart
 						className="h-[18px] w-[18px] cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
 						onClick={openYearStats}

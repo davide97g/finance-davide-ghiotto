@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FirebaseAuth } from "../api/auth";
+import { useSyncStore } from "../stores/sync";
 import { useUserStore } from "../stores/user";
 
 function GoogleIcon({ className }: { className?: string }) {
@@ -34,6 +35,7 @@ function GoogleIcon({ className }: { className?: string }) {
 export default function Login() {
 	const isLoggedIn = useUserStore((s) => s.isLoggedIn);
 	const user = useUserStore((s) => s.user);
+	const isOnline = useSyncStore((s) => s.isOnline);
 
 	return (
 		<div className="relative min-h-screen flex flex-col overflow-hidden">
@@ -127,14 +129,21 @@ export default function Login() {
 						<div className="w-full max-w-sm animate-[fadeSlideIn_0.5s_0.2s_ease_both]">
 							<button
 								type="button"
+								disabled={!isOnline}
 								onClick={() => FirebaseAuth.signInWithGoogle()}
-								className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-card/80 backdrop-blur-sm border border-border px-6 py-4 shadow-sm transition-all duration-200 hover:bg-card hover:shadow-md hover:shadow-foreground/[0.06] hover:-translate-y-0.5 active:scale-[0.99]"
+								className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-card/80 backdrop-blur-sm border border-border px-6 py-4 shadow-sm transition-all duration-200 hover:bg-card hover:shadow-md hover:shadow-foreground/[0.06] hover:-translate-y-0.5 active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
 							>
 								<GoogleIcon className="h-5 w-5" />
 								<span className="text-sm font-semibold text-foreground">
 									Continue with Google
 								</span>
 							</button>
+							{/* Signing in is the one thing that cannot work from the cache. */}
+							{!isOnline && (
+								<p className="mt-3 text-center text-xs text-muted-foreground">
+									You are offline — connect once to sign in.
+								</p>
+							)}
 						</div>
 					</div>
 				)}

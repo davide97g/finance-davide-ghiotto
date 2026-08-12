@@ -51,7 +51,8 @@
     "vite": "^7",
     "vite-plugin-pwa": "^1.2.0",
     "vite-plus": "^0.1.14",
-    "workbox-precaching": "^7.4.0"
+    "workbox-precaching": "^7.4.0",
+    "workbox-routing": "^7.4.0"
   },
   "website": "https://finance.davideghiotto.it"
 }
