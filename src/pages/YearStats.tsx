@@ -1,4 +1,4 @@
-import { ArrowLeft, ChevronDown, TrendingUp } from "lucide-react";
+import { ArrowLeft, ChevronDown, Download, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -30,9 +30,14 @@ import {
 } from "../components/ui/tabs";
 import YearBalanceCard from "../components/YearBalanceCard";
 import type { Category } from "../models/category";
-import type { IStats } from "../models/stats";
+import type { IStats, Stats } from "../models/stats";
 import type { Transaction } from "../models/transaction";
-import { formatDate, setIsLoading } from "../services/utils";
+import { buildStatsCsvRows, downloadCsv, toCsv } from "../services/export";
+import {
+	formatDate,
+	openNotificationWithIcon,
+	setIsLoading,
+} from "../services/utils";
 import { useCategoryStore } from "../stores/category";
 import { useStatsStore } from "../stores/stats";
 import { useTagStore } from "../stores/tag";
@@ -231,6 +236,37 @@ export default function YearStats() {
 		[categories],
 	);
 
+	const exportCsv = useCallback(
+		(statsToExport: Stats[], filename: string) => {
+			if (statsToExport.length === 0) {
+				openNotificationWithIcon("warning", "Nothing to export");
+				return;
+			}
+			downloadCsv(
+				filename,
+				toCsv(buildStatsCsvRows(statsToExport, categories)),
+			);
+		},
+		[categories],
+	);
+
+	const exportYear = useCallback(() => {
+		exportCsv([...yearlyExpenses, ...yearlyEarnings], `stats-${year}.csv`);
+	}, [exportCsv, yearlyExpenses, yearlyEarnings, year]);
+
+	const exportAllYears = useCallback(async () => {
+		setIsLoading(true);
+		try {
+			const allStats = await DataBaseClient.Stats.getAllYears();
+			exportCsv(allStats, "stats-all-years.csv");
+		} catch (e) {
+			console.log(e);
+			openNotificationWithIcon("error", "Export failed");
+		} finally {
+			setIsLoading(false);
+		}
+	}, [exportCsv]);
+
 	const freezeYear = useCallback(async () => {
 		setIsLoading(true);
 		try {
@@ -321,6 +357,14 @@ export default function YearStats() {
 							<TrendingUp className="h-5 w-5" />
 						</Button>
 					</Link>
+					<Button
+						variant="ghost"
+						size="icon"
+						aria-label={`Export ${year} to CSV`}
+						onClick={exportYear}
+					>
+						<Download className="h-5 w-5" />
+					</Button>
 					<Button size="sm" onClick={freezeYear}>
 						{hasData ? "Update" : "Freeze"}
 					</Button>
@@ -523,6 +567,33 @@ export default function YearStats() {
 					<Button onClick={freezeYear}>Freeze</Button>
 				</div>
 			)}
+
+			<div className="mt-6 bg-white rounded-lg shadow-sm p-4">
+				<h3 className="text-sm font-semibold mb-1">Export</h3>
+				<p className="text-xs text-muted-foreground mb-3">
+					Aggregated CSV: one row per month, type and category
+				</p>
+				<div className="flex gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						className="flex-1"
+						onClick={exportYear}
+					>
+						<Download className="h-4 w-4 mr-2" />
+						{year}
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className="flex-1"
+						onClick={exportAllYears}
+					>
+						<Download className="h-4 w-4 mr-2" />
+						All years
+					</Button>
+				</div>
+			</div>
 		</div>
 	);
 }
