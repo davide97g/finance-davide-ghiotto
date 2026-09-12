@@ -61,7 +61,15 @@ const read = <T>(name: string): T[] => {
 };
 
 const problems: string[] = [];
+let emptyDocs = 0;
 const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Firestore accumulated documents holding nothing but their id (2612 exported
+ * transactions included 178 of them). They carry no data to migrate, so they
+ * are counted, not reported field by field.
+ */
+const isEmpty = (doc: Record<string, unknown>) => Object.keys(doc).length <= 1;
 
 /** Normalises the loose date shapes Firestore accumulated to a real `date`. */
 const toDate = (value: unknown): string | null => {
@@ -205,6 +213,10 @@ console.log(`recurring: ${recurringRows.length}`);
 // --- transactions -----------------------------------------------------------
 const transactionRows = [];
 for (const doc of read<Record<string, any>>("transactions")) {
+	if (isEmpty(doc)) {
+		emptyDocs++;
+		continue;
+	}
 	const categoryId = resolveCategory(doc.category, `transaction ${doc.id}`);
 	const date = toDate(doc.date);
 	const amount = toAmount(doc.amount);
@@ -403,6 +415,9 @@ if (userRows.length)
 			},
 		});
 console.log(`users: ${userRows.length} (passwords must be set separately)`);
+
+if (emptyDocs)
+	console.log(`\n${emptyDocs} empty document(s) skipped (no fields to migrate)`);
 
 if (problems.length) {
 	console.log(`\n${problems.length} row(s) needed attention:`);
