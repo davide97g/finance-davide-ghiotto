@@ -1,6 +1,6 @@
 import { ArrowLeft, LogOut, Mail, Moon, Rows3, Sun, User } from "lucide-react";
 import { Link } from "react-router-dom";
-import { FirebaseAuth } from "../api/auth";
+import { Auth } from "../api/auth";
 import { useCompactMode } from "../hooks/useCompactMode";
 import { useTheme } from "../hooks/useTheme";
 import { getPhotoURL } from "../services/utils";
@@ -160,7 +160,7 @@ export default function Profile() {
 				<div className="mt-8 animate-[fadeSlideIn_0.5s_0.35s_ease_both]">
 					<button
 						type="button"
-						onClick={() => FirebaseAuth.signOut()}
+						onClick={() => Auth.signOut()}
 						className="group flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200/60 dark:border-red-800/40 px-6 py-3 text-sm font-semibold text-red-600 dark:text-red-400 transition-all duration-200 hover:bg-red-100 dark:hover:bg-red-950/80 hover:border-red-300/60 dark:hover:border-red-700/50 active:scale-[0.98]"
 					>
 						<LogOut className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />

@@ -80,4 +80,13 @@ export default defineConfig({
   build: {
     outDir: "dist",
   },
+  server: {
+    // Same-origin API in dev, mirroring what nginx does in the container.
+    proxy: {
+      "/api": {
+        target: process.env.VITE_API_PROXY || "http://localhost:3000",
+        changeOrigin: true,
+      },
+    },
+  },
 });

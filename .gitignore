@@ -31,3 +31,8 @@ tsconfig.node.tsbuildinfo
 /docs
 
 .superpowers    
+# migration artefacts
+backup/
+backend/node_modules
+scripts/node_modules
+backend/.env

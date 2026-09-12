@@ -1,0 +1,7 @@
+node_modules
+dist
+backend
+backup
+.git
+.env
+scripts/node_modules

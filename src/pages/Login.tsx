@@ -1,41 +1,34 @@
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { type FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
-import { FirebaseAuth } from "../api/auth";
+import { Auth } from "../api/auth";
+import { Input } from "../components/ui/input";
+import { getPhotoURL } from "../services/utils";
 import { useSyncStore } from "../stores/sync";
 import { useUserStore } from "../stores/user";
-
-function GoogleIcon({ className }: { className?: string }) {
-	return (
-		<svg
-			className={className}
-			viewBox="0 0 24 24"
-			fill="none"
-			aria-hidden="true"
-		>
-			<path
-				d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-				fill="#4285F4"
-			/>
-			<path
-				d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-				fill="#34A853"
-			/>
-			<path
-				d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z"
-				fill="#FBBC05"
-			/>
-			<path
-				d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-				fill="#EA4335"
-			/>
-		</svg>
-	);
-}
 
 export default function Login() {
 	const isLoggedIn = useUserStore((s) => s.isLoggedIn);
 	const user = useUserStore((s) => s.user);
 	const isOnline = useSyncStore((s) => s.isOnline);
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [error, setError] = useState<string | null>(null);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	const submit = async (event: FormEvent) => {
+		event.preventDefault();
+		setError(null);
+		setIsSubmitting(true);
+		try {
+			await Auth.signInWithPassword(email.trim(), password);
+			window.location.href = "/";
+		} catch {
+			setError("Wrong email or password.");
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
 
 	return (
 		<div className="relative min-h-screen flex flex-col overflow-hidden">
@@ -69,7 +62,7 @@ export default function Login() {
 							<div className="relative">
 								<div className="absolute -inset-2 rounded-full bg-gradient-to-br from-emerald-600/15 to-teal-500/10 blur-sm" />
 								<img
-									src={user?.photoURL || ""}
+									src={getPhotoURL(user)}
 									alt="profile"
 									referrerPolicy="no-referrer"
 									className="relative h-20 w-20 rounded-full border-[3px] border-card/90 shadow-lg shadow-foreground/10"
@@ -121,30 +114,57 @@ export default function Login() {
 								Welcome back
 							</h2>
 							<p className="text-sm text-muted-foreground leading-relaxed max-w-[260px] mx-auto">
-								Sign in with your Google account to access your personal finance
-								dashboard.
+								Sign in to access your personal finance dashboard.
 							</p>
 						</div>
 
-						<div className="w-full max-w-sm animate-[fadeSlideIn_0.5s_0.2s_ease_both]">
+						<form
+							onSubmit={submit}
+							className="w-full max-w-sm space-y-3 animate-[fadeSlideIn_0.5s_0.2s_ease_both]"
+						>
+							<Input
+								type="email"
+								autoComplete="username"
+								placeholder="Email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								className="rounded-2xl bg-card/80 px-5 py-6 text-sm"
+							/>
+							<Input
+								type="password"
+								autoComplete="current-password"
+								placeholder="Password"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+								className="rounded-2xl bg-card/80 px-5 py-6 text-sm"
+							/>
+
+							{error && (
+								<p className="text-center text-xs text-destructive">{error}</p>
+							)}
+
 							<button
-								type="button"
-								disabled={!isOnline}
-								onClick={() => FirebaseAuth.signInWithGoogle()}
-								className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-card/80 backdrop-blur-sm border border-border px-6 py-4 shadow-sm transition-all duration-200 hover:bg-card hover:shadow-md hover:shadow-foreground/[0.06] hover:-translate-y-0.5 active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
+								type="submit"
+								disabled={!isOnline || isSubmitting || !email || !password}
+								className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-sm font-semibold text-primary-foreground shadow-lg shadow-foreground/10 transition-all duration-200 hover:opacity-90 hover:shadow-xl active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
 							>
-								<GoogleIcon className="h-5 w-5" />
-								<span className="text-sm font-semibold text-foreground">
-									Continue with Google
-								</span>
+								{isSubmitting ? (
+									<Loader2 className="h-4 w-4 animate-spin" />
+								) : (
+									<>
+										Sign in
+										<ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+									</>
+								)}
 							</button>
-							{/* Signing in is the one thing that cannot work from the cache. */}
+
+							{/* Signing in is the one thing that needs the network. */}
 							{!isOnline && (
-								<p className="mt-3 text-center text-xs text-muted-foreground">
+								<p className="text-center text-xs text-muted-foreground">
 									You are offline — connect once to sign in.
 								</p>
 							)}
-						</div>
+						</form>
 					</div>
 				)}
 			</div>
