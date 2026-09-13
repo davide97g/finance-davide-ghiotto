@@ -3,8 +3,9 @@
 # Differences from docker-compose.yml (which stays the local/dev one):
 #  - nothing is published on a host port (8080 is taken by qbittorrent there);
 #    Traefik reaches `web` over the shared `dokploy-network` instead
-#  - `web` carries the Traefik router labels, matching how the other Dokploy
-#    compose apps on this host are wired
+#  - the Traefik labels are left to Dokploy: it injects them from the domain
+#    configured on the application, so declaring our own would create a second
+#    router on the same host rule
 #
 # Required environment (set on the Dokploy application):
 #   APP_DOMAIN, POSTGRES_PASSWORD, SESSION_SECRET
@@ -63,13 +64,6 @@ services:
     networks:
       - dokploy-network
       - default
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=dokploy-network
-      - traefik.http.routers.finance-web.rule=Host(`${APP_DOMAIN}`)
-      - traefik.http.routers.finance-web.entrypoints=web
-      - traefik.http.routers.finance-web.service=finance-web
-      - traefik.http.services.finance-web.loadbalancer.server.port=80
 
   backup:
     image: prodrigestivill/postgres-backup-local:17-alpine
