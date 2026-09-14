@@ -10,7 +10,7 @@
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { db, sql } from "./client";
 
-const ATTEMPTS = 30;
+const ATTEMPTS = 60;
 const DELAY_MS = 2000;
 
 for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {

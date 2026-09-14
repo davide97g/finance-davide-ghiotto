@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
 import { Auth } from "../api/auth";
+import { ApiError } from "../api/http";
 import { Input } from "../components/ui/input";
 import { getPhotoURL } from "../services/utils";
 import { useSyncStore } from "../stores/sync";
@@ -23,8 +24,16 @@ export default function Login() {
 		try {
 			await Auth.signInWithPassword(email.trim(), password);
 			window.location.href = "/";
-		} catch {
-			setError("Wrong email or password.");
+		} catch (err) {
+			// 429 means the account or this address is locked out for a while;
+			// saying so beats a wrong-password message the user cannot act on.
+			if (err instanceof ApiError && err.status === 429) {
+				const seconds = Number(err.body?.retryAfter) || 0;
+				const minutes = Math.max(1, Math.ceil(seconds / 60));
+				setError(`Too many attempts. Try again in ${minutes} min.`);
+			} else {
+				setError("Wrong email or password.");
+			}
 		} finally {
 			setIsSubmitting(false);
 		}

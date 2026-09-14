@@ -12,6 +12,8 @@ export class ApiError extends Error {
 	constructor(
 		readonly status: number,
 		message: string,
+		/** Parsed error payload when the server sent JSON, e.g. `{ retryAfter }`. */
+		readonly body?: Record<string, unknown>,
 	) {
 		super(message);
 		this.name = "ApiError";
@@ -33,9 +35,16 @@ const request = async <T>(
 
 	if (!response.ok) {
 		const detail = await response.text().catch(() => "");
+		let body: Record<string, unknown> | undefined;
+		try {
+			body = JSON.parse(detail);
+		} catch {
+			// Not every error body is JSON; the text still goes in the message.
+		}
 		throw new ApiError(
 			response.status,
 			detail || `${method} ${path} failed with ${response.status}`,
+			body,
 		);
 	}
 
