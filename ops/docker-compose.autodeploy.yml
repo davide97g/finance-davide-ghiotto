@@ -1,0 +1,29 @@
+# Auto-deploy watcher for the mini PC.
+#
+# Deliberately a separate stack from the app: if it lived in the app's compose
+# file, every deploy would restart the watcher mid-request. Deployed by hand
+# once (see ops/README.md), then it looks after itself — restart: unless-stopped
+# brings it back after a reboot or a power cut, same as the app.
+services:
+  autodeploy:
+    image: curlimages/curl:8.11.1
+    restart: unless-stopped
+    # The image runs as uid 100 and a fresh named volume is owned by root, so
+    # the watcher could not write its state file. Root in a container whose
+    # whole job is two curl calls is the lesser evil against a manual chown
+    # step that breaks silently whenever the volume is recreated.
+    user: "0:0"
+    entrypoint: ["sh", "/opt/autodeploy.sh"]
+    environment:
+      DOKPLOY_URL: ${DOKPLOY_URL:-http://172.17.0.1:3000}
+      DOKPLOY_API_KEY: ${DOKPLOY_API_KEY:?set DOKPLOY_API_KEY}
+      COMPOSE_ID: ${COMPOSE_ID:?set COMPOSE_ID}
+      REPO: ${REPO:-davide97g/finance-davide-ghiotto}
+      BRANCH: ${BRANCH:-main}
+      INTERVAL: ${INTERVAL:-60}
+    volumes:
+      - ./autodeploy.sh:/opt/autodeploy.sh:ro
+      - autodeploy-state:/state
+
+volumes:
+  autodeploy-state:
