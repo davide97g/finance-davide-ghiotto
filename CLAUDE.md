@@ -17,7 +17,7 @@ bun run db:migrate    # Apply migrations
 bun run import        # Load a Firestore dump into Postgres
 bun run user:create   # Create a login / reset a password
 
-docker compose up -d --build   # Whole stack: postgres + api + nginx
+docker compose up -d --build   # Whole stack locally: postgres + api + nginx
 ```
 
 ## Tech Stack
@@ -53,6 +53,8 @@ REST + SSE → Zustand stores → React components. The `DataBaseClient` in `src
 
 ## Deployment
 
-- **Homelab (this branch)**: `docker-compose.yml` builds three services — `postgres`, `api` (Bun), `web` (nginx serving `dist/` and proxying `/api`) — plus a nightly `pg_dump` sidecar. Deployed with Dokploy on the mini PC; the API applies migrations on boot.
-- **Firebase (main)**: still live at `finance.davideghiotto.it` while the replica is proven. GitHub Actions (`.github/workflows/deploy-prod.yml`) deploys it on push to `main`.
+- **Production is the homelab mini PC** (`debian`, 192.168.15.131), serving `finance.davideghiotto.it` through a Cloudflare tunnel and Traefik. Dokploy project `finance`, compose service `finance`, file `docker-compose.dokploy.yml`: `postgres`, `api` (Bun), `web` (nginx serving `dist/` and proxying `/api`), plus a nightly `pg_dump` sidecar. The API applies migrations on boot.
+- **Redeploys are manual.** Dokploy is only reachable on the LAN (`dokploy.homelab.davideghiotto.it`), so GitHub cannot call its webhook: deploy from the Dokploy UI, or `POST /api/compose.deploy` with an API key.
+- GitHub Actions (`.github/workflows/ci.yml`) only lints, builds and type-checks. Nothing deploys from CI.
+- Firebase is retired. `firebase.json`, `.firebaserc` and the `firestore.*` files are kept as an inert rollback path — nothing reads them.
 - Migration runbook, backup and cutover: **MIGRATION.md**.

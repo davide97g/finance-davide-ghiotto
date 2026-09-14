@@ -139,12 +139,26 @@ Point that directory at whatever the mini PC already backs up off-site.
   stats (619 category rows), 231 groceries, 16 todos, 1 setting. Per-year and
   per-type totals reconcile with the Firestore dump to the cent.
 
-## Cutover
+## Cutover — done
 
-Dual-run: Firebase stays production. The homelab copy is re-synced by
-re-running export + import, so it can be thrown away and rebuilt at any time.
-When it has earned trust, point `finance.davideghiotto.it` at the mini PC and
-make the Firestore project read-only.
+`finance.davideghiotto.it` now resolves to the mini PC. What changed at the
+moment of the switch:
+
+- The Cloudflare tunnel serves the domain from Traefik on the mini PC instead
+  of Firebase Hosting.
+- `.github/workflows/deploy-prod.yml` is gone, replaced by `ci.yml`, which
+  only lints, builds and type-checks. Nothing deploys to Firebase any more.
+- Firestore still holds the original data, untouched and no longer written to.
+  The JSON dump under `backup/` is the portable copy of it.
+
+### Rolling back
+
+Firebase Hosting still has the last Firestore-based release, and
+`firebase.json` / `.firebaserc` are still in the repo. To go back: point the
+DNS record at Firebase again and redeploy the pre-migration commit
+(`6b4c76c`, the last one before this work). Anything entered in Postgres after
+the cutover would need re-entering — the export only runs Firestore to
+Postgres, not the other way.
 
 ## Left for phase 2
 
