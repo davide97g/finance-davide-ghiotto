@@ -60,7 +60,12 @@ const read = <T>(name: string): T[] => {
 	}
 };
 
+/** Rows that lost data or need a decision. */
 const problems: string[] = [];
+/** Rows dropped on purpose, reported so the drop stays visible. */
+const skipped: string[] = [];
+/** Set when something referenced a category that no longer exists. */
+let orphanRefs = 0;
 let emptyDocs = 0;
 const isoDate = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -101,8 +106,12 @@ const categoryRows = categoryDocs
 		excludeFromBudget: Boolean(doc.excludeFromBudget),
 	}));
 for (const doc of categoryDocs) {
+	// The app only knows expense/earning; anything else (a stray "nail" type
+	// from an old experiment) is dropped by decision, not by accident.
 	if (doc.type !== "expense" && doc.type !== "earning")
-		problems.push(`category ${doc.id}: unusable type ${JSON.stringify(doc.type)}`);
+		skipped.push(
+			`category ${doc.id} "${doc.name}": type ${JSON.stringify(doc.type)} is not expense/earning`,
+		);
 }
 
 if (allowOrphans) {
@@ -159,6 +168,7 @@ console.log(`tags: ${tagRows.length}`);
 const resolveCategory = (value: unknown, where: string): string | null => {
 	const id = typeof value === "string" ? value : "";
 	if (categoryIds.has(id)) return id;
+	orphanRefs++;
 	problems.push(`${where}: category ${JSON.stringify(value)} does not exist`);
 	return allowOrphans ? ORPHAN_CATEGORY_ID : null;
 };
@@ -419,12 +429,17 @@ console.log(`users: ${userRows.length} (passwords must be set separately)`);
 if (emptyDocs)
 	console.log(`\n${emptyDocs} empty document(s) skipped (no fields to migrate)`);
 
+if (skipped.length) {
+	console.log(`\n${skipped.length} row(s) dropped by design:`);
+	for (const entry of skipped) console.log(`  - ${entry}`);
+}
+
 if (problems.length) {
 	console.log(`\n${problems.length} row(s) needed attention:`);
 	for (const problem of problems.slice(0, 50)) console.log(`  - ${problem}`);
 	if (problems.length > 50)
 		console.log(`  ... and ${problems.length - 50} more`);
-	if (!allowOrphans)
+	if (orphanRefs && !allowOrphans)
 		console.log(
 			"\nRe-run with --allow-orphans to park dangling references on a placeholder category.",
 		);

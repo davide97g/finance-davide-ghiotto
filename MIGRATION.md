@@ -127,6 +127,18 @@ gunzip -c backup/postgres/daily/finance-<date>.sql.gz \
 
 Point that directory at whatever the mini PC already backs up off-site.
 
+## Decisions taken on the real data
+
+- **178 transaction documents held nothing but their id.** Verified against
+  live Firestore: they exist with zero fields and no subcollections. Skipped.
+- **Two categories carried `type: "nail"`** ("Gel", "semipermanente"), a type
+  the app never supported. Nothing referenced them — no transaction, no stats
+  row — so they are dropped, and the enum stays expense/earning. The importer
+  reports them under "dropped by design" on every run.
+- Everything else imported: 2434 transactions, 23 categories, 18 tags, 88
+  stats (619 category rows), 231 groceries, 16 todos, 1 setting. Per-year and
+  per-type totals reconcile with the Firestore dump to the cent.
+
 ## Cutover
 
 Dual-run: Firebase stays production. The homelab copy is re-synced by
