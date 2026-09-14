@@ -1,16 +1,14 @@
 import { create } from "zustand";
 
 /**
- * Offline/sync state.
+ * Online/sync state.
  *
- * Firestore applies every write to its local IndexedDB cache immediately and
- * flushes it to the server when the connection is back, so writes never block
- * the UI. This store tracks what is still waiting for a server ack so the app
- * can show it:
+ * Writes now travel straight to the API, so "pending" means "still in flight",
+ * not "queued in a local cache":
  *
- * - `inFlight`: writes issued in this session whose ack has not arrived yet.
- * - `pendingByListener`: docs a real-time listener reports as `hasPendingWrites`.
- *   Needed because `inFlight` is lost on reload while the Firestore queue is not.
+ * - `inFlight`: writes issued in this session whose response has not arrived.
+ * - `pendingByListener`: kept for the offline write queue planned next; no
+ *   listener reports into it yet.
  */
 interface SyncState {
 	isOnline: boolean;
@@ -66,13 +64,20 @@ let listenerCounter = 0;
 export const nextListenerId = () => `l${++listenerCounter}`;
 
 /**
- * Counts a write while it flies to the server. The returned promise is never
- * awaited by callers: Firestore has already applied the change locally, so the
- * UI can move on and the ack only matters for the sync indicator.
+ * Counts a write while it flies to the server and hands the promise back, so
+ * callers can await the stored row (the id is now assigned by Postgres) while
+ * the sync indicator stays honest. Failures are logged and rethrown: without a
+ * local cache behind it, a failed write is a failed write.
  */
-export const trackWrite = <T>(promise: Promise<T>, label: string): void => {
+export const trackWrite = <T>(
+	promise: Promise<T>,
+	label: string,
+): Promise<T> => {
 	useSyncStore.getState().writeStarted();
-	promise
-		.catch((err) => console.error(`${label} failed to sync`, err))
+	return promise
+		.catch((err) => {
+			console.error(`${label} failed`, err);
+			throw err;
+		})
 		.finally(() => useSyncStore.getState().writeSettled());
 };

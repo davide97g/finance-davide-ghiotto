@@ -1,0 +1,11 @@
+{
+  "name": "finance-migration-scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "export": "bun run export-firestore.ts"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}

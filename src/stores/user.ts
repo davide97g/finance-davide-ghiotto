@@ -1,23 +1,22 @@
-import type { User } from "firebase/auth";
 import { create } from "zustand";
-
-const ADMINS = ["70DafDh0t0VJ6kwfES1WPYd9s723", "RnGor26IYQM6vwRwq12vH1gKC1m1"];
+import type { AppUser } from "../models/user";
 
 interface UserState {
 	isLoggedIn: boolean | undefined;
-	user: User | null;
+	user: AppUser | null;
 	isAdmin: boolean;
-	setUser: (user: User | null) => void;
+	setUser: (user: AppUser | null) => void;
 }
 
 export const useUserStore = create<UserState>((set) => ({
 	isLoggedIn: undefined,
 	user: null,
 	isAdmin: false,
-	setUser: (user: User | null) =>
+	// Admin is a column on the user row now, not a hardcoded uid list.
+	setUser: (user: AppUser | null) =>
 		set({
 			user,
 			isLoggedIn: !!user,
-			isAdmin: !!user && ADMINS.includes(user.uid),
+			isAdmin: !!user?.isAdmin,
 		}),
 }));

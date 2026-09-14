@@ -1,10 +1,10 @@
-import type { User } from "firebase/auth";
 import { toast } from "sonner";
+import type { AppUser } from "../models/user";
 import { setIsLoading } from "../stores/loading";
 
 export { setIsLoading };
 
-export const getPhotoURL = (user: User | null) => {
+export const getPhotoURL = (user: AppUser | null) => {
 	return user?.photoURL || "/img/default-profile-pic.svg";
 };
 
