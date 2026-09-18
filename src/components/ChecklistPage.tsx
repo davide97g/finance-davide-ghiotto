@@ -1,31 +1,40 @@
-import { ChevronDown, Plus, Search, Trash2 } from "lucide-react";
+import { Check, ChevronDown, Plus, Search, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { ChecklistItemView } from "../hooks/useChecklist";
 import { cn } from "../lib/utils";
 import Avatar from "./Avatar";
-import { Checkbox } from "./ui/checkbox";
 import { Input } from "./ui/input";
-
-interface ChecklistItem {
-	id: string;
-	label: string;
-	checked: boolean;
-}
 
 interface ChecklistPageProps {
 	title: string;
 	icon: string;
-	items: ChecklistItem[];
+	items: ChecklistItemView[];
 	filterWhileTyping?: boolean;
+	error?: string | null;
+	onDismissError?: () => void;
 	onAdd: (label: string) => Promise<unknown>;
-	onCheck: (item: ChecklistItem) => void;
-	onDelete: (item: ChecklistItem) => void;
+	onCheck: (item: ChecklistItemView) => void;
+	onDelete: (item: ChecklistItemView) => void;
 }
+
+/**
+ * Tap targets are sized for a hand holding a basket, not a mouse: the whole
+ * row toggles, `touch-manipulation` drops the browser's double-tap delay, and
+ * the press feedback is local CSS so it shows before any network answer.
+ */
+const ROW_TAP =
+	"flex flex-1 min-w-0 items-center gap-3 rounded-xl px-3.5 text-left cursor-pointer touch-manipulation select-none transition-colors duration-100 active:bg-foreground/[0.06] [-webkit-tap-highlight-color:transparent]";
+
+const DELETE_TAP =
+	"shrink-0 h-11 w-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-150 [-webkit-tap-highlight-color:transparent]";
 
 export default function ChecklistPage({
 	title,
 	icon,
 	items,
 	filterWhileTyping = false,
+	error,
+	onDismissError,
 	onAdd,
 	onCheck,
 	onDelete,
@@ -62,11 +71,20 @@ export default function ChecklistPage({
 		if (newItem.trim()) {
 			const value = newItem.trim();
 			setNewItem("");
-			onAdd(value);
+			onAdd(value).catch(() => {
+				// The caller rolls the row back and reports it; nothing to do here.
+			});
 		}
 	};
 
-	const handleDelete = (item: ChecklistItem) => {
+	const handleCheck = (item: ChecklistItemView) => {
+		// A short buzz confirms the tap without looking at the screen. Not every
+		// browser has it, and it is a nicety either way.
+		navigator.vibrate?.(10);
+		onCheck(item);
+	};
+
+	const handleDelete = (item: ChecklistItemView) => {
 		setDeletingIds((prev) => new Set(prev).add(item.id));
 		setTimeout(() => {
 			onDelete(item);
@@ -119,6 +137,7 @@ export default function ChecklistPage({
 									strokeLinecap="round"
 									strokeDasharray={circumference}
 									strokeDashoffset={strokeDashoffset}
+									style={{ transition: "stroke-dashoffset 250ms ease-out" }}
 								/>
 							</svg>
 							<span className="absolute inset-0 flex items-center justify-center text-lg">
@@ -158,17 +177,34 @@ export default function ChecklistPage({
 							type="button"
 							onClick={handleAdd}
 							disabled={!newItem.trim()}
+							aria-label="Add item"
 							className={cn(
-								"shrink-0 h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200",
+								"shrink-0 h-9 w-9 rounded-lg flex items-center justify-center touch-manipulation transition-all duration-200",
 								newItem.trim()
 									? "bg-earning text-white shadow-sm hover:bg-earning/90 active:scale-95"
 									: "bg-foreground/[0.04] text-foreground/20",
 							)}
 						>
-							<Plus className="h-3.5 w-3.5" />
+							<Plus className="h-4 w-4" />
 						</button>
 					</div>
 				</div>
+
+				{error && (
+					<div className="px-5 pb-2">
+						<div className="flex items-center gap-2 rounded-xl bg-expense/10 border border-expense/20 px-3 py-2">
+							<span className="flex-1 text-xs text-expense">{error}</span>
+							<button
+								type="button"
+								onClick={onDismissError}
+								aria-label="Dismiss"
+								className="shrink-0 h-7 w-7 rounded-lg flex items-center justify-center text-expense/60 touch-manipulation"
+							>
+								<X className="h-3.5 w-3.5" />
+							</button>
+						</div>
+					</div>
+				)}
 			</div>
 
 			{/* Scrollable list */}
@@ -181,24 +217,36 @@ export default function ChecklistPage({
 								<div
 									key={item.id}
 									className={cn(
-										"group flex items-center gap-3 bg-card/60 backdrop-blur-sm rounded-xl px-3.5 py-3 shadow-sm border border-border/30 transition-opacity duration-250",
+										"group flex items-center bg-card/60 backdrop-blur-sm rounded-xl pr-1 shadow-sm border border-border/30 transition-opacity duration-250",
 										deletingIds.has(item.id) && "opacity-0",
+										item.unsaved && "opacity-60",
 									)}
 								>
-									<Checkbox
-										checked={false}
-										onCheckedChange={() => onCheck(item)}
-										className="h-5 w-5 rounded-full border-2 border-foreground/15 data-[state=checked]:bg-earning data-[state=checked]:border-earning transition-colors"
-									/>
-									<span className="flex-1 text-sm text-foreground/80 text-left leading-snug">
-										{item.label}
-									</span>
+									<label className={cn(ROW_TAP, "min-h-[52px] py-3")}>
+										<input
+											type="checkbox"
+											checked={false}
+											onChange={() => handleCheck(item)}
+											className="sr-only peer"
+										/>
+										<span
+											aria-hidden="true"
+											className="shrink-0 h-6 w-6 rounded-full border-2 border-foreground/20 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-earning peer-focus-visible:ring-offset-2"
+										/>
+										<span className="flex-1 text-sm text-foreground/80 leading-snug">
+											{item.label}
+										</span>
+									</label>
 									<button
 										type="button"
 										onClick={() => handleDelete(item)}
-										className="opacity-40 sm:opacity-0 sm:group-hover:opacity-100 active:opacity-100 shrink-0 h-6 w-6 rounded-lg flex items-center justify-center text-foreground/20 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all duration-150"
+										aria-label={`Delete ${item.label}`}
+										className={cn(
+											DELETE_TAP,
+											"opacity-40 sm:opacity-0 sm:group-hover:opacity-100 active:opacity-100 text-foreground/25 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50",
+										)}
 									>
-										<Trash2 className="h-3.5 w-3.5" />
+										<Trash2 className="h-4 w-4" />
 									</button>
 								</div>
 							))}
@@ -224,7 +272,7 @@ export default function ChecklistPage({
 						<button
 							type="button"
 							onClick={() => setShowCompleted(!showCompleted)}
-							className="flex items-center gap-2 mb-2 group"
+							className="flex items-center gap-2 mb-2 group h-11 touch-manipulation"
 						>
 							<ChevronDown
 								className={cn(
@@ -246,24 +294,37 @@ export default function ChecklistPage({
 									<div
 										key={item.id}
 										className={cn(
-											"group flex items-center gap-3 rounded-xl px-3.5 py-2.5 transition-opacity duration-250",
+											"group flex items-center rounded-xl pr-1 transition-opacity duration-250",
 											deletingIds.has(item.id) && "opacity-0",
 										)}
 									>
-										<Checkbox
-											checked={true}
-											onCheckedChange={() => onCheck(item)}
-											className="h-5 w-5 rounded-full border-2 data-[state=checked]:bg-earning/60 data-[state=checked]:border-earning/60 transition-colors"
-										/>
-										<span className="flex-1 text-sm text-foreground/30 text-left line-through decoration-foreground/15 leading-snug">
-											{item.label}
-										</span>
+										<label className={cn(ROW_TAP, "min-h-[48px] py-2.5")}>
+											<input
+												type="checkbox"
+												checked={true}
+												onChange={() => handleCheck(item)}
+												className="sr-only peer"
+											/>
+											<span
+												aria-hidden="true"
+												className="shrink-0 h-6 w-6 rounded-full bg-earning/60 flex items-center justify-center text-white transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-earning peer-focus-visible:ring-offset-2"
+											>
+												<Check className="h-3.5 w-3.5" strokeWidth={3} />
+											</span>
+											<span className="flex-1 text-sm text-foreground/30 line-through decoration-foreground/15 leading-snug">
+												{item.label}
+											</span>
+										</label>
 										<button
 											type="button"
 											onClick={() => handleDelete(item)}
-											className="opacity-30 sm:opacity-0 sm:group-hover:opacity-100 active:opacity-100 shrink-0 h-6 w-6 rounded-lg flex items-center justify-center text-foreground/15 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all duration-150"
+											aria-label={`Delete ${item.label}`}
+											className={cn(
+												DELETE_TAP,
+												"opacity-30 sm:opacity-0 sm:group-hover:opacity-100 active:opacity-100 text-foreground/20 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50",
+											)}
 										>
-											<Trash2 className="h-3.5 w-3.5" />
+											<Trash2 className="h-4 w-4" />
 										</button>
 									</div>
 								))}

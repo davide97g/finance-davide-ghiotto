@@ -7,7 +7,7 @@
  * by itself, so a dropped connection needs no handling beyond re-reading on
  * the next event.
  */
-import { BASE_URL } from "./http";
+import { BASE_URL, CLIENT_ID } from "./http";
 
 export type Collection =
 	| "transactions"
@@ -32,9 +32,15 @@ const openSource = () => {
 	source = new EventSource(`${BASE_URL}/events`, { withCredentials: true });
 	source.addEventListener("change", (event) => {
 		try {
-			const { collection } = JSON.parse((event as MessageEvent).data) as {
+			const { collection, origin } = JSON.parse(
+				(event as MessageEvent).data,
+			) as {
 				collection: Collection;
+				origin?: string;
 			};
+			// Our own write already applied the row the server sent back, so the
+			// echo of it would only buy a redundant round trip.
+			if (origin && origin === CLIENT_ID) return;
 			for (const listener of listeners.get(collection) ?? []) listener();
 		} catch {
 			// A malformed frame is not worth tearing the stream down for.

@@ -33,13 +33,31 @@ const liveQuery = async <T>(
 	callback: (items: T[]) => void,
 ): Promise<Unsubscribe> => {
 	let active = true;
+	let reading = false;
+	let queued = false;
 
+	/**
+	 * One read at a time, with at most one trailing re-read queued behind it. A
+	 * burst of changes then costs a single extra round trip instead of one per
+	 * event, which matters on a phone with a bad connection.
+	 */
 	const refresh = async () => {
+		if (reading) {
+			queued = true;
+			return;
+		}
+		reading = true;
 		try {
 			const items = await read();
 			if (active) callback(items);
 		} catch (error) {
 			console.error(`failed to read ${collection}`, error);
+		} finally {
+			reading = false;
+			if (queued && active) {
+				queued = false;
+				void refresh();
+			}
 		}
 	};
 
@@ -250,6 +268,21 @@ export const DataBaseClient = {
 			await trackWrite(api.put(`/groceries/${id}`, payload), "grocery update");
 			return true;
 		},
+		/**
+		 * Ticking an item off, on its own: one small `PATCH` that answers with the
+		 * stored row, so the caller never has to re-read the collection to learn
+		 * the outcome. `keepalive` sees it through a phone locking mid-shop.
+		 */
+		setChecked(id: string, checked: boolean): Promise<Grocery> {
+			return trackWrite(
+				api.patch<Grocery>(
+					`/groceries/${id}`,
+					{ checked },
+					{ keepalive: true, priority: "high" },
+				),
+				"grocery check",
+			);
+		},
 		async delete(groceryId: string): Promise<boolean> {
 			await trackWrite(api.delete(`/groceries/${groceryId}`), "grocery delete");
 			return true;
@@ -275,6 +308,17 @@ export const DataBaseClient = {
 			const { id, ...payload } = todo;
 			await trackWrite(api.put(`/todo/${id}`, payload), "todo update");
 			return true;
+		},
+		/** See `Grocery.setChecked`. */
+		setChecked(id: string, checked: boolean): Promise<Todo> {
+			return trackWrite(
+				api.patch<Todo>(
+					`/todo/${id}`,
+					{ checked },
+					{ keepalive: true, priority: "high" },
+				),
+				"todo check",
+			);
 		},
 		async delete(todoId: string): Promise<boolean> {
 			await trackWrite(api.delete(`/todo/${todoId}`), "todo delete");

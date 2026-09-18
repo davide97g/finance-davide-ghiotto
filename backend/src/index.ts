@@ -34,8 +34,8 @@ app.use(
 	cors({
 		origin: origins,
 		credentials: true,
-		allowHeaders: ["Content-Type", "Authorization"],
-		allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+		allowHeaders: ["Content-Type", "Authorization", "X-Client-Id"],
+		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 	}),
 );
 

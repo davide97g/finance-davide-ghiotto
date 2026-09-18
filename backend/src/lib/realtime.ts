@@ -20,6 +20,13 @@ export interface ChangeEvent {
 	collection: ChangedCollection;
 	action: "create" | "update" | "delete";
 	at: number;
+	/**
+	 * The `X-Client-Id` of the tab that made the write, when it sent one. The
+	 * writer already has the server's answer in its own response, so it skips
+	 * the re-read this event would otherwise trigger; every other tab still
+	 * re-reads.
+	 */
+	origin?: string;
 }
 
 type Subscriber = (event: ChangeEvent) => void;
@@ -34,8 +41,9 @@ export const subscribe = (subscriber: Subscriber) => {
 export const publish = (
 	collection: ChangedCollection,
 	action: ChangeEvent["action"],
+	origin?: string,
 ) => {
-	const event: ChangeEvent = { collection, action, at: Date.now() };
+	const event: ChangeEvent = { collection, action, at: Date.now(), origin };
 	for (const subscriber of subscribers) {
 		try {
 			subscriber(event);

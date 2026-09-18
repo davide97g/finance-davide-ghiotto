@@ -8,6 +8,18 @@
  */
 const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
+/**
+ * Identifies this tab for the lifetime of the page. It rides along on writes so
+ * the server can stamp the resulting change event with its origin, letting this
+ * tab skip the re-read it would otherwise do for its own write — the write's
+ * own response already carries the new row. Other tabs and devices still
+ * re-read as before.
+ */
+export const CLIENT_ID =
+	typeof crypto !== "undefined" && "randomUUID" in crypto
+		? crypto.randomUUID()
+		: `c${Date.now()}${Math.random().toString(36).slice(2)}`;
+
 export class ApiError extends Error {
 	constructor(
 		readonly status: number,
@@ -20,18 +32,35 @@ export class ApiError extends Error {
 	}
 }
 
+interface RequestOptions {
+	/**
+	 * Lets a small write outlive the page: the browser finishes it even if the
+	 * tab is backgrounded or closed mid-flight. Exactly the case of locking the
+	 * phone right after ticking something off a list in a shop.
+	 */
+	keepalive?: boolean;
+	/** `high` jumps the browser's queue ahead of background refetches. */
+	priority?: "high" | "low" | "auto";
+}
+
 const request = async <T>(
 	method: string,
 	path: string,
 	body?: unknown,
+	options?: RequestOptions,
 ): Promise<T> => {
+	const headers: Record<string, string> = { "X-Client-Id": CLIENT_ID };
+	if (body !== undefined) headers["Content-Type"] = "application/json";
+
 	const response = await fetch(`${BASE_URL}${path}`, {
 		method,
 		credentials: "include",
-		headers:
-			body === undefined ? undefined : { "Content-Type": "application/json" },
+		headers,
 		body: body === undefined ? undefined : JSON.stringify(body),
-	});
+		keepalive: options?.keepalive,
+		// Not in every lib.dom yet; harmless where the browser ignores it.
+		...(options?.priority ? { priority: options.priority } : {}),
+	} as RequestInit);
 
 	if (!response.ok) {
 		const detail = await response.text().catch(() => "");
@@ -63,9 +92,13 @@ export const toQuery = (params: Record<string, string | undefined>) => {
 
 export const api = {
 	get: <T>(path: string) => request<T>("GET", path),
-	post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
+	post: <T>(path: string, body?: unknown, options?: RequestOptions) =>
+		request<T>("POST", path, body, options),
 	put: <T>(path: string, body?: unknown) => request<T>("PUT", path, body),
-	delete: <T>(path: string) => request<T>("DELETE", path),
+	patch: <T>(path: string, body?: unknown, options?: RequestOptions) =>
+		request<T>("PATCH", path, body, options),
+	delete: <T>(path: string, options?: RequestOptions) =>
+		request<T>("DELETE", path, undefined, options),
 };
 
 export { BASE_URL };
