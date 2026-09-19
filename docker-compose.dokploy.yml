@@ -48,8 +48,13 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
+    # nginx in `web` proxies to `finance-api` and not to `api`: `web` sits on
+    # dokploy-network, where other projects' api containers answer to `api`
+    # too and Docker's DNS picks whichever it likes.
     networks:
-      - default
+      default:
+        aliases:
+          - finance-api
 
   web:
     build:

@@ -36,6 +36,12 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
+    # The name nginx proxies to, needed here too: same web image as the
+    # deployment, where `api` alone collides with other stacks.
+    networks:
+      default:
+        aliases:
+          - finance-api
 
   web:
     build:
