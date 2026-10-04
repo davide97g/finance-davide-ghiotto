@@ -51,8 +51,13 @@ services:
     # nginx in `web` proxies to `finance-api` and not to `api`: `web` sits on
     # dokploy-network, where other projects' api containers answer to `api`
     # too and Docker's DNS picks whichever it likes.
+    # Also on dokploy-network so autocratico (same host) reaches it as
+    # http://finance-api:3000 with an API token, without going through Cloudflare.
     networks:
       default:
+        aliases:
+          - finance-api
+      dokploy-network:
         aliases:
           - finance-api
 

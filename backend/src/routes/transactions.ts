@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte, lte } from "drizzle-orm";
 import { Hono } from "hono";
 import { db } from "../db/client";
 import { transactions } from "../db/schema";
@@ -36,11 +36,17 @@ const toRow = (body: TransactionBody, id: string) => ({
 });
 
 transactionRoutes.get("/", async (c) => {
-	const { type, month, year } = c.req.query();
+	const { type, month, year, from, to } = c.req.query();
+	const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+	if ((from && !isoDate.test(from)) || (to && !isoDate.test(to)))
+		return c.json({ error: "from and to must be YYYY-MM-DD" }, 400);
 	const filters = [
 		type ? eq(transactions.type, type as "expense" | "earning") : undefined,
 		month ? eq(transactions.month, month) : undefined,
 		year ? eq(transactions.year, year) : undefined,
+		// Inclusive date range, for clients that sync a window (autocratico).
+		from ? gte(transactions.date, from) : undefined,
+		to ? lte(transactions.date, to) : undefined,
 	].filter(Boolean);
 
 	const rows = await db

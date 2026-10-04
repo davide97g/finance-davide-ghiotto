@@ -142,6 +142,25 @@ export const todos = pgTable("todos", {
 	checked: boolean("checked").notNull().default(false),
 });
 
+/**
+ * Long-lived bearer tokens for other services (e.g. autocratico), so they never
+ * hold a password. Only the SHA-256 of the token is stored; `scope` limits what
+ * it may do (see `requireAuth`).
+ */
+export const tokenScope = pgEnum("token_scope", ["read", "write"]);
+
+export const apiTokens = pgTable("api_tokens", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	tokenHash: text("token_hash").notNull().unique(),
+	scope: tokenScope("scope").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
+	lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+	revokedAt: timestamp("revoked_at", { withTimezone: true }),
+});
+
 /** Singleton documents the app kept under Firestore's `settings` collection. */
 export const settings = pgTable("settings", {
 	key: text("key").primaryKey(),

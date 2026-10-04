@@ -8,6 +8,12 @@
 import type { Context, MiddlewareHandler } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { sign, verify } from "hono/jwt";
+import {
+	findToken,
+	TOKEN_PREFIX,
+	type TokenScope,
+	tokenAllows,
+} from "./tokens";
 
 export const SESSION_COOKIE = "fin_session";
 const THIRTY_DAYS_SECONDS = 60 * 60 * 24 * 30;
@@ -16,6 +22,8 @@ export interface SessionUser {
 	uid: string;
 	email: string;
 	isAdmin: boolean;
+	/** Set only for API tokens; people's sessions have no scope limit. */
+	scope?: TokenScope;
 }
 
 const secret = () => {
@@ -51,9 +59,18 @@ export const issueSession = async (c: Context, user: SessionUser) => {
 export const clearSession = (c: Context) =>
 	deleteCookie(c, SESSION_COOKIE, { path: "/" });
 
-/** Reads the session from the cookie, falling back to a bearer token for CLI use. */
+/**
+ * Reads the session from the cookie, falling back to a bearer token: a session
+ * JWT for CLI use, or an API token (`fin_…`) for other services.
+ */
 const readSession = async (c: Context): Promise<SessionUser | null> => {
 	const bearer = c.req.header("Authorization")?.replace(/^Bearer\s+/i, "");
+	if (bearer?.startsWith(TOKEN_PREFIX)) {
+		const row = await findToken(bearer);
+		return row
+			? { uid: `token:${row.id}`, email: "", isAdmin: false, scope: row.scope }
+			: null;
+	}
 	const token = getCookie(c, SESSION_COOKIE) ?? bearer;
 	if (!token) return null;
 	try {
@@ -74,6 +91,8 @@ export const requireAuth: MiddlewareHandler<{
 }> = async (c, next) => {
 	const user = await readSession(c);
 	if (!user) return c.json({ error: "unauthorized" }, 401);
+	if (user.scope && !tokenAllows(user.scope, c.req.method, c.req.path))
+		return c.json({ error: "forbidden for this token" }, 403);
 	c.set("user", user);
 	await next();
 };

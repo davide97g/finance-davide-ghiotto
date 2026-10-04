@@ -16,6 +16,7 @@ bun run db:generate   # New migration from the drizzle schema
 bun run db:migrate    # Apply migrations
 bun run import        # Load a Firestore dump into Postgres
 bun run user:create   # Create a login / reset a password
+bun run token create <name> --scope read|write   # API token for another service (list | revoke <id>)
 
 docker compose up -d --build   # Whole stack locally: postgres + api + nginx
 ```
@@ -42,6 +43,7 @@ REST + SSE → Zustand stores → React components. The `DataBaseClient` in `src
 - **Categories** have a `type` field (expense/earning) and `excludeFromBudget` flag — budget calculations must respect this
 - **Protected routes** redirect to `/login`; the session is checked once at boot by `checkUserIsLoggedIn` in `src/api/auth.ts`
 - **Auth**: email + password, Argon2id, httpOnly session cookie. No signup route — accounts come from `bun run user:create`
+- **API tokens** (`api_tokens`, `src/lib/tokens.ts`): `Authorization: Bearer fin_…` for other services (autocratico). Only the SHA-256 is stored. `read` = GET only; `write` = GET + changes to `/api/transactions*`; anything else is 403. They also open `/api/events`. autocratico reaches the API on `dokploy-network` as `http://finance-api:3000`
 - **Admin system**: `is_admin` column on the user row, surfaced as `AppUser.isAdmin`
 - **Online-only for now**: writes go straight to the API and `trackWrite` (`src/stores/sync.ts`) counts them while in flight. The Firestore offline cache has no replacement yet — see MIGRATION.md, phase 2. The service worker still serves the SPA shell for any navigation
 
