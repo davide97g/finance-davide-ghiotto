@@ -14,7 +14,7 @@
     "token": "bun src/scripts/token.ts"
   },
   "dependencies": {
-    "drizzle-orm": "^0.44.6",
+    "drizzle-orm": "^0.45.2",
     "hono": "^4.10.2",
     "postgres": "^3.4.7"
   },
