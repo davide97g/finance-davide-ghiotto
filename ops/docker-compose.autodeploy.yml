@@ -6,7 +6,7 @@
 # brings it back after a reboot or a power cut, same as the app.
 services:
   autodeploy:
-    image: curlimages/curl:8.11.1
+    image: curlimages/curl:8.23.0
     restart: unless-stopped
     # The image runs as uid 100 and a fresh named volume is owned by root, so
     # the watcher could not write its state file. Root in a container whose
